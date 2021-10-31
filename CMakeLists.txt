@@ -1,23 +1,54 @@
-cmake_minimum_required(VERSION 3.14.0)
+cmake_minimum_required(VERSION 3.14)
 
 project(chessengine
- VERSION 1.0
- DESCRIPTION "Chess engine and UI"
- LANGUAGES CXX)
+	VERSION 1.0
+	DESCRIPTION "Chess engine and UI"
+	LANGUAGES CXX)
 
-set(PROJECT "D:/Documents/dev/cpp/chessengine" PATH)
-set(SOURCES src/hello.cpp )# include/include.h include/piece.h include/pawn.h include/board.h)
+add_executable(chessengine src/main.cpp)
 
-add_executable(chessengine ${SOURCES})
+############ sioclient
 
-target_include_directories(chessengine PRIVATE ${PROJECT}/include)
-# target_include_directories(chessengine PRIVATE ${PROJECT}/src)
+aux_source_directory(${CMAKE_CURRENT_LIST_DIR}/lib/src ALL_SRC)
+aux_source_directory(${CMAKE_CURRENT_LIST_DIR}/lib/src/internal ALL_SRC)
+
+add_definitions(
+	# These will force ASIO to compile without Boost
+	-DBOOST_DATE_TIME_NO_LIB
+	-DBOOST_REGEX_NO_LIB
+	-DASIO_STANDALONE
+	# These will force WebsocketPP to compile with C++11
+	-D_WEBSOCKETPP_CPP11_STL_
+	-D_WEBSOCKETPP_CPP11_FUNCTIONAL_
+)
+
+add_library(sioclient ${ALL_SRC})
+target_include_directories(sioclient PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/lib/rapidjson/include
+	${CMAKE_CURRENT_LIST_DIR}/lib/websocketpp
+	${CMAKE_CURRENT_LIST_DIR}/lib/asio/asio/include
+	)
+
+############
+
+# target_compile_options(sioclient INTERFACE -W2)
+target_compile_options(chessengine PRIVATE -W4 ${OpenMP_CXX_FLAGS})
+
+set_target_properties(sioclient PROPERTIES COMPILE_FLAGS "-w")
+
+target_include_directories(chessengine PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/include
+	${CMAKE_CURRENT_LIST_DIR}/lib
+	${CMAKE_CURRENT_LIST_DIR}/lib/src
+	)
 
 target_compile_features(chessengine PRIVATE cxx_std_20)
 
-# target_compile_definitions(chessengine PRIVATE BOARD)
+target_compile_definitions(chessengine PRIVATE _WIN32_WINNT=0x0A00)
+
+############ omp
 
 find_package(OpenMP REQUIRED)
 
-target_compile_options(chessengine PRIVATE -W4 ${OpenMP_CXX_FLAGS})
-target_link_libraries(chessengine PRIVATE ${OpenMP_CXX_FLAGS})
+############ link libs
+target_link_libraries(chessengine PRIVATE ${OpenMP_CXX_FLAGS} sioclient)

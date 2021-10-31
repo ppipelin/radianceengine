@@ -1,2 +1,6 @@
 .vscode/
 build/
+sioclient/
+node_modules
+package-lock.json
+lib
