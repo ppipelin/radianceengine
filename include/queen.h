@@ -5,30 +5,26 @@
 class Queen : public Piece
 {
 public:
-	// a is letter, b is number. Both starts at 0
-	// tile is computed by substracting to 64 the sum of the cases from the bottom right to left.
-	Queen(bool isWhite, bool neverMoved, Int a, Int b) : Piece(isWhite, neverMoved, 64 - (BOARD_SIZE * b + (BOARD_SIZE - a))) {}
-	Queen(bool isWhite, bool neverMoved, Int a) : Piece(isWhite, neverMoved, a) {}
+	Queen(UInt a, UInt b, bool isWhite, bool neverMoved) : Piece(a, b, isWhite, neverMoved) {}
+	Queen(UInt a, bool isWhite, bool neverMoved) : Piece(a, isWhite, neverMoved) {}
 	~Queen() {}
-	// Returns a vector of the cases where Piece can move.
-	std::vector<Int> canMove(Board &b)
+	void canMove(const Board &b, std::vector<UInt> &v) const
 	{
-		std::vector<Int> v;
-		if (m_isWhite)
+		std::vector<Int> directions = { 1, -1, 8, -8, 9, -9, 7, -7 };
+		for (Int direction : directions)
 		{
+			std::vector<UInt> w;
+			sliding(b, direction, w);
+			v.insert(v.end(), w.begin(), w.end());
 		}
-		else
-		{
-		}
-		return v;
 	}
 
-	bool exists() override
+	bool exists() const override
 	{
 		return true;
 	}
 
-	const std::string str() override
+	std::string str() const override
 	{
 		return m_isWhite ? "Q" : "q";
 	}

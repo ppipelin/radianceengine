@@ -31,7 +31,6 @@ target_include_directories(sioclient PRIVATE
 
 ############
 
-# target_compile_options(sioclient INTERFACE -W2)
 target_compile_options(chessengine PRIVATE -W4 ${OpenMP_CXX_FLAGS})
 
 set_target_properties(sioclient PROPERTIES COMPILE_FLAGS "-w")

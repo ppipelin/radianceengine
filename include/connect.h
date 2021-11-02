@@ -17,7 +17,7 @@ class Connection_listener
 
 public:
 	Connection_listener(sio::client &h) : handler(h)
-	{ }
+	{}
 
 	void on_connected()
 	{

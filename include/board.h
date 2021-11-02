@@ -4,66 +4,98 @@
 
 class Piece;
 
+/**
+	* @brief Board	class
+	* @details	This class is used to represent the board.
+	*  It contains the pieces in `m_board`. Which is a 64 vector of all the cases.
+	*  Index 0 is bottom left corner (A1), index 63 is top right corner (H8).
+	*  It also contains the methods to check if a king is in check.
+	*
+	*/
 class Board
 {
 private:
-	std::vector<Piece *> *m_board;
-	//  std::vector<bool> * m_empty;
+	// TODO: perhaps set to const Piece
+	std::vector<Piece *> m_board;
+	std::vector<UInt> m_whitePos;
+	std::vector<UInt> m_blackPos;
 public:
 	Board()
 	{
-		// m_board.reserve( BOARD_SIZE * BOARD_SIZE);
-		// for (Int i = 0; i < BOARD_SIZE * BOARD_SIZE; ++i)
-		// {
-		//  m_board.push_back(new Piece(false, false, i)); // TO CHECK if first is true 
-		// }
-		m_board = new std::vector<Piece *>(BOARD_SIZE * BOARD_SIZE);
-		// m_empty = new std::vector<bool>( BOARD_SIZE * BOARD_SIZE , false); // init as if all cases where used
-		// fillBoard(m_starting);
+		m_board = std::vector<Piece *>(BOARD_SIZE2);
+		m_whitePos.reserve(BOARD_SIZE * 2);
+		m_blackPos.reserve(BOARD_SIZE * 2);
 	}
 
 	~Board()
-	{
-		delete m_board;
-		// delete m_empty;
-	}
+	{}
 
 	// Mutators
-	std::vector<Piece *> &board()
-	{
-		return *m_board;
-	}
+	std::vector<Piece *> &board() { return m_board; }
 
-	//  std::vector<bool> &empty() {
-	//   return *m_empty;
-	//  }
+	const std::vector<Piece *> &board() const { return m_board; }
 
-	// const std::vector<const Piece*> board() const {
-	//  return m_board;
-	// }
+	Piece &operator[](std::size_t idx) { return *board()[idx]; }
 
-	//  bool isFree(Int tile) {
-	//   // return true;//decltype(m_board[tile]) == Piece;
-	//    return m_empty->at(tile);
-	//  }
+	const Piece &operator[](std::size_t idx) const { return *board()[idx]; }
 
-	bool sameLine(Int a, Int b) const
+	std::vector<UInt> &whitePos() { return m_whitePos; }
+
+	const std::vector<UInt> &whitePos() const { return m_whitePos; }
+
+	std::vector<UInt> &blackPos() { return m_blackPos; }
+
+	const std::vector<UInt> &blackPos() const { return m_blackPos; }
+
+	/**
+		* @brief method to check tile a is on the same line as tile b
+		*
+		* @param a
+		* @param b
+		* @return true
+		* @return false
+		*/
+	bool sameLine(UInt a, UInt b) const
 	{
 		return floor(a / BOARD_SIZE) == floor(b / BOARD_SIZE);
 	}
 
-	bool sameColumn(Int a, Int b) const
+	bool sameColumn(UInt a, UInt b) const
 	{
 		return a % BOARD_SIZE == b % BOARD_SIZE;
 	}
 
-	static bool firstCol(Int tile)
+	static bool leftCol(UInt tile)
 	{
 		return tile % BOARD_SIZE == 0; // is 0 % smth always true ?
 	}
 
-	static bool lastCol(Int tile)
+	static bool rightCol(UInt tile)
 	{
-		return tile % (BOARD_SIZE - 1) == 0;
+		if (tile > BOARD_SIZE2 - 1)
+			err("Going beyond board.");
+		return (tile + 1) % (BOARD_SIZE) == 0;
+	}
+
+	static bool botRow(UInt tile)
+	{
+		return tile < BOARD_SIZE;
+	}
+
+	static bool topRow(UInt tile)
+	{
+		if (tile > BOARD_SIZE2 - 1)
+			err("Going beyond board.");
+		return tile >= BOARD_SIZE * (BOARD_SIZE - 1);
+	}
+
+	static UInt row(UInt tile)
+	{
+		return tile / BOARD_SIZE;
+	}
+
+	static UInt column(UInt tile)
+	{
+		return tile % BOARD_SIZE;
 	}
 };
