@@ -5,7 +5,14 @@ project(chessengine
 	DESCRIPTION "Chess engine and UI"
 	LANGUAGES CXX)
 
-add_executable(chessengine src/main.cpp)
+add_executable(chessengine)
+target_sources(chessengine PRIVATE
+	src/main.cpp
+	src/piece.cpp
+	src/king.cpp
+	src/queen.cpp
+	src/pawn.cpp
+	)
 
 ############ sioclient
 

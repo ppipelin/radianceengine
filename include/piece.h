@@ -1,6 +1,7 @@
 #pragma once
 
 #include "include.h"
+#include "board.h"
 
 /**
 	* @brief Piece class.
@@ -47,78 +48,16 @@ public:
 	virtual void canMove(const Board &, std::vector<UInt> &) const
 	{}
 
-	void sliding(const Board &b, Int direction, std::vector<UInt> &v) const
-	{
-		// Direction +
-		if (direction > 0)
-		{
-			// first condition if going vertically second if going horizontally
-			for (UInt i = m_tile; i < BOARD_SIZE2; i += direction)
-			{
-				if (i != m_tile)
-				{
-					if (b[i].exists())
-					{
-						if (b[i].isWhite() != b[m_tile].isWhite())
-						{
-							v.push_back(i);
-						}
-						// break even if there is a pin
-						break;
-					}
-					v.push_back(i);
-				}
-				// Check right and left column
-				if ((Board::rightCol(i) && (direction == BOARD_SIZE + 1 || direction == 1)) || (Board::leftCol(i) && direction == BOARD_SIZE - 1))
-				{
-					break;
-				}
-			}
-		}
-		else
-		{
-			for (Int i = m_tile; Int(i) >= 0; i += direction)
-			{
-				if (UInt(i) != m_tile)
-				{
+	void sliding(const Board &b, Int direction, std::vector<UInt> &v) const;
 
-					if (b[i].exists())
-					{
-						if (b[i].isWhite() != b[m_tile].isWhite())
-						{
-							v.push_back(UInt(i));
-						}
-						// break even if there is a pin
-						break;
-					}
-					v.push_back(UInt(i));
-				}
-				// Check right and left column
-				if ((Board::rightCol(i) && direction == -Int(BOARD_SIZE) + 1) || (Board::leftCol(i) && (direction == -Int(BOARD_SIZE) - 1 || direction == -1)))
-				{
-					break;
-				}
-			}
-		}
-	}
+	const bool isWhite() const;
 
-	const bool isWhite() const
-	{
-		return m_isWhite;
-	}
-
-	virtual bool exists() const
-	{
-		return false;
-	}
+	virtual bool exists() const;
 
 	/**
 		* @brief string output corresponding to the current Piece
 		*
 		* @return const std::string
 		*/
-	virtual std::string str() const
-	{
-		return " ";
-	}
+	virtual std::string str() const;
 };
