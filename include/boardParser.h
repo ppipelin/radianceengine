@@ -6,6 +6,9 @@
 #include "pawn.h"
 #include "king.h"
 #include "queen.h"
+#include "rook.h"
+#include "bishop.h"
+#include "knight.h"
 
 #include "board.h"
 
@@ -106,6 +109,42 @@ public:
 				if (m_board->board()[counter] != nullptr)
 					delete m_board->board()[counter];
 				m_board->board()[counter] = new Queen(counter, true, true);
+				m_board->whitePos().push_back(counter);
+				break;
+			case 'r':
+				if (m_board->board()[counter] != nullptr)
+					delete m_board->board()[counter];
+				m_board->board()[counter] = new Rook(counter, false, true);
+				m_board->blackPos().push_back(counter);
+				break;
+			case 'R':
+				if (m_board->board()[counter] != nullptr)
+					delete m_board->board()[counter];
+				m_board->board()[counter] = new Rook(counter, true, true);
+				m_board->whitePos().push_back(counter);
+				break;
+			case 'b':
+				if (m_board->board()[counter] != nullptr)
+					delete m_board->board()[counter];
+				m_board->board()[counter] = new Bishop(counter, false, true);
+				m_board->blackPos().push_back(counter);
+				break;
+			case 'B':
+				if (m_board->board()[counter] != nullptr)
+					delete m_board->board()[counter];
+				m_board->board()[counter] = new Bishop(counter, true, true);
+				m_board->whitePos().push_back(counter);
+				break;
+			case 'n':
+				if (m_board->board()[counter] != nullptr)
+					delete m_board->board()[counter];
+				m_board->board()[counter] = new Knight(counter, false, true);
+				m_board->blackPos().push_back(counter);
+				break;
+			case 'N':
+				if (m_board->board()[counter] != nullptr)
+					delete m_board->board()[counter];
+				m_board->board()[counter] = new Knight(counter, true, true);
 				m_board->whitePos().push_back(counter);
 				break;
 			case '/':

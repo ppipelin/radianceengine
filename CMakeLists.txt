@@ -11,6 +11,9 @@ target_sources(chessengine PRIVATE
 	src/piece.cpp
 	src/king.cpp
 	src/queen.cpp
+	src/rook.cpp
+	src/bishop.cpp
+	src/knight.cpp
 	src/pawn.cpp
 	)
 
