@@ -2,6 +2,7 @@
 
 void Knight::canMove(const Board &b, std::vector<UInt> &v) const
 {
+	v.reserve(8);
 	bool lc = Board::leftCol(m_tile) || Board::leftCol(m_tile - 1);
 	bool llc = lc || Board::leftCol(m_tile - 2);
 	bool rc = Board::rightCol(m_tile) || Board::rightCol(m_tile + 1);

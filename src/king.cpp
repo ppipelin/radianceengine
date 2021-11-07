@@ -2,6 +2,7 @@
 
 void King::canMove(const Board &b, std::vector<UInt> &v) const
 {
+	v.reserve(8);
 	const bool left = Board::leftCol(m_tile);
 	const bool right = Board::rightCol(m_tile);
 	// Go top

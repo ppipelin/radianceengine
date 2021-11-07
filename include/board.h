@@ -16,13 +16,13 @@ class Board
 {
 private:
 	// TODO: perhaps set to const Piece
-	std::vector<Piece *> m_board;
+	std::array<Piece *, BOARD_SIZE2> m_board;
 	std::vector<UInt> m_whitePos;
 	std::vector<UInt> m_blackPos;
 public:
 	Board()
 	{
-		m_board = std::vector<Piece *>(BOARD_SIZE2);
+		m_board = std::array<Piece *, BOARD_SIZE2>();
 		m_whitePos.reserve(BOARD_SIZE * 2);
 		m_blackPos.reserve(BOARD_SIZE * 2);
 	}
@@ -31,9 +31,9 @@ public:
 	{}
 
 	// Mutators
-	std::vector<Piece *> &board() { return m_board; }
+	std::array<Piece *, BOARD_SIZE2> &board() { return m_board; }
 
-	const std::vector<Piece *> &board() const { return m_board; }
+	const std::array<Piece *, BOARD_SIZE2> &board() const { return m_board; }
 
 	Piece &operator[](std::size_t idx) { return *board()[idx]; }
 

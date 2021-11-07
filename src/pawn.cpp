@@ -2,6 +2,7 @@
 
 void Pawn::canMove(const Board &b, std::vector<UInt> &v) const
 {
+	v.reserve(4);
 	if (m_isWhite)
 	{
 		// Can move forward
