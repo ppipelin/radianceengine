@@ -5,8 +5,8 @@
 class King : public Piece
 {
 public:
-	King(UInt a, UInt b, bool isWhite, bool neverMoved) : Piece(a, b, isWhite, neverMoved) {}
-	King(UInt a, bool isWhite, bool neverMoved) : Piece(a, isWhite, neverMoved) {}
+	King(UInt a, UInt b, bool isWhite = true, bool neverMoved = true) : Piece(a, b, isWhite, neverMoved) {}
+	King(UInt a, bool isWhite = true, bool neverMoved = true) : Piece(a, isWhite, neverMoved) {}
 	~King() {}
 
 	void canMove(const Board &b, std::vector<UInt> &v) const;

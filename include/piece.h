@@ -26,7 +26,7 @@ public:
 		* @param isWhite
 		* @param neverMoved
 		*/
-	Piece(UInt a, UInt b, bool isWhite = false, bool neverMoved = false) : Piece(BOARD_SIZE *b + (BOARD_SIZE - a), isWhite, neverMoved) {}
+	Piece(UInt a, UInt b, bool isWhite = true, bool neverMoved = true) : Piece(BOARD_SIZE *b + (BOARD_SIZE - a), isWhite, neverMoved) {}
 
 	/**
 		* @brief Construct a new Piece object with one coordinate.
@@ -35,9 +35,14 @@ public:
 		* @param isWhite
 		* @param neverMoved
 		*/
-	Piece(UInt tile, bool isWhite = false, bool neverMoved = false) : m_tile(tile), m_isWhite(isWhite), m_neverMoved(neverMoved) {}
+	Piece(UInt tile, bool isWhite = true, bool neverMoved = true) : m_tile(tile), m_isWhite(isWhite), m_neverMoved(neverMoved) {}
 	Piece() {}
 	~Piece() {}
+
+	// Mutators
+	UInt &tile() { return m_tile; }
+
+	const UInt &tile() const { return m_tile; }
 
 	/**
 		* @brief Returns a vector of the tiles where Piece can move.

@@ -3,10 +3,10 @@
 void Knight::canMove(const Board &b, std::vector<UInt> &v) const
 {
 	v.reserve(8);
-	bool lc = Board::leftCol(m_tile) || Board::leftCol(m_tile - 1);
-	bool llc = lc || Board::leftCol(m_tile - 2);
-	bool rc = Board::rightCol(m_tile) || Board::rightCol(m_tile + 1);
-	bool rrc = rc || Board::rightCol(m_tile + 2);
+	bool lc = Board::leftCol(m_tile);
+	bool llc = lc || Board::leftCol(m_tile - 1);
+	bool rc = Board::rightCol(m_tile);
+	bool rrc = rc || Board::rightCol(m_tile + 1);
 
 	// 2 top
 	if (m_tile + BOARD_SIZE * 2 < BOARD_SIZE2)
@@ -14,12 +14,16 @@ void Knight::canMove(const Board &b, std::vector<UInt> &v) const
 		// Left
 		if (!lc)
 		{
-			v.push_back(m_tile + BOARD_SIZE * 2 - 1);
+			UInt tile = m_tile + BOARD_SIZE * 2 - 1;
+			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+				v.push_back(tile);
 		}
 		// Right
 		if (!rc)
 		{
-			v.push_back(m_tile + BOARD_SIZE * 2 + 1);
+			UInt tile = m_tile + BOARD_SIZE * 2 + 1;
+			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+				v.push_back(tile);
 		}
 	}
 
@@ -29,42 +33,54 @@ void Knight::canMove(const Board &b, std::vector<UInt> &v) const
 		// Left
 		if (!llc)
 		{
-			v.push_back(m_tile + BOARD_SIZE - 2);
+			UInt tile = m_tile + BOARD_SIZE - 2;
+			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+				v.push_back(tile);
 		}
 		// Right
 		if (!rrc)
 		{
-			v.push_back(m_tile + BOARD_SIZE + 2);
+			UInt tile = m_tile + BOARD_SIZE + 2;
+			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+				v.push_back(tile);
 		}
+	}
 
-		// 2 mid-bottom
-		if (Int(m_tile) - BOARD_SIZE >= 0)
+	// 2 mid-bottom
+	if (Int(m_tile) - Int(BOARD_SIZE) >= 0)
+	{
+		// Left
+		if (!llc)
 		{
-			// Left
-			if (!llc)
-			{
-				v.push_back(m_tile - BOARD_SIZE - 2);
-			}
-			// Right
-			if (!rc)
-			{
-				v.push_back(m_tile - BOARD_SIZE + 2);
-			}
+			UInt tile = m_tile - BOARD_SIZE - 2;
+			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+				v.push_back(tile);
 		}
-
-		//	2 bottom
-		if (Int(m_tile) - BOARD_SIZE * 2 >= 0)
+		// Right
+		if (!rrc)
 		{
-			// Left
-			if (!lc)
-			{
-				v.push_back(m_tile - BOARD_SIZE * 2 - 1);
-			}
-			// Right
-			if (!rc)
-			{
-				v.push_back(m_tile - BOARD_SIZE * 2 + 1);
-			}
+			UInt tile = m_tile - BOARD_SIZE + 2;
+			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+				v.push_back(tile);
+		}
+	}
+
+	//	2 bottom
+	if (Int(m_tile) - Int(BOARD_SIZE) * 2 >= 0)
+	{
+		// Left
+		if (!lc)
+		{
+			UInt tile = m_tile - BOARD_SIZE * 2 - 1;
+			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+				v.push_back(tile);
+		}
+		// Right
+		if (!rc)
+		{
+			UInt tile = m_tile - BOARD_SIZE * 2 + 1;
+			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+				v.push_back(tile);
 		}
 	}
 }

@@ -5,8 +5,8 @@
 class Rook : public Piece
 {
 public:
-	Rook(UInt a, UInt b, bool isWhite, bool neverMoved) : Piece(a, b, isWhite, neverMoved) {}
-	Rook(UInt a, bool isWhite, bool neverMoved) : Piece(a, isWhite, neverMoved) {}
+	Rook(UInt a, UInt b, bool isWhite = true, bool neverMoved = true) : Piece(a, b, isWhite, neverMoved) {}
+	Rook(UInt a, bool isWhite = true, bool neverMoved = true) : Piece(a, isWhite, neverMoved) {}
 	~Rook() {}
 
 	void canMove(const Board &b, std::vector<UInt> &v) const;

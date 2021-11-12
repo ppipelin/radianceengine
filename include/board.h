@@ -47,14 +47,6 @@ public:
 
 	const std::vector<UInt> &blackPos() const { return m_blackPos; }
 
-	/**
-		* @brief method to check tile a is on the same line as tile b
-		*
-		* @param a
-		* @param b
-		* @return true
-		* @return false
-		*/
 	bool sameLine(UInt a, UInt b) const
 	{
 		return floor(a / BOARD_SIZE) == floor(b / BOARD_SIZE);
@@ -97,5 +89,22 @@ public:
 	static UInt column(UInt tile)
 	{
 		return tile % BOARD_SIZE;
+	}
+
+	static UInt toTiles(std::string s)
+	{
+		if (s.length() != 2) return 0;
+		UInt letter = s[0] - 'a';
+		try
+		{
+			UInt number = s[1] - '0';
+			if (letter > 8 || number > 8)
+			{
+				err("Invalid tile.");
+				return 0;
+			}
+			return letter + (number - 1) * BOARD_SIZE;
+		}
+		catch (const std::exception &) { return 0; }
 	}
 };

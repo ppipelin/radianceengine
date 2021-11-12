@@ -23,8 +23,8 @@ public:
 	BoardParser()
 	{
 		m_board = new Board();
-		// fillBoard(m_starting);
-		fillBoard(m_pawnMoveTest);
+		fillBoard(m_starting);
+		// fillBoard(m_pawnMoveTest);
 	}
 
 	~BoardParser()
@@ -38,6 +38,28 @@ public:
 	Board *board() { return m_board; }
 
 	const Board *board() const { return m_board; }
+
+	void movePiece(UInt	from, UInt to)
+	{
+		Piece *fromPiece = m_board->board()[from];
+		Piece *toPiece = m_board->board()[to];
+		if (!fromPiece->exists())
+		{
+			return;
+		}
+		UInt toTile = toPiece->tile();
+		if (toPiece->exists())
+		{
+			delete (*m_board).board()[to];
+			(*m_board).board()[from] = new Piece(to);
+		}
+		else
+		{
+			(*m_board).board()[from] = toPiece;
+		}
+		m_board->board()[to] = fromPiece;
+		fromPiece->tile() = to;
+	}
 
 	/**
 		* @brief Fills the	board with the position fen
@@ -153,7 +175,7 @@ public:
 			default:
 				if (m_board->board()[counter] != nullptr)
 					delete m_board->board()[counter];
-				m_board->board()[counter] = new Piece(counter, true, true);
+				m_board->board()[counter] = new Piece(counter);
 				break;
 			}
 			++counter;

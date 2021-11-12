@@ -13,7 +13,7 @@ void King::canMove(const Board &b, std::vector<UInt> &v) const
 		{
 			v.push_back(forward - 1);
 		}
-		else	if (!right && (!b.board()[forward + 1]->exists() || b.board()[forward + 1]->isWhite() != m_isWhite))
+		if (!right && (!b.board()[forward + 1]->exists() || b.board()[forward + 1]->isWhite() != m_isWhite))
 		{
 			v.push_back(forward + 1);
 		}
@@ -30,7 +30,7 @@ void King::canMove(const Board &b, std::vector<UInt> &v) const
 		{
 			v.push_back(backward - 1);
 		}
-		else	if (!right && (!b.board()[backward + 1]->exists() || b.board()[backward + 1]->isWhite() != m_isWhite))
+		if (!right && (!b.board()[backward + 1]->exists() || b.board()[backward + 1]->isWhite() != m_isWhite))
 		{
 			v.push_back(backward + 1);
 		}
@@ -38,6 +38,16 @@ void King::canMove(const Board &b, std::vector<UInt> &v) const
 		{
 			v.push_back(backward);
 		}
+	}
+	//	Go left
+	if (!left && (!b.board()[m_tile - 1]->exists() || b.board()[m_tile - 1]->isWhite() != m_isWhite))
+	{
+		v.push_back(m_tile - 1);
+	}
+	//	Go right
+	if (!right && (!b.board()[m_tile + 1]->exists() || b.board()[m_tile + 1]->isWhite() != m_isWhite))
+	{
+		v.push_back(m_tile + 1);
 	}
 }
 
