@@ -4,6 +4,11 @@ var color = 1; // white first
 var chess_text = document.getElementById("chess_text");
 var socket = io();
 
+const highlightStyles = document.createElement("style");
+document.head.append(highlightStyles);
+const whiteSquareGrey = "#a9a9a9";
+const blackSquareGrey = "#696969";
+
 function showPosition() {
 	console.log("Current position as an Object:");
 	console.log(board.position);
@@ -20,9 +25,18 @@ function loadboard() {
 }
 
 board.addEventListener("drop", (e) => {
-	const {source, target, piece, newPosition, oldPosition, orientation} = e.detail;
+	const { source, target, piece, newPosition, oldPosition, orientation } =
+		e.detail;
+	removeGreySquares();
+
 	console.log("dropping " + piece + " : " + source + "-" + target);
 	socket.emit("drop", piece, source, target);
+});
+
+board.addEventListener("drag-start", (e) => {
+	const { source, piece, position, orientation } = e.detail;
+	console.log("drag-start " + piece + " : " + source);
+	socket.emit("dragStart", source);
 });
 
 function isNullOrWhitespaceOrTabs(text) {
@@ -113,6 +127,40 @@ socket.on("move", (move) => {
 	color *= -1;
 });
 
+function removeGreySquares() {
+	highlightStyles.textContent = "";
+}
+
+function greySquare(square) {
+	const highlightColor =
+		square.charCodeAt(0) % 2 ^ square.charCodeAt(1) % 2
+			? whiteSquareGrey
+			: blackSquareGrey;
+
+	highlightStyles.textContent += `
+			chess-board::part(${square}) {
+					background-color: ${highlightColor};
+			}
+	`;
+}
+
+function squareToCoordinates(square) {
+	var letter = String.fromCharCode((square % 8) + 97);
+	var number = Math.floor(square / 8) + 1;
+	return letter + number;
+}
+
+socket.on("moveset", (moveset) => {
+	console.log("moveset: ", moveset);
+	moves = moveset.split(" ");
+	for (var move of moves) {
+		if (!parseInt(move)) continue;
+		move = squareToCoordinates(move);
+		console.log("move: ", move);
+		greySquare(move);
+	}
+});
+
 // socket.onAny((eventName, ...args) => {
 //  console.log("all: ", eventName)
 // });
@@ -174,7 +222,11 @@ function canRookMove(piece_pos, move) {
 	if (number_piece != number_move && letter_piece != letter_move) return 0;
 
 	// trace line
-	for (var i = previousChar(letter_piece); i > letter_move; i = previousChar(i)) {
+	for (
+		var i = previousChar(letter_piece);
+		i > letter_move;
+		i = previousChar(i)
+	) {
 		if (piece(i + number_piece)) return 0; // line left
 	}
 
@@ -187,11 +239,19 @@ function canRookMove(piece_pos, move) {
 	}
 
 	// trace column
-	for (var i = parseInt(number_piece) - 1; letter_piece == letter_move && i > number_move; --i) {
+	for (
+		var i = parseInt(number_piece) - 1;
+		letter_piece == letter_move && i > number_move;
+		--i
+	) {
 		if (piece(letter_piece + i)) return 0; // column down
 	}
 
-	for (var i = parseInt(number_piece) + 1; letter_piece == letter_move && i < number_move; ++i) {
+	for (
+		var i = parseInt(number_piece) + 1;
+		letter_piece == letter_move && i < number_move;
+		++i
+	) {
 		if (piece(letter_piece + i)) return 0; // column up
 	}
 
@@ -338,8 +398,10 @@ function canKnightMove(piece_pos, move) {
 	//top
 	//top two left
 	if (
-		((letter_move == previousChar(letter_piece) && number_move + 2 == number_piece) ||
-			(letter_move == previousChar(previousChar(letter_piece)) && number_move + 1 == number_piece)) &&
+		((letter_move == previousChar(letter_piece) &&
+			number_move + 2 == number_piece) ||
+			(letter_move == previousChar(previousChar(letter_piece)) &&
+				number_move + 1 == number_piece)) &&
 		insideBoard(move) &&
 		(ambiguity == null || letter_piece == ambiguity)
 	)
@@ -347,7 +409,8 @@ function canKnightMove(piece_pos, move) {
 	//top two right
 	if (
 		((letter_move == nextChar(letter_piece) && number_move + 2 == number_piece) ||
-			(letter_move == nextChar(nextChar(letter_piece)) && number_move + 1 == number_piece)) &&
+			(letter_move == nextChar(nextChar(letter_piece)) &&
+				number_move + 1 == number_piece)) &&
 		insideBoard(move) &&
 		(ambiguity == null || letter_piece == ambiguity)
 	)
@@ -356,8 +419,10 @@ function canKnightMove(piece_pos, move) {
 	//bottom
 	//bottom two left
 	if (
-		((letter_move == previousChar(letter_piece) && number_move - 2 == number_piece) ||
-			(letter_move == previousChar(previousChar(letter_piece)) && number_move - 1 == number_piece)) &&
+		((letter_move == previousChar(letter_piece) &&
+			number_move - 2 == number_piece) ||
+			(letter_move == previousChar(previousChar(letter_piece)) &&
+				number_move - 1 == number_piece)) &&
 		insideBoard(move) &&
 		(ambiguity == null || letter_piece == ambiguity)
 	)
@@ -365,7 +430,8 @@ function canKnightMove(piece_pos, move) {
 	//bottom two right
 	if (
 		((letter_move == nextChar(letter_piece) && number_move - 2 == number_piece) ||
-			(letter_move == nextChar(nextChar(letter_piece)) && number_move - 1 == number_piece)) &&
+			(letter_move == nextChar(nextChar(letter_piece)) &&
+				number_move - 1 == number_piece)) &&
 		insideBoard(move) &&
 		(ambiguity == null || letter_piece == ambiguity)
 	)
@@ -400,7 +466,8 @@ function movePawn(color, move, takes) {
 			combination = (left ? left_case : right_case) + "-" + move[0] + move[1]; // d4-c5
 		} else {
 			// xdc5 from d4 to c5 with ambiguity on which pawn
-			combination = move[0] + (parseInt(move[2]) - color) + "-" + move[1] + move[2]; // d4-c5
+			combination =
+				move[0] + (parseInt(move[2]) - color) + "-" + move[1] + move[2]; // d4-c5
 		}
 	} else {
 		// c5
@@ -408,15 +475,20 @@ function movePawn(color, move, takes) {
 			((color == 1 && move[1] == 4) || (color == -1 && move[1] == 5)) &&
 			!piece(move[0] + (parseInt(move[1]) - color))
 		) {
-			combination = move[0] + (parseInt(move[1]) - 2 * color) + "-" + move[0] + move[1]; // e2-e4
-		} else combination = move[0] + (parseInt(move[1]) - color) + "-" + move[0] + move[1]; // d4-d5
+			combination =
+				move[0] + (parseInt(move[1]) - 2 * color) + "-" + move[0] + move[1]; // e2-e4
+		} else
+			combination =
+				move[0] + (parseInt(move[1]) - color) + "-" + move[0] + move[1]; // d4-d5
 	}
 	// console.log(combination);
 	return combination;
 }
 
 function findPiece(piece_name) {
-	return Object.keys(board.position).filter((key) => board.position[key] === piece_name);
+	return Object.keys(board.position).filter(
+		(key) => board.position[key] === piece_name
+	);
 }
 
 function piece(p) {
@@ -424,7 +496,12 @@ function piece(p) {
 }
 
 function insideBoard(pos) {
-	return !(pos.charAt(0) > "h" || pos.charAt(0) < "a" || pos[1] > 8 || pos[1] < 1);
+	return !(
+		pos.charAt(0) > "h" ||
+		pos.charAt(0) < "a" ||
+		pos[1] > 8 ||
+		pos[1] < 1
+	);
 }
 
 function nextChar(c) {

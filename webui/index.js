@@ -24,6 +24,17 @@ io.on("connection", (socket) => {
 
 	socket.on("drop", (piece, source, target) => {
 		console.log("drop: ", piece, source, target);
+		socket.broadcast.emit("dropToCPP", source, target);
+	});
+
+	socket.on("dragStart", (source) => {
+		console.log("dragStart: ", source);
+		socket.broadcast.emit("dragStartToCPP", source);
+	});
+
+	socket.on("cpp_moveset", (movevset) => {
+		console.log("forwarding moveset ", movevset);
+		socket.broadcast.emit("moveset", movevset);
 	});
 
 	socket.on("cpp_move", (move) => {
