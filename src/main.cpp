@@ -21,10 +21,11 @@ int main()
 	// std::cout << std::endl;
 	// bParser.displayCLIWhiteBlack();
 
-	benchFillBoard();
-	benchInCheck();
-	benchInCheck(/*display =*/ false, 1000); // 1000 release with vector - 960 with reserve on canmove - 910 with array
-	benchInCheck(/*display =*/ false, 10000); // 12 225 release with vector - 9023 with reserve on canmove -  8429 with array
+	// benchFillBoard();
+	// benchInCheck();
+	// benchInCheck(/*display =*/ false, 1000); // 1000 release with vector - 960 with reserve on canmove - 910 with array
+	// benchInCheck(/*display =*/ false, 10000); // 12 225 release with vector - 9023 with reserve on canmove -  8429 with array
+	benchRules(4);
 	// demo();
 
 	// connect();

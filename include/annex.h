@@ -65,6 +65,61 @@ void benchInCheck(bool display = false, UInt multiplier = 1)
 	std::cout << "Total time for benchInCheck: " << ms_int.count() << "ms" << std::endl;
 }
 
+void benchRules(UInt depth = 1, bool display = false)
+{
+	std::vector<BoardParser *>	currentBoards;
+	std::vector<BoardParser *>	lastBoards;
+	UInt size = 1;
+
+	lastBoards.reserve(20);
+	lastBoards.push_back(new BoardParser());
+	bool isWhite = true;
+	std::cout << "Depth " << 0 << ": " << 1 << std::endl;
+
+	for (UInt i = 1; i <= depth; ++i)
+	{
+		auto t1 = high_resolution_clock::now();
+		for (BoardParser *b : lastBoards)
+		{
+			for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
+			{
+				Piece &p = (*b->board())[tile];
+				if (p.exists() && p.isWhite() == isWhite)
+				{
+					std::vector<UInt> v;
+					p.canMove(*b->board(), v);
+					for (UInt move : v)
+					{
+						BoardParser *b2 = new BoardParser(*b);
+						b2->movePiece(tile, move);
+						currentBoards.push_back(b2);
+						if (display)
+						{
+							b2->displayCLI();
+							std::cout << std::endl;
+						}
+					}
+				}
+			}
+		}
+		size = UInt(currentBoards.size());
+		auto t2 = high_resolution_clock::now();
+		auto ms_int = duration_cast<milliseconds>(t2 - t1);
+		std::cout << "Depth " << i << ": " << size << " - " << ms_int.count() << "ms" << std::endl;
+		std::cout << "Size in Mo " << (sizeof(lastBoards) + lastBoards.capacity() * (sizeof(BoardParser) + sizeof(Board) + sizeof(Piece) * BOARD_SIZE2)) / 1e6 << std::endl;
+		// std::cout << "Size2 " << sizeof(lastBoards) << " " << sizeof(BoardParser) << " " << sizeof(Board) << " " << sizeof(Piece) << std::endl; // 32 88 576 16
+		// std::cout << "Size3 " << sizeof(std::array<Piece, BOARD_SIZE2>) << " == " << sizeof(Piece) * BOARD_SIZE2 << std::endl; // 1024 == 1024
+		for (auto b : lastBoards)
+		{
+			delete b;
+		}
+		lastBoards.clear();
+		lastBoards = currentBoards;
+		currentBoards.clear();
+		isWhite = !isWhite;
+	}
+}
+
 void fill(std::vector<UInt> &tofill)
 {
 	for (int i = 0; i < 4; ++i)
