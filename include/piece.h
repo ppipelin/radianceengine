@@ -38,6 +38,12 @@ public:
 	Piece(UInt tile, bool isWhite = true, bool neverMoved = true) : m_tile(tile), m_isWhite(isWhite), m_neverMoved(neverMoved) {}
 	Piece() {}
 	~Piece() {}
+	Piece(const Piece &p)
+	{
+		m_tile = p.m_tile;
+		m_isWhite = p.m_isWhite;
+		m_neverMoved = p.m_neverMoved;
+	}
 
 	// Mutators
 	UInt &tile() { return m_tile; }
@@ -56,6 +62,8 @@ public:
 	void sliding(const Board &b, Int direction, std::vector<UInt> &v) const;
 
 	const bool isWhite() const;
+
+	const bool neverMoved() const;
 
 	virtual bool exists() const;
 

@@ -34,6 +34,29 @@ public:
 			delete i;
 		}
 	}
+
+	BoardParser(const BoardParser &b)
+	{
+		m_board = new Board();
+		for (UInt i = 0; i < BOARD_SIZE2; ++i)
+		{
+			if (typeid(*b.board()->board()[i]) == typeid(Piece))
+				m_board->board()[i] = new Piece((*b.board())[i]);
+			else if (typeid(*b.board()->board()[i]) == typeid(King))
+				m_board->board()[i] = new King((*b.board())[i]);
+			else if (typeid(*b.board()->board()[i]) == typeid(Queen))
+				m_board->board()[i] = new Queen((*b.board())[i]);
+			else if (typeid(*b.board()->board()[i]) == typeid(Rook))
+				m_board->board()[i] = new Rook((*b.board())[i]);
+			else if (typeid(*b.board()->board()[i]) == typeid(Bishop))
+				m_board->board()[i] = new Bishop((*b.board())[i]);
+			else if (typeid(*b.board()->board()[i]) == typeid(Knight))
+				m_board->board()[i] = new Knight((*b.board())[i]);
+			else if (typeid(*b.board()->board()[i]) == typeid(Pawn))
+				m_board->board()[i] = new Pawn((*b.board())[i]);
+		}
+	}
+
 	// Mutators
 	Board *board() { return m_board; }
 

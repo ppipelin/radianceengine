@@ -60,6 +60,11 @@ const bool Piece::isWhite() const
 	return m_isWhite;
 }
 
+const bool Piece::neverMoved() const
+{
+	return m_neverMoved;
+}
+
 bool Piece::exists() const
 {
 	return false;
