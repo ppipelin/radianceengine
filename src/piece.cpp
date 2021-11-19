@@ -2,6 +2,12 @@
 
 void Piece::sliding(const Board &b, Int direction, std::vector<UInt> &v) const
 {
+	if (b.board()[m_tile] == nullptr)
+	{
+		err("we should never make a non existentpiece sliding, this piece is supposed to be nullptr");
+		return;
+	}
+
 	// Direction +
 	if (direction > 0)
 	{
@@ -10,7 +16,7 @@ void Piece::sliding(const Board &b, Int direction, std::vector<UInt> &v) const
 		{
 			if (i != m_tile)
 			{
-				if (b[i].exists())
+				if (b.board()[i] != nullptr)
 				{
 					if (b[i].isWhite() != b[m_tile].isWhite())
 					{
@@ -35,7 +41,7 @@ void Piece::sliding(const Board &b, Int direction, std::vector<UInt> &v) const
 			if (UInt(i) != m_tile)
 			{
 
-				if (b[i].exists())
+				if (b.board()[i] != nullptr)
 				{
 					if (b[i].isWhite() != b[m_tile].isWhite())
 					{

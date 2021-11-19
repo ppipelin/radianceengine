@@ -83,11 +83,11 @@ void benchRules(UInt depth = 1, bool display = false)
 		{
 			for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
 			{
-				Piece &p = (*b->board())[tile];
-				if (p.exists() && p.isWhite() == isWhite)
+				Piece *p = b->board()->board()[tile];
+				if (p != nullptr && p->isWhite() == isWhite)
 				{
 					std::vector<UInt> v;
-					p.canMove(*b->board(), v);
+					p->canMove(*b->board(), v);
 					for (UInt move : v)
 					{
 						BoardParser *b2 = new BoardParser(*b);
@@ -106,16 +106,31 @@ void benchRules(UInt depth = 1, bool display = false)
 		auto t2 = high_resolution_clock::now();
 		auto ms_int = duration_cast<milliseconds>(t2 - t1);
 		std::cout << "Depth " << i << ": " << size << " - " << ms_int.count() << "ms" << std::endl;
-		std::cout << "Size in Mo " << (sizeof(lastBoards) + lastBoards.capacity() * (sizeof(BoardParser) + sizeof(Board) + sizeof(Piece) * BOARD_SIZE2)) / 1e6 << std::endl;
-		// std::cout << "Size2 " << sizeof(lastBoards) << " " << sizeof(BoardParser) << " " << sizeof(Board) << " " << sizeof(Piece) << std::endl; // 32 88 576 16
-		// std::cout << "Size3 " << sizeof(std::array<Piece, BOARD_SIZE2>) << " == " << sizeof(Piece) * BOARD_SIZE2 << std::endl; // 1024 == 1024
+		Int count = 0;
 		for (auto b : lastBoards)
 		{
-			delete b;
+			for (auto &p : b->board()->board())
+			{
+				if (p != nullptr)
+					count += sizeof(nullptr);
+				else
+					count += sizeof(Piece);
+			}
 		}
+		std::cout << "Size in Mo " << (sizeof(lastBoards) + lastBoards.capacity() * (sizeof(BoardParser) + sizeof(Board)) + count) / 1e6 << std::endl;
+		// std::cout << "Size2 " << sizeof(lastBoards) << " " << sizeof(BoardParser) << " " << sizeof(Board) << " " << sizeof(Piece) << std::endl; // 32 88 576 16
+		// std::cout << "Size3 " << sizeof(std::array<Piece, BOARD_SIZE2>) << " == " << sizeof(Piece) * BOARD_SIZE2 << std::endl; // 1024 == 1024
+
+		// Clear will call the delete for the objects but won't de allocate the space in it. 
+		// This is not an issue since the vecotr's size is growing with iterations
+		// for (auto b : lastBoards)
+		// {
+		// 	if (b != nullptr)
+		// 		delete b;
+		// }
 		lastBoards.clear();
-		lastBoards = currentBoards;
-		currentBoards.clear();
+		lastBoards.swap(currentBoards);
+		// currentBoards.clear();
 		isWhite = !isWhite;
 	}
 }

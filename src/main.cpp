@@ -25,7 +25,15 @@ int main()
 	// benchInCheck();
 	// benchInCheck(/*display =*/ false, 1000); // 1000 release with vector - 960 with reserve on canmove - 910 with array
 	// benchInCheck(/*display =*/ false, 10000); // 12 225 release with vector - 9023 with reserve on canmove -  8429 with array
-	benchRules(4);
+	benchRules(5);
+	// Depth 0: 1
+	// Depth 1: 20 - 0ms ---- Size in Mo 0.033144 -> 0.013432 
+	// Depth 2: 400 - 3ms -> 1ms ---- Size in Mo 0.033144 -> 0.028024
+	// Depth 3: 8902 - 64ms -> 46ms ---- Size in Mo 0.662424 ->0.560024
+	// Depth 4: 197742 - 1136ms -> 925ms ---- Size in Mo 14.7417 -> 12.4631
+	// Depth 5: 4896998 - 25249ms -> 21350ms ---- Size in Mo 327.461 -> 276.857
+	// perft(5) done in 15s with empty ram
+
 	// demo();
 
 	// connect();

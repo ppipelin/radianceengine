@@ -9,15 +9,15 @@ void King::canMove(const Board &b, std::vector<UInt> &v) const
 	UInt forward = m_tile + BOARD_SIZE;
 	if (forward < BOARD_SIZE2 && !Board::topRow(m_tile))
 	{
-		if (!left && (!b.board()[forward - 1]->exists() || b.board()[forward - 1]->isWhite() != m_isWhite))
+		if (!left && (b.board()[forward - 1] == nullptr || b.board()[forward - 1]->isWhite() != m_isWhite))
 		{
 			v.push_back(forward - 1);
 		}
-		if (!right && (!b.board()[forward + 1]->exists() || b.board()[forward + 1]->isWhite() != m_isWhite))
+		if (!right && (b.board()[forward + 1] == nullptr || b.board()[forward + 1]->isWhite() != m_isWhite))
 		{
 			v.push_back(forward + 1);
 		}
-		if (!b.board()[forward]->exists() || b.board()[forward]->isWhite() != m_isWhite)
+		if (b.board()[forward] == nullptr || b.board()[forward]->isWhite() != m_isWhite)
 		{
 			v.push_back(forward);
 		}
@@ -26,26 +26,26 @@ void King::canMove(const Board &b, std::vector<UInt> &v) const
 	UInt	backward = m_tile - BOARD_SIZE;
 	if (backward >= 0 && !Board::botRow(m_tile))
 	{
-		if (!left && (!b.board()[backward - 1]->exists() || b.board()[backward - 1]->isWhite() != m_isWhite))
+		if (!left && (b.board()[backward - 1] == nullptr || b.board()[backward - 1]->isWhite() != m_isWhite))
 		{
 			v.push_back(backward - 1);
 		}
-		if (!right && (!b.board()[backward + 1]->exists() || b.board()[backward + 1]->isWhite() != m_isWhite))
+		if (!right && (b.board()[backward + 1] == nullptr || b.board()[backward + 1]->isWhite() != m_isWhite))
 		{
 			v.push_back(backward + 1);
 		}
-		if (!b.board()[backward]->exists() || b.board()[backward]->isWhite() != m_isWhite)
+		if (b.board()[backward] == nullptr || b.board()[backward]->isWhite() != m_isWhite)
 		{
 			v.push_back(backward);
 		}
 	}
 	//	Go left
-	if (!left && (!b.board()[m_tile - 1]->exists() || b.board()[m_tile - 1]->isWhite() != m_isWhite))
+	if (!left && (b.board()[m_tile - 1] == nullptr || b.board()[m_tile - 1]->isWhite() != m_isWhite))
 	{
 		v.push_back(m_tile - 1);
 	}
 	//	Go right
-	if (!right && (!b.board()[m_tile + 1]->exists() || b.board()[m_tile + 1]->isWhite() != m_isWhite))
+	if (!right && (b.board()[m_tile + 1] == nullptr || b.board()[m_tile + 1]->isWhite() != m_isWhite))
 	{
 		v.push_back(m_tile + 1);
 	}

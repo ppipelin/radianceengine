@@ -31,7 +31,11 @@ public:
 	{
 		for (auto &i : m_board->board())
 		{
-			delete i;
+			if (i != nullptr)
+			{
+				delete i;
+				i = nullptr;
+			}
 		}
 	}
 
@@ -40,19 +44,22 @@ public:
 		m_board = new Board();
 		for (UInt i = 0; i < BOARD_SIZE2; ++i)
 		{
-			if (typeid(*b.board()->board()[i]) == typeid(Piece))
+			Piece *p = b.board()->board()[i];
+			if (p == nullptr)
+				continue;
+			if (typeid(*p) == typeid(Piece))
 				m_board->board()[i] = new Piece((*b.board())[i]);
-			else if (typeid(*b.board()->board()[i]) == typeid(King))
+			else if (typeid(*p) == typeid(King))
 				m_board->board()[i] = new King((*b.board())[i]);
-			else if (typeid(*b.board()->board()[i]) == typeid(Queen))
+			else if (typeid(*p) == typeid(Queen))
 				m_board->board()[i] = new Queen((*b.board())[i]);
-			else if (typeid(*b.board()->board()[i]) == typeid(Rook))
+			else if (typeid(*p) == typeid(Rook))
 				m_board->board()[i] = new Rook((*b.board())[i]);
-			else if (typeid(*b.board()->board()[i]) == typeid(Bishop))
+			else if (typeid(*p) == typeid(Bishop))
 				m_board->board()[i] = new Bishop((*b.board())[i]);
-			else if (typeid(*b.board()->board()[i]) == typeid(Knight))
+			else if (typeid(*p) == typeid(Knight))
 				m_board->board()[i] = new Knight((*b.board())[i]);
-			else if (typeid(*b.board()->board()[i]) == typeid(Pawn))
+			else if (typeid(*p) == typeid(Pawn))
 				m_board->board()[i] = new Pawn((*b.board())[i]);
 		}
 	}
@@ -66,22 +73,20 @@ public:
 	{
 		Piece *fromPiece = m_board->board()[from];
 		Piece *toPiece = m_board->board()[to];
-		if (!fromPiece->exists())
+		if (fromPiece == nullptr)
 		{
 			return;
 		}
-		UInt toTile = toPiece->tile();
-		if (toPiece->exists())
+		if (toPiece != nullptr)
 		{
-			delete (*m_board).board()[to];
-			(*m_board).board()[from] = new Piece(to);
+			delete m_board->board()[to];
 		}
-		else
-		{
-			(*m_board).board()[from] = toPiece;
-		}
+
+		m_board->board()[from] = NULL;
+
 		m_board->board()[to] = fromPiece;
 		fromPiece->tile() = to;
+		// TODO : move color tables, not sure if really efficient, see erase(remove())
 	}
 
 	/**
@@ -108,87 +113,74 @@ public:
 			{
 				for (Int i = 0; i < atoi(&c); ++i)
 				{
-					m_board->board()[counter] = new Piece(counter);
+					if (m_board->board()[counter] != nullptr)
+					{
+						delete m_board->board()[counter];
+						m_board->board()[counter] = NULL;
+					}
 					++counter;
 				}
 				continue;
 			}
-			if (c == '/' && Board::column(counter + 1) == 0)
+			if (c == '/' && Board::column(counter) != 0)
 			{
 				err("Going further than board numbers.");
 				return false;
 			}
+
+			if (c != '/' && m_board->board()[counter] != nullptr)
+			{
+				delete m_board->board()[counter];
+				m_board->board()[counter] = NULL;
+			}
+
 			switch (c)
 			{
 			case 'p':
-				if (m_board->board()[counter] != nullptr)
-					delete m_board->board()[counter];
 				m_board->board()[counter] = new Pawn(counter, false, true);
 				m_board->blackPos().push_back(counter);
 				break;
 			case 'P':
-				if (m_board->board()[counter] != nullptr)
-					delete m_board->board()[counter];
 				m_board->board()[counter] = new Pawn(counter, true, true);
 				m_board->whitePos().push_back(counter);
 				break;
 			case 'k':
-				if (m_board->board()[counter] != nullptr)
-					delete m_board->board()[counter];
 				m_board->board()[counter] = new King(counter, false, true);
 				m_board->blackPos().push_back(counter);
 				break;
 			case 'K':
-				if (m_board->board()[counter] != nullptr)
-					delete m_board->board()[counter];
 				m_board->board()[counter] = new King(counter, true, true);
 				m_board->whitePos().push_back(counter);
 				break;
 			case 'q':
-				if (m_board->board()[counter] != nullptr)
-					delete m_board->board()[counter];
 				m_board->board()[counter] = new Queen(counter, false, true);
 				m_board->blackPos().push_back(counter);
 				break;
 			case 'Q':
-				if (m_board->board()[counter] != nullptr)
-					delete m_board->board()[counter];
 				m_board->board()[counter] = new Queen(counter, true, true);
 				m_board->whitePos().push_back(counter);
 				break;
 			case 'r':
-				if (m_board->board()[counter] != nullptr)
-					delete m_board->board()[counter];
 				m_board->board()[counter] = new Rook(counter, false, true);
 				m_board->blackPos().push_back(counter);
 				break;
 			case 'R':
-				if (m_board->board()[counter] != nullptr)
-					delete m_board->board()[counter];
 				m_board->board()[counter] = new Rook(counter, true, true);
 				m_board->whitePos().push_back(counter);
 				break;
 			case 'b':
-				if (m_board->board()[counter] != nullptr)
-					delete m_board->board()[counter];
 				m_board->board()[counter] = new Bishop(counter, false, true);
 				m_board->blackPos().push_back(counter);
 				break;
 			case 'B':
-				if (m_board->board()[counter] != nullptr)
-					delete m_board->board()[counter];
 				m_board->board()[counter] = new Bishop(counter, true, true);
 				m_board->whitePos().push_back(counter);
 				break;
 			case 'n':
-				if (m_board->board()[counter] != nullptr)
-					delete m_board->board()[counter];
 				m_board->board()[counter] = new Knight(counter, false, true);
 				m_board->blackPos().push_back(counter);
 				break;
 			case 'N':
-				if (m_board->board()[counter] != nullptr)
-					delete m_board->board()[counter];
 				m_board->board()[counter] = new Knight(counter, true, true);
 				m_board->whitePos().push_back(counter);
 				break;
@@ -196,9 +188,7 @@ public:
 				counter -= BOARD_SIZE * 2 + 1;
 				break;
 			default:
-				if (m_board->board()[counter] != nullptr)
-					delete m_board->board()[counter];
-				m_board->board()[counter] = new Piece(counter);
+				m_board->board()[counter] = nullptr;
 				break;
 			}
 			++counter;
@@ -243,7 +233,7 @@ public:
 		{
 			const Piece *value = m_board->board()[counter];
 			out.append("|");
-			if (!value->exists())
+			if (value == nullptr)
 			{
 				out.append(" ");
 			}
@@ -259,7 +249,7 @@ public:
 		}
 		out.append("|");
 		const Piece *value = m_board->board()[BOARD_SIZE - 1];
-		if (!value->exists())
+		if (value == nullptr)
 		{
 			out.append(" ");
 		}
@@ -329,7 +319,7 @@ public:
 					continue;
 			}
 
-			if (!value->exists())
+			if (value == nullptr)
 			{
 				out.append(" ");
 			}
@@ -355,7 +345,7 @@ public:
 		std::cout << "displayCout" << std::endl;
 		for (const Piece *value : m_board->board())
 		{
-			if (!value->exists())
+			if (value == nullptr)
 			{
 				std::cout << " ";
 				continue;

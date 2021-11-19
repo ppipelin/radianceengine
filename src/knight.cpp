@@ -15,14 +15,14 @@ void Knight::canMove(const Board &b, std::vector<UInt> &v) const
 		if (!lc)
 		{
 			UInt tile = m_tile + BOARD_SIZE * 2 - 1;
-			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+			if (b.board()[tile] == nullptr || b[tile].isWhite() != isWhite())
 				v.push_back(tile);
 		}
 		// Right
 		if (!rc)
 		{
 			UInt tile = m_tile + BOARD_SIZE * 2 + 1;
-			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+			if (b.board()[tile] == nullptr || b[tile].isWhite() != isWhite())
 				v.push_back(tile);
 		}
 	}
@@ -34,14 +34,14 @@ void Knight::canMove(const Board &b, std::vector<UInt> &v) const
 		if (!llc)
 		{
 			UInt tile = m_tile + BOARD_SIZE - 2;
-			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+			if (b.board()[tile] == nullptr || b[tile].isWhite() != isWhite())
 				v.push_back(tile);
 		}
 		// Right
 		if (!rrc)
 		{
 			UInt tile = m_tile + BOARD_SIZE + 2;
-			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+			if (b.board()[tile] == nullptr || b[tile].isWhite() != isWhite())
 				v.push_back(tile);
 		}
 	}
@@ -53,14 +53,14 @@ void Knight::canMove(const Board &b, std::vector<UInt> &v) const
 		if (!llc)
 		{
 			UInt tile = m_tile - BOARD_SIZE - 2;
-			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+			if (b.board()[tile] == nullptr || b[tile].isWhite() != isWhite())
 				v.push_back(tile);
 		}
 		// Right
 		if (!rrc)
 		{
 			UInt tile = m_tile - BOARD_SIZE + 2;
-			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+			if (b.board()[tile] == nullptr || b[tile].isWhite() != isWhite())
 				v.push_back(tile);
 		}
 	}
@@ -72,14 +72,14 @@ void Knight::canMove(const Board &b, std::vector<UInt> &v) const
 		if (!lc)
 		{
 			UInt tile = m_tile - BOARD_SIZE * 2 - 1;
-			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+			if (b.board()[tile] == nullptr || b[tile].isWhite() != isWhite())
 				v.push_back(tile);
 		}
 		// Right
 		if (!rc)
 		{
 			UInt tile = m_tile - BOARD_SIZE * 2 + 1;
-			if (!b[tile].exists() || b[tile].isWhite() != isWhite())
+			if (b.board()[tile] == nullptr || b[tile].isWhite() != isWhite())
 				v.push_back(tile);
 		}
 	}

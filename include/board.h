@@ -22,7 +22,12 @@ private:
 public:
 	Board()
 	{
-		m_board = std::array<Piece *, BOARD_SIZE2>();
+		// std::array are auto set to nullptr but des not seem to be the case
+		// m_board = std::array<Piece *, BOARD_SIZE2>();
+		for (auto &p : m_board)
+		{
+			p = nullptr;
+		}
 		m_whitePos.reserve(BOARD_SIZE * 2);
 		m_blackPos.reserve(BOARD_SIZE * 2);
 	}
