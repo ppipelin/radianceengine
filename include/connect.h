@@ -63,18 +63,18 @@ void drop(sio::event &e)
 	if (e.get_messages()[0]->get_string() == e.get_messages()[1]->get_string())
 		return;
 	bParserConnect.movePiece(Board::toTiles(e.get_messages()[0]->get_string()), Board::toTiles(e.get_messages()[1]->get_string()));
-	std::cout << bParserConnect.board()->board()[Board::toTiles(e.get_messages()[0]->get_string())]->str() << " from " << bParserConnect.board()->board()[Board::toTiles(e.get_messages()[0]->get_string())]->tile() << std::endl;
-	std::cout << bParserConnect.board()->board()[Board::toTiles(e.get_messages()[1]->get_string())]->str() << " to " << bParserConnect.board()->board()[Board::toTiles(e.get_messages()[1]->get_string())]->tile() << std::endl;
+	std::cout << bParserConnect.boardParsed()->board()[Board::toTiles(e.get_messages()[0]->get_string())]->str() << " from " << bParserConnect.boardParsed()->board()[Board::toTiles(e.get_messages()[0]->get_string())]->tile() << std::endl;
+	std::cout << bParserConnect.boardParsed()->board()[Board::toTiles(e.get_messages()[1]->get_string())]->str() << " to " << bParserConnect.boardParsed()->board()[Board::toTiles(e.get_messages()[1]->get_string())]->tile() << std::endl;
 	isWhite = !isWhite;
-	// (*bParserConnect.board())[Board::toTiles(e.get_messages()[]->get_string())];
+	// (*bParserConnect.boardParsed())[Board::toTiles(e.get_messages()[]->get_string())];
 }
 
 void dragStart(sio::event &e)
 {
 	std::cout << "dragStart: " << e.get_message()->get_string() << std::endl;
 	std::vector<UInt> v;
-	Piece &p = (*bParserConnect.board())[Board::toTiles(e.get_message()->get_string())];
-	p.canMove(*bParserConnect.board(), v);
+	Piece &p = (*bParserConnect.boardParsed())[Board::toTiles(e.get_message()->get_string())];
+	p.canMove(*bParserConnect.boardParsed(), v);
 	// std::cout << "v0: " << v[0] << std::endl;
 	std::cout << "sending: " << utils::to_string(v) << std::endl;
 	current_socket->emit("cpp_moveset", utils::to_string(v));

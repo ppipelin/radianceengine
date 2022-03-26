@@ -44,30 +44,30 @@ public:
 		m_board = new Board();
 		for (UInt i = 0; i < BOARD_SIZE2; ++i)
 		{
-			Piece *p = b.board()->board()[i];
+			Piece *p = b.boardParsed()->board()[i];
 			if (p == nullptr)
 				continue;
 			if (typeid(*p) == typeid(Piece))
-				m_board->board()[i] = new Piece((*b.board())[i]);
+				m_board->board()[i] = new Piece((*b.boardParsed())[i]);
 			else if (typeid(*p) == typeid(King))
-				m_board->board()[i] = new King((*b.board())[i]);
+				m_board->board()[i] = new King((*b.boardParsed())[i]);
 			else if (typeid(*p) == typeid(Queen))
-				m_board->board()[i] = new Queen((*b.board())[i]);
+				m_board->board()[i] = new Queen((*b.boardParsed())[i]);
 			else if (typeid(*p) == typeid(Rook))
-				m_board->board()[i] = new Rook((*b.board())[i]);
+				m_board->board()[i] = new Rook((*b.boardParsed())[i]);
 			else if (typeid(*p) == typeid(Bishop))
-				m_board->board()[i] = new Bishop((*b.board())[i]);
+				m_board->board()[i] = new Bishop((*b.boardParsed())[i]);
 			else if (typeid(*p) == typeid(Knight))
-				m_board->board()[i] = new Knight((*b.board())[i]);
+				m_board->board()[i] = new Knight((*b.boardParsed())[i]);
 			else if (typeid(*p) == typeid(Pawn))
-				m_board->board()[i] = new Pawn((*b.board())[i]);
+				m_board->board()[i] = new Pawn((*b.boardParsed())[i]);
 		}
 	}
 
 	// Mutators
-	Board *board() { return m_board; }
+	Board *boardParsed() { return m_board; }
 
-	const Board *board() const { return m_board; }
+	const Board *boardParsed() const { return m_board; }
 
 	void movePiece(UInt	from, UInt to)
 	{

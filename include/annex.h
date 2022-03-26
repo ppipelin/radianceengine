@@ -83,11 +83,11 @@ void benchRules(UInt depth = 1, bool display = false)
 		{
 			for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
 			{
-				Piece *p = b->board()->board()[tile];
+				Piece *p = b->boardParsed()->board()[tile];
 				if (p != nullptr && p->isWhite() == isWhite)
 				{
 					std::vector<UInt> v;
-					p->canMove(*b->board(), v);
+					p->canMove(*b->boardParsed(), v);
 					for (UInt move : v)
 					{
 						BoardParser *b2 = new BoardParser(*b);
@@ -109,7 +109,7 @@ void benchRules(UInt depth = 1, bool display = false)
 		Int count = 0;
 		for (auto b : lastBoards)
 		{
-			for (auto &p : b->board()->board())
+			for (auto &p : b->boardParsed()->board())
 			{
 				if (p != nullptr)
 					count += sizeof(nullptr);
