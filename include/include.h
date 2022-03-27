@@ -1,4 +1,5 @@
 #pragma once
+#pragma warning(disable: 4505)
 
 #include <iostream>
 #include <vector>
@@ -8,7 +9,6 @@
 // #include <regex>
 // #include <map>
 
-// typedef short Int;
 typedef std::uint_fast16_t UInt;
 typedef std::int_fast16_t Int;
 typedef std::uint_fast8_t SUInt;

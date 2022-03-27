@@ -331,52 +331,61 @@ public:
 		std::cout << out << std::string("|") << std::endl;
 	}
 
-	void displayCLIMove()
+	/**
+		* @brief Display board in CLI and shows how can a piece move.
+		*
+		*/
+	void displayCLIMove(UInt tile)
 	{
 		std::string out;
-		std::vector<UInt> bypass = std::vector<UInt>();
-		for (UInt counter = 0; const auto & value : m_board->board())
+		const Piece *piece = m_board->board()[tile];
+		std::vector<UInt> v = std::vector<UInt>();
+		if (piece != nullptr)
 		{
-			if (Board::column(counter) == 0 && counter != 0)
-				out.append("|\n");
+			piece->canMove(*m_board, v);
+		}
+
+		for (UInt counter = BOARD_SIZE2 - BOARD_SIZE; counter != BOARD_SIZE - 1; ++counter)
+		{
+			const Piece *value = m_board->board()[counter];
 			out.append("|");
-
-			if (!bypass.empty())
+			if (std::find(v.begin(), v.end(), counter) != v.end())
 			{
-				bool doesContinue = false;
-				for (const auto &b : bypass)
-				{
-					if (b == counter)
-					{
-						out.append("X");
-						++counter;
-						doesContinue = true;
-						break;
-					}
-				}
-				if (doesContinue)
-					continue;
+				out.append("X");
 			}
-
+			else if (value == nullptr)
+			{
+				out.append(" ");
+			}
+			else
+			{
+				out.append(value->str());
+			}
+			if (Board::column(counter + 1) == 0)
+			{
+				out.append("|\n");
+				counter -= BOARD_SIZE * 2;
+			}
+		}
+		out.append("|");
+		if (std::find(v.begin(), v.end(), BOARD_SIZE - 1) != v.end())
+		{
+			out.append("X");
+		}
+		else
+		{
+			const Piece *value = m_board->board()[BOARD_SIZE - 1];
 			if (value == nullptr)
 			{
 				out.append(" ");
 			}
 			else
 			{
-				std::string s = value->str();
-				out.append(s);
-				std::vector<UInt> moves;
-				value->canMove(*m_board, moves);
-				if (!moves.empty() && bypass.empty())
-				{
-					bypass = std::vector<UInt>(moves);
-				}
+				out.append(value->str());
 			}
-			++counter;
 		}
+
 		std::cout << out << std::string("|") << std::endl;
-		// if ( bypass != nullptr ) delete bypass;
 	}
 
 	void displayCout()
