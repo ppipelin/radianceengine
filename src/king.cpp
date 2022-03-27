@@ -49,6 +49,25 @@ void King::canMove(const Board &b, std::vector<UInt> &v) const
 	{
 		v.push_back(m_tile + 1);
 	}
+
+	// Castling
+	// Queen	side
+	if (m_isWhite && b.m_castleAvailableQueenWhite || !m_isWhite && b.m_castleAvailableQueenBlack)
+	{
+		if (b.board()[m_tile - 1] == nullptr && b.board()[m_tile - 2] == nullptr && b.board()[m_tile - 3] == nullptr)
+		{
+			v.push_back(m_tile - 2);
+		}
+	}
+
+	// King	side
+	if (m_isWhite && b.m_castleAvailableKingWhite || !m_isWhite && b.m_castleAvailableKingBlack)
+	{
+		if (b.board()[m_tile + 1] == nullptr && b.board()[m_tile + 2] == nullptr)
+		{
+			v.push_back(m_tile + 2);
+		}
+	}
 }
 
 bool King::exists() const

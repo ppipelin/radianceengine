@@ -15,11 +15,13 @@ class Piece;
 class Board
 {
 private:
-	// TODO: perhaps set to const Piece
 	std::array<Piece *, BOARD_SIZE2> m_board;
 	std::vector<UInt> m_whitePos;
 	std::vector<UInt> m_blackPos;
+
 public:
+	bool m_castleAvailableQueenWhite, m_castleAvailableKingWhite, m_castleAvailableQueenBlack, m_castleAvailableKingBlack;
+
 	Board()
 	{
 		// std::array are auto set to nullptr but des not seem to be the case
@@ -30,6 +32,7 @@ public:
 		}
 		m_whitePos.reserve(BOARD_SIZE * 2);
 		m_blackPos.reserve(BOARD_SIZE * 2);
+		m_castleAvailableQueenWhite = m_castleAvailableKingWhite = m_castleAvailableQueenBlack = m_castleAvailableKingBlack = true;
 	}
 
 	~Board()

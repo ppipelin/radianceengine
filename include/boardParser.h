@@ -77,6 +77,45 @@ public:
 		{
 			return;
 		}
+		if (typeid(*fromPiece) == typeid(King))
+		{
+			if (fromPiece->isWhite())
+			{
+				boardParsed()->m_castleAvailableKingWhite = false;
+				boardParsed()->m_castleAvailableQueenWhite = false;
+			}
+			else
+			{
+				boardParsed()->m_castleAvailableKingBlack = false;
+				boardParsed()->m_castleAvailableQueenBlack = false;
+			}
+		}
+		else if (typeid(*fromPiece) == typeid(Rook))
+		{
+			if (fromPiece->isWhite())
+			{
+				if (from == BOARD_SIZE - 1)
+				{
+					boardParsed()->m_castleAvailableKingWhite = false;
+				}
+				else if (from == 0)
+				{
+					boardParsed()->m_castleAvailableQueenWhite = false;
+				}
+			}
+			else
+			{
+				if (from == BOARD_SIZE2 - 1)
+				{
+					boardParsed()->m_castleAvailableKingBlack = false;
+				}
+				else if (from == BOARD_SIZE2 - BOARD_SIZE)
+				{
+					boardParsed()->m_castleAvailableQueenBlack = false;
+				}
+			}
+		}
+
 		if (toPiece != nullptr)
 		{
 			delete m_board->board()[to];
