@@ -16,6 +16,7 @@ class BoardParser
 {
 private:
 	Board *m_board;
+	bool m_isWhiteTurn;
 	const std::string m_starting = std::string("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 	const std::string m_pawnMoveTest = std::string("rnbqkbnr/pppppppp/1P6/8/8/8/PPPPPPPP/RNBQKBNR");
 
@@ -24,6 +25,7 @@ public:
 	{
 		m_board = new Board();
 		fillBoard(m_starting);
+		m_isWhiteTurn = true;
 		// fillBoard(m_pawnMoveTest);
 	}
 
@@ -42,6 +44,7 @@ public:
 	BoardParser(const BoardParser &b)
 	{
 		m_board = new Board();
+		m_isWhiteTurn = b.isWhiteTurn();
 		for (UInt i = 0; i < BOARD_SIZE2; ++i)
 		{
 			Piece *p = b.boardParsed()->board()[i];
@@ -62,6 +65,8 @@ public:
 			else if (typeid(*p) == typeid(Pawn))
 				m_board->board()[i] = new Pawn((*b.boardParsed())[i]);
 		}
+		m_board->whitePos() = b.boardParsed()->whitePos();
+		m_board->blackPos() = b.boardParsed()->blackPos();
 	}
 
 	// Mutators
@@ -69,14 +74,18 @@ public:
 
 	const Board *boardParsed() const { return m_board; }
 
+	const bool isWhiteTurn() const { return m_isWhiteTurn; }
+
 	void movePiece(UInt	from, UInt to)
 	{
 		Piece *fromPiece = m_board->board()[from];
 		Piece *toPiece = m_board->board()[to];
 		if (fromPiece == nullptr)
 		{
+			err("moving a nullptr");
 			return;
 		}
+		// Disable castle if king/rook is moved
 		if (typeid(*fromPiece) == typeid(King))
 		{
 			if (fromPiece->isWhite())
@@ -121,11 +130,23 @@ public:
 			delete m_board->board()[to];
 		}
 
-		m_board->board()[from] = NULL;
+		m_board->board()[from] = nullptr;
 
 		m_board->board()[to] = fromPiece;
 		fromPiece->tile() = to;
-		// TODO : move color tables, not sure if really efficient, see erase(remove())
+
+		// Editing color table
+		if (m_isWhiteTurn)
+		{
+			m_board->whitePos().erase(std::find(m_board->whitePos().begin(), m_board->whitePos().end(), from));
+			m_board->whitePos().push_back(to);
+		}
+		else
+		{
+			m_board->blackPos().erase(std::find(m_board->blackPos().begin(), m_board->blackPos().end(), from));
+			m_board->blackPos().push_back(to);
+		}
+		m_isWhiteTurn = !m_isWhiteTurn;
 	}
 
 	/**
@@ -242,7 +263,8 @@ public:
 		// finding king
 		for (const UInt tile : (isWhite ? m_board->whitePos() : m_board->blackPos()))
 		{
-			if (typeid(*m_board->board()[tile]) == typeid(King))
+			const Piece *piece = m_board->board()[tile];
+			if (piece != nullptr && typeid(*piece) == typeid(King))
 			{
 				kingPos = tile;
 				break;
@@ -252,17 +274,17 @@ public:
 		for (const UInt tile : (!isWhite ? m_board->whitePos() : m_board->blackPos()))
 		{
 			std::vector<UInt> v;
-			m_board->board()[tile]->canMove(*m_board, v);
+			const Piece *piece = m_board->board()[tile];
+			if (piece == nullptr)
+			{
+				continue;
+			}
+			piece->canMove(*m_board, v);
 			vTotal.insert(vTotal.end(), v.begin(), v.end());
 		}
 
 		// TODO: parallelize
-		for (UInt i = 0; i < vTotal.size(); ++i)
-		{
-			if (vTotal[i] == kingPos)
-				return true;
-		}
-		return false;
+		return std::find(vTotal.begin(), vTotal.end(), kingPos) != vTotal.end();
 	}
 
 	void displayCLI()
@@ -297,7 +319,7 @@ public:
 			out.append(value->str());
 		}
 
-		std::cout << out << std::string("|") << std::endl;
+		std::cout << out << std::string("|") << std::endl << std::endl;
 	}
 
 	/**

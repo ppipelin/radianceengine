@@ -65,74 +65,91 @@ void benchInCheck(bool display = false, UInt multiplier = 1)
 	std::cout << "Total time for benchInCheck: " << ms_int.count() << "ms" << std::endl;
 }
 
-void benchRules(UInt depth = 1, bool display = false)
+/**
+	* @brief perft test from https://www.chessprogramming.org/Perft
+	*
+	* @param b
+	* @param depth
+	* @return UInt number of possibles position after all possible moves on b
+	*/
+UInt perft(BoardParser &b, UInt depth = 1)
 {
-	std::vector<BoardParser *>	currentBoards;
-	std::vector<BoardParser *>	lastBoards;
-	UInt size = 1;
-
-	lastBoards.reserve(20);
-	lastBoards.push_back(new BoardParser());
-	bool isWhite = true;
-	std::cout << "Depth " << 0 << ": " << 1 << std::endl;
-
-	for (UInt i = 1; i <= depth; ++i)
+	std::vector<std::pair<UInt, UInt> > moveList = std::vector<std::pair<UInt, UInt> >();
+	UInt nodes = 0;
+	for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
 	{
-		auto t1 = high_resolution_clock::now();
-		for (BoardParser *b : lastBoards)
+		// #define TEST_CHECK_BASE
+		// #define TEST_CHECK_COVERING
+#ifdef TEST_CHECK_BASE
+		UInt originalDepth = 4;
+		std::vector<UInt> v = { 12, 51, 5 };
+		if (originalDepth - depth < v.size() && tile != v[originalDepth - depth])
 		{
-			for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
-			{
-				Piece *p = b->boardParsed()->board()[tile];
-				if (p != nullptr && p->isWhite() == isWhite)
-				{
-					std::vector<UInt> v;
-					p->canMove(*b->boardParsed(), v);
-					for (UInt move : v)
-					{
-						BoardParser *b2 = new BoardParser(*b);
-						b2->movePiece(tile, move);
-						currentBoards.push_back(b2);
-						if (display)
-						{
-							b2->displayCLI();
-							std::cout << std::endl;
-						}
-					}
-				}
-			}
+			continue;
 		}
-		size = UInt(currentBoards.size());
-		auto t2 = high_resolution_clock::now();
-		auto ms_int = duration_cast<milliseconds>(t2 - t1);
-		std::cout << "Depth " << i << ": " << size << " - " << ms_int.count() << "ms" << std::endl;
-		Int count = 0;
-		for (auto b : lastBoards)
+#endif
+		std::vector<UInt> subMoveList = std::vector<UInt>();
+		const Piece *piece = b.boardParsed()->board()[tile];
+		if (piece == nullptr || (piece->isWhite() != b.isWhiteTurn()))
 		{
-			for (auto &p : b->boardParsed()->board())
-			{
-				if (p != nullptr)
-					count += sizeof(nullptr);
-				else
-					count += sizeof(Piece);
-			}
+			continue;
 		}
-		std::cout << "Size in Mo " << (sizeof(lastBoards) + lastBoards.capacity() * (sizeof(BoardParser) + sizeof(Board)) + count) / 1e6 << std::endl;
-		// std::cout << "Size2 " << sizeof(lastBoards) << " " << sizeof(BoardParser) << " " << sizeof(Board) << " " << sizeof(Piece) << std::endl; // 32 88 576 16
-		// std::cout << "Size3 " << sizeof(std::array<Piece, BOARD_SIZE2>) << " == " << sizeof(Piece) * BOARD_SIZE2 << std::endl; // 1024 == 1024
+		if (piece->isWhite() != b.isWhiteTurn())
+		{
+			warn("is wrong turn");
+		}
+		piece->canMove(*b.boardParsed(), subMoveList);
+		std::vector<std::pair<UInt, UInt> > subMoveListPairs = std::vector<std::pair<UInt, UInt> >();
+		subMoveListPairs.reserve(subMoveList.size());
+		for (UInt to : subMoveList)
+		{
+			subMoveListPairs.push_back(std::make_pair(tile, to));
+		}
 
-		// Clear will call the delete for the objects but won't de allocate the space in it. 
-		// This is not an issue since the vecotr's size is growing with iterations
-		// for (auto b : lastBoards)
-		// {
-		// 	if (b != nullptr)
-		// 		delete b;
-		// }
-		lastBoards.clear();
-		lastBoards.swap(currentBoards);
-		// currentBoards.clear();
-		isWhite = !isWhite;
+		moveList.insert(moveList.end(), subMoveListPairs.begin(), subMoveListPairs.end());
 	}
+	// #define FASTER_PERFT
+#ifdef FASTER_PERFT
+	if (depth == 1)
+	{
+		return moveList.size();
+	}
+#endif
+#ifndef FASTER_PERFT
+	if (depth == 0)
+	{
+		return 1;
+	}
+#endif
+#ifdef TEST_CHECK_COVERING
+	bool wasInCheck = false;
+	b.displayCLI();
+
+	if (b.inCheck(b.isWhiteTurn()))
+	{
+		wasInCheck = true;
+	}
+#endif
+	for (std::pair<UInt, UInt> move : moveList)
+	{
+		BoardParser b2 = BoardParser(b);
+		b2.movePiece(move.first, move.second);
+		// We assert that we are not in check after we just moved
+		if (b2.inCheck(!b2.isWhiteTurn()))
+		{
+			// We don't count illegal moves
+			continue;
+		}
+#ifdef TEST_CHECK_COVERING
+		if (wasInCheck)
+		{
+			debug("Check covered : ");
+			b2.displayCLI();
+		}
+#endif
+		nodes += perft(b2, depth - 1);
+	}
+	return nodes;
 }
 
 void fill(std::vector<UInt> &tofill)
