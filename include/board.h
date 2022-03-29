@@ -43,9 +43,9 @@ public:
 
 	const std::array<Piece *, BOARD_SIZE2> &board() const { return m_board; }
 
-	Piece &operator[](std::size_t idx) { return *board()[idx]; }
+	Piece *operator[](std::size_t idx) { return board()[idx]; }
 
-	const Piece &operator[](std::size_t idx) const { return *board()[idx]; }
+	const Piece *operator[](std::size_t idx) const { return board()[idx]; }
 
 	std::vector<UInt> &whitePos() { return m_whitePos; }
 

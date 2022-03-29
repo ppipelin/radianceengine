@@ -51,19 +51,19 @@ public:
 			if (p == nullptr)
 				continue;
 			if (typeid(*p) == typeid(Piece))
-				m_board->board()[i] = new Piece((*b.boardParsed())[i]);
+				m_board->board()[i] = new Piece(*(*b.boardParsed())[i]);
 			else if (typeid(*p) == typeid(King))
-				m_board->board()[i] = new King((*b.boardParsed())[i]);
+				m_board->board()[i] = new King(*(*b.boardParsed())[i]);
 			else if (typeid(*p) == typeid(Queen))
-				m_board->board()[i] = new Queen((*b.boardParsed())[i]);
+				m_board->board()[i] = new Queen(*(*b.boardParsed())[i]);
 			else if (typeid(*p) == typeid(Rook))
-				m_board->board()[i] = new Rook((*b.boardParsed())[i]);
+				m_board->board()[i] = new Rook(*(*b.boardParsed())[i]);
 			else if (typeid(*p) == typeid(Bishop))
-				m_board->board()[i] = new Bishop((*b.boardParsed())[i]);
+				m_board->board()[i] = new Bishop(*(*b.boardParsed())[i]);
 			else if (typeid(*p) == typeid(Knight))
-				m_board->board()[i] = new Knight((*b.boardParsed())[i]);
+				m_board->board()[i] = new Knight(*(*b.boardParsed())[i]);
 			else if (typeid(*p) == typeid(Pawn))
-				m_board->board()[i] = new Pawn((*b.boardParsed())[i]);
+				m_board->board()[i] = new Pawn(*(*b.boardParsed())[i]);
 		}
 		m_board->whitePos() = b.boardParsed()->whitePos();
 		m_board->blackPos() = b.boardParsed()->blackPos();

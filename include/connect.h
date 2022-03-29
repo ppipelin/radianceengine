@@ -73,8 +73,8 @@ void dragStart(sio::event &e)
 {
 	std::cout << "dragStart: " << e.get_message()->get_string() << std::endl;
 	std::vector<UInt> v;
-	Piece &p = (*bParserConnect.boardParsed())[Board::toTiles(e.get_message()->get_string())];
-	p.canMove(*bParserConnect.boardParsed(), v);
+	Piece *piece = (*bParserConnect.boardParsed())[Board::toTiles(e.get_message()->get_string())];
+	piece->canMove(*bParserConnect.boardParsed(), v);
 	// std::cout << "v0: " << v[0] << std::endl;
 	std::cout << "sending: " << utils::to_string(v) << std::endl;
 	current_socket->emit("cpp_moveset", utils::to_string(v));
