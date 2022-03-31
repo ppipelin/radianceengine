@@ -99,7 +99,7 @@ public:
 		return tile % BOARD_SIZE;
 	}
 
-	static UInt toTiles(std::string s)
+	static UInt toTiles(const std::string &s)
 	{
 		if (s.length() != 2) return 0;
 		UInt letter = s[0] - 'a';

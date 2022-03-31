@@ -1,41 +1,40 @@
 #include "include.h"
 #include "board.h"
 #include "boardParser.h"
-#include "connect.h"
+// #include "connect.h"
+#include "client.h"
 
 #include "annex.h"
 
 #include <iostream>
-#include <omp.h>
-#include <ctime>
+#include <chrono>
 
 int main()
 {
-	BoardParser bParser = BoardParser();
-	// bParser.fillBoard("rnb1kbnr/pppp1ppp/8/4p3/7q/5P1P/PPPPP1P1/RNBQKBNR");
-	// bParser.fillBoard("rnbqkbnr/pppppppp/8/5N2/8/5B2/PPPPPPPP/RNBQK2R");
-	// bParser.fillBoard("r3k2r/pppppppp/8/1bnq1N1n/4b3/5B2/PPPPPPPP/RNBQK2R");
-	// bParser.displayCLI();
+	BoardParser boardParser = BoardParser();
+	Client	client = Client(boardParser);
+	client.connect();
+
+	// boardParser.fillBoard("rnb1kbnr/pppp1ppp/8/4p3/7q/5P1P/PPPPP1P1/RNBQKBNR");
+	// boardParser.fillBoard("rnbqkbnr/pppppppp/8/5N2/8/5B2/PPPPPPPP/RNBQK2R");
+	// boardParser.fillBoard("r3k2r/pppppppp/8/1bnq1N1n/4b3/5B2/PPPPPPPP/RNBQK2R");
+	// boardParser.displayCLI();
 	// std::cout << std::endl;
-	// bParser.displayCout();
+	// boardParser.displayCout();
 	// std::cout << std::endl;
 	// for (UInt i = 0; i < BOARD_SIZE2; ++i)
 	// {
-	// 	bParser.displayCLIMove(i);
+	// 	boardParser.displayCLIMove(i);
 	// 	std::cout << std::endl;
 	// }
-	// bParser.displayCLIMove(4);
-	// std::cout << std::endl;
-	// bParser.displayCLIWhiteBlack();
+	// boardParser.displayCLIWhiteBlack();
 
-	// benchFillBoard();
-	// bParser.fillBoard("rnbqkbnr/ppp1pppp/8/1B1p4/4P3/8/PPPP1PPP/RNBQK1NR");
-	// std::cout << bParser.inCheck(false) << std::endl;
-	// benchInCheck(/*display =*/ false, 1000); // 1000 release with vector - 960 with reserve on canmove - 910 with array
-	// benchInCheck(/*display =*/ false, 10000); // 12 225 release with vector - 9023 with reserve on canmove -  8429 with array
-
-	int perft_value = 5;
-	std::cout << "perft(" << perft_value << ") : " << perft(bParser, perft_value) << std::endl;
+	// int perft_value = 3;
+	// auto t1 = std::chrono::high_resolution_clock::now();
+	// std::cout << "perft(" << perft_value << ") : " << perft(boardParser, perft_value) << std::endl;
+	// auto t2 = std::chrono::high_resolution_clock::now();
+	// auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+	// std::cout << "Total time for benchInCheck: " << ms_int.count() << "ms" << std::endl;
 	// perft(4) : 197 281
 	// perft(5) : 4 865 351
 
@@ -50,8 +49,6 @@ int main()
 	// 3 195 901 860
 
 	// demo();
-
-	// connect();
 
 	std::cout << "Hello, world!" << std::endl;
 	return 0;

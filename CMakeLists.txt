@@ -8,6 +8,8 @@ project(chessengine
 add_executable(chessengine)
 target_sources(chessengine PRIVATE
 	src/main.cpp
+	src/game.cpp
+	src/client.cpp
 	src/piece.cpp
 	src/king.cpp
 	src/queen.cpp

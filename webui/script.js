@@ -1,4 +1,5 @@
-var board = document.querySelector("chess-board");
+var m_board = document.querySelector("chess-board");
+var m_lastPosition;
 
 var color = 1; // white first
 var chess_text = document.getElementById("chess_text");
@@ -11,29 +12,30 @@ const blackSquareGrey = "#696969";
 
 function showPosition() {
 	console.log("Current position as an Object:");
-	console.log(board.position);
+	console.log(m_board.position);
 
 	console.log("Current position as a FEN string:");
-	console.log(board.fen());
+	console.log(m_board.fen());
 }
 
 function loadboard() {
-	board = document.querySelector("chess-board");
+	m_board = document.querySelector("chess-board");
 	setTimeout(function () {
-		board.start();
+		m_board.start();
 	}, 10);
 }
 
-board.addEventListener("drop", (e) => {
+m_board.addEventListener("drop", (e) => {
 	const { source, target, piece, newPosition, oldPosition, orientation } =
 		e.detail;
+	m_lastPosition = oldPosition;
 	removeGreySquares();
 
 	console.log("dropping " + piece + " : " + source + "-" + target);
 	socket.emit("drop", piece, source, target);
 });
 
-board.addEventListener("drag-start", (e) => {
+m_board.addEventListener("drag-start", (e) => {
 	const { source, piece, position, orientation } = e.detail;
 	console.log("drag-start " + piece + " : " + source);
 	socket.emit("dragStart", source);
@@ -123,7 +125,13 @@ function parseMove(move) {
 socket.on("move", (move) => {
 	move_parsed = parseMove(move);
 	console.log("moving: ", move_parsed);
-	board.move(move_parsed);
+	m_board.move(move_parsed);
+	color *= -1;
+});
+
+socket.on("unmakeLastMove", () => {
+	console.log("unmakeLastMove");
+	m_board.position = m_lastPosition;
 	color *= -1;
 });
 
@@ -486,13 +494,13 @@ function movePawn(color, move, takes) {
 }
 
 function findPiece(piece_name) {
-	return Object.keys(board.position).filter(
-		(key) => board.position[key] === piece_name
+	return Object.keys(m_board.position).filter(
+		(key) => m_board.position[key] === piece_name
 	);
 }
 
 function piece(p) {
-	return board.position[p];
+	return m_board.position[p];
 }
 
 function insideBoard(pos) {

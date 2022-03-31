@@ -59,6 +59,21 @@ public:
 	virtual void canMove(const Board &, std::vector<UInt> &) const
 	{}
 
+	/**
+		* @brief Returns whether a piece can move to a tile.
+		* @todo Should be optimized and overriden for each Piece.
+		* @param b
+		* @param to
+		* @return true
+		* @return false
+		*/
+	virtual bool canMove(const Board &b, UInt to) const
+	{
+		std::vector<UInt> v = std::vector<UInt>();
+		canMove(b, v);
+		return std::find(v.begin(), v.end(), to) != v.end();
+	}
+
 	void sliding(const Board &b, Int direction, std::vector<UInt> &v) const;
 
 	const bool isWhite() const;

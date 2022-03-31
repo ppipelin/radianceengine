@@ -41,6 +41,11 @@ io.on("connection", (socket) => {
 		console.log("forwarding move ", move);
 		socket.broadcast.emit("move", move);
 	});
+
+	socket.on("cpp_unmakeLastMove", () => {
+		console.log("forwarding unmakeLastMove ");
+		socket.broadcast.emit("unmakeLastMove");
+	});
 });
 
 server.listen(3000, () => {
