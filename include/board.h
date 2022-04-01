@@ -18,6 +18,8 @@ private:
 	std::array<Piece *, BOARD_SIZE2> m_board;
 	std::vector<UInt> m_whitePos;
 	std::vector<UInt> m_blackPos;
+	// Column if the en passant has been done, -1 otherwise.
+	Int m_enPassant;
 
 public:
 	bool m_castleAvailableQueenWhite, m_castleAvailableKingWhite, m_castleAvailableQueenBlack, m_castleAvailableKingBlack;
@@ -33,6 +35,7 @@ public:
 		m_whitePos.reserve(BOARD_SIZE * 2);
 		m_blackPos.reserve(BOARD_SIZE * 2);
 		m_castleAvailableQueenWhite = m_castleAvailableKingWhite = m_castleAvailableQueenBlack = m_castleAvailableKingBlack = true;
+		m_enPassant = -1;
 	}
 
 	~Board()
@@ -42,6 +45,10 @@ public:
 	std::array<Piece *, BOARD_SIZE2> &board() { return m_board; }
 
 	const std::array<Piece *, BOARD_SIZE2> &board() const { return m_board; }
+
+	void enPassant(Int i) { m_enPassant = i; }
+
+	const Int enPassant() const { return m_enPassant; }
 
 	Piece *operator[](std::size_t idx) { return board()[idx]; }
 
@@ -55,12 +62,12 @@ public:
 
 	const std::vector<UInt> &blackPos() const { return m_blackPos; }
 
-	bool sameLine(UInt a, UInt b) const
+	static bool sameLine(UInt a, UInt b)
 	{
 		return floor(a / BOARD_SIZE) == floor(b / BOARD_SIZE);
 	}
 
-	bool sameColumn(UInt a, UInt b) const
+	static bool sameColumn(UInt a, UInt b)
 	{
 		return a % BOARD_SIZE == b % BOARD_SIZE;
 	}

@@ -3,6 +3,7 @@
 void Pawn::canMove(const Board &b, std::vector<UInt> &v) const
 {
 	v.reserve(4);
+	const UInt c = Board::column(m_tile);
 	if (m_isWhite)
 	{
 		// Can move forward
@@ -22,6 +23,18 @@ void Pawn::canMove(const Board &b, std::vector<UInt> &v) const
 			// Forward right (checks white + not on last column)
 			if (!Board::rightCol(m_tile) && b[forward + 1] != nullptr && !b[forward + 1]->isWhite())
 				v.push_back(forward + 1);
+			// Adding en passant
+			if (Board::row(m_tile) == 4)
+			{
+				if (b.enPassant() == c + 1)
+				{
+					v.push_back(m_tile + BOARD_SIZE + 1);
+				}
+				else if (b.enPassant() == c - 1)
+				{
+					v.push_back(m_tile + BOARD_SIZE - 1);
+				}
+			}
 		}
 	}
 	else
@@ -43,6 +56,18 @@ void Pawn::canMove(const Board &b, std::vector<UInt> &v) const
 			// One black forward right (checks black + not on last column)
 			if (!Board::rightCol(m_tile) && b[forward + 1] != nullptr && b[forward + 1]->isWhite())
 				v.push_back(forward + 1);
+			// Adding en passant
+			if (Board::row(m_tile) == 3)
+			{
+				if (b.enPassant() == c + 1)
+				{
+					v.push_back(m_tile - BOARD_SIZE + 1);
+				}
+				else if (b.enPassant() == c - 1)
+				{
+					v.push_back(m_tile - BOARD_SIZE - 1);
+				}
+			}
 		}
 	}
 }

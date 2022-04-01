@@ -11,14 +11,16 @@
 #include "knight.h"
 
 #include "board.h"
-
+/**
+	* @brief This class is used to parse the board and is aware of the Piece's type.
+	* @details To be able to know the if castle is available, it contains the movePiece()	function.
+	*/
 class BoardParser
 {
 private:
 	Board *m_board;
 	bool m_isWhiteTurn;
 	const std::string m_starting = std::string("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-	const std::string m_pawnMoveTest = std::string("rnbqkbnr/pppppppp/1P6/8/8/8/PPPPPPPP/RNBQKBNR");
 
 public:
 	BoardParser()
@@ -26,7 +28,6 @@ public:
 		m_board = new Board();
 		fillBoard(m_starting);
 		m_isWhiteTurn = true;
-		// fillBoard(m_pawnMoveTest);
 	}
 
 	~BoardParser()
@@ -147,6 +148,7 @@ public:
 			m_board->blackPos().push_back(to);
 		}
 		m_isWhiteTurn = !m_isWhiteTurn;
+		m_board->enPassant(typeid(*fromPiece) == typeid(Pawn) && fabs(Int(from) - Int(to)) == 16 ? Board::column(to) : -1);
 	}
 
 	/**
