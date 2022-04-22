@@ -31,6 +31,28 @@ m_board.addEventListener("drop", (e) => {
 	m_lastPosition = oldPosition;
 	removeGreySquares();
 
+	// Addressing castle
+	if (
+		piece[1] == "K" &&
+		source[1] == target[1] &&
+		Math.abs(source.charCodeAt(0) - target.charCodeAt(0)) == 2
+	) {
+		row = piece[0] == "w" ? 1 : 8;
+		if (piece[0] == "w") {
+			if (source.charCodeAt(0) > target.charCodeAt(0)) {
+				m_board.move("a" + row + "-d" + row);
+			} else {
+				m_board.move("h" + row + "-f" + row);
+			}
+		} else {
+			if (source.charCodeAt(0) > target.charCodeAt(0)) {
+				m_board.move("a8-d8");
+			} else {
+				m_board.move("h8-f8");
+			}
+		}
+	}
+
 	console.log("dropping " + piece + " : " + source + "-" + target);
 	socket.emit("drop", piece, source, target);
 });

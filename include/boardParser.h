@@ -99,6 +99,37 @@ public:
 				boardParsed()->m_castleAvailableKingBlack = false;
 				boardParsed()->m_castleAvailableQueenBlack = false;
 			}
+			// if actually castling
+			if (abs(Int(to) - Int(from)) == 2)
+			{
+				if (fromPiece->isWhite())
+				{
+					// Queen Castle
+					if (to < from)
+					{
+						movePiece(0, 3);
+					}
+					else
+					{
+						movePiece(BOARD_SIZE - 1, BOARD_SIZE - 3);
+					}
+				}
+				else
+				{
+					// Queen Castle
+					if (to < from)
+					{
+						movePiece(BOARD_SIZE2 - BOARD_SIZE, BOARD_SIZE2 - BOARD_SIZE + 3);
+					}
+					else
+					{
+						movePiece(BOARD_SIZE2 - 1, BOARD_SIZE2 - 3);
+					}
+				}
+
+				// We have moved, we need to set the turn back
+				m_isWhiteTurn = !m_isWhiteTurn;
+			}
 		}
 		else if (typeid(*fromPiece) == typeid(Rook))
 		{
