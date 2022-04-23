@@ -53,6 +53,21 @@ m_board.addEventListener("drop", (e) => {
 		}
 	}
 
+	// Addressing en passant
+	if (
+		piece[1] == "P" &&
+		source[1] != target[1] &&
+		m_board.position[target] == ""
+	) {
+		var enPassantTile = target;
+		if (piece[0] == "w") {
+			enPassantTile = target[0] + (parseInt(target[1]) - 1);
+		} else {
+			enPassantTile = target[0] + (parseInt(target[1]) + 1);
+		}
+		m_board.position[enPassantTile] = "";
+	}
+
 	console.log("dropping " + piece + " : " + source + "-" + target);
 	socket.emit("drop", piece, source, target);
 });

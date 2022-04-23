@@ -26,11 +26,11 @@ void Pawn::canMove(const Board &b, std::vector<UInt> &v) const
 			// Adding en passant
 			if (Board::row(m_tile) == 4)
 			{
-				if (b.enPassant() == c + 1)
+				if (b.enPassant() == Int(c + 1))
 				{
 					v.push_back(m_tile + BOARD_SIZE + 1);
 				}
-				else if (b.enPassant() == c - 1)
+				else if (b.enPassant() == Int(c - 1))
 				{
 					v.push_back(m_tile + BOARD_SIZE - 1);
 				}
@@ -59,11 +59,11 @@ void Pawn::canMove(const Board &b, std::vector<UInt> &v) const
 			// Adding en passant
 			if (Board::row(m_tile) == 3)
 			{
-				if (b.enPassant() == c + 1)
+				if (b.enPassant() == Int(c + 1))
 				{
 					v.push_back(m_tile - BOARD_SIZE + 1);
 				}
-				else if (b.enPassant() == c - 1)
+				else if (b.enPassant() == Int(c - 1))
 				{
 					v.push_back(m_tile - BOARD_SIZE - 1);
 				}

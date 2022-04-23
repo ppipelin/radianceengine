@@ -156,6 +156,17 @@ public:
 				}
 			}
 		}
+		else if (typeid(*fromPiece) == typeid(Pawn))
+		{
+			// En passant
+			if (!Board::sameColumn(from, to) && abs(Int(Board::row(from)) - Int(Board::row(to))) > 1)
+			{
+				// Should never be nullptr
+				UInt enPassantTile = to - (fromPiece->isWhite() ? -8 : 8);
+				delete m_board->board()[enPassantTile];
+				m_board->board()[enPassantTile] = nullptr;
+			}
+		}
 
 		if (toPiece != nullptr)
 		{
