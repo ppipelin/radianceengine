@@ -331,6 +331,25 @@ public:
 		return std::find(vTotal.begin(), vTotal.end(), kingPos) != vTotal.end();
 	}
 
+	void displayCout()
+	{
+		std::cout << "displayCout" << std::endl;
+		for (UInt counter = BOARD_SIZE2 - BOARD_SIZE; counter != BOARD_SIZE - 1; ++counter)
+		{
+			const Piece *value = m_board->board()[counter];
+			if (Board::column(counter + 1) == 0)
+			{
+				counter -= BOARD_SIZE * 2;
+			}
+			if (value == nullptr)
+			{
+				std::cout << " ";
+				continue;
+			}
+			std::cout << value->str();
+		}
+	}
+
 	void displayCLI()
 	{
 		std::string out;
@@ -373,26 +392,45 @@ public:
 	void displayCLIWhiteBlack()
 	{
 		std::string out;
-		for (UInt counter = 0; counter < BOARD_SIZE2; ++counter)
+		for (UInt counter = BOARD_SIZE2 - BOARD_SIZE; counter != BOARD_SIZE - 1; ++counter)
 		{
-			if (Board::column(counter) == 0 && counter != 0)
-				out.append("|\n");
 			out.append("|");
 			std::string s;
 			auto whiteFind = std::find(m_board->whitePos().begin(), m_board->whitePos().end(), counter);
 			auto blackFind = std::find(m_board->blackPos().begin(), m_board->blackPos().end(), counter);
 			if (whiteFind != m_board->whitePos().end())
 			{
-				out.append("X");
+				out.append("O");
 			}
 			else if (blackFind != m_board->blackPos().end())
 			{
-				out.append("O");
+				out.append("X");
 			}
 			else
 			{
 				out.append(" ");
 			}
+			if (Board::column(counter + 1) == 0)
+			{
+				out.append("|\n");
+				counter -= BOARD_SIZE * 2;
+			}
+		}
+		out.append("|");
+		std::string s;
+		auto whiteFind = std::find(m_board->whitePos().begin(), m_board->whitePos().end(), BOARD_SIZE - 1);
+		auto blackFind = std::find(m_board->blackPos().begin(), m_board->blackPos().end(), BOARD_SIZE - 1);
+		if (whiteFind != m_board->whitePos().end())
+		{
+			out.append("O");
+		}
+		else if (blackFind != m_board->blackPos().end())
+		{
+			out.append("X");
+		}
+		else
+		{
+			out.append(" ");
 		}
 		std::cout << out << std::string("|") << std::endl;
 	}
@@ -452,19 +490,5 @@ public:
 		}
 
 		std::cout << out << std::string("|") << std::endl;
-	}
-
-	void displayCout()
-	{
-		std::cout << "displayCout" << std::endl;
-		for (const Piece *value : m_board->board())
-		{
-			if (value == nullptr)
-			{
-				std::cout << " ";
-				continue;
-			}
-			std::cout << value->str();
-		}
 	}
 };
