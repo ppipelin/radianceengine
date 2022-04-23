@@ -56,8 +56,8 @@ m_board.addEventListener("drop", (e) => {
 	// Addressing en passant
 	if (
 		piece[1] == "P" &&
-		source[1] != target[1] &&
-		m_board.position[target] == ""
+		source[0] != target[0] &&
+		m_board.position[target] == undefined
 	) {
 		var enPassantTile = target;
 		if (piece[0] == "w") {
@@ -65,7 +65,7 @@ m_board.addEventListener("drop", (e) => {
 		} else {
 			enPassantTile = target[0] + (parseInt(target[1]) + 1);
 		}
-		m_board.position[enPassantTile] = "";
+		m_board.position[enPassantTile] = undefined;
 	}
 
 	console.log("dropping " + piece + " : " + source + "-" + target);

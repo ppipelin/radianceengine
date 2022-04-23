@@ -24,13 +24,14 @@ void Pawn::canMove(const Board &b, std::vector<UInt> &v) const
 			if (!Board::rightCol(m_tile) && b[forward + 1] != nullptr && !b[forward + 1]->isWhite())
 				v.push_back(forward + 1);
 			// Adding en passant
-			if (Board::row(m_tile) == 4)
+			Int enPassantCol = b.enPassant();
+			if (Board::row(m_tile) == 4 && enPassantCol != -1)
 			{
-				if (b.enPassant() == Int(c + 1))
+				if (enPassantCol == Int(c + 1))
 				{
 					v.push_back(m_tile + BOARD_SIZE + 1);
 				}
-				else if (b.enPassant() == Int(c - 1))
+				else if (enPassantCol == Int(c - 1))
 				{
 					v.push_back(m_tile + BOARD_SIZE - 1);
 				}
@@ -57,13 +58,14 @@ void Pawn::canMove(const Board &b, std::vector<UInt> &v) const
 			if (!Board::rightCol(m_tile) && b[forward + 1] != nullptr && b[forward + 1]->isWhite())
 				v.push_back(forward + 1);
 			// Adding en passant
-			if (Board::row(m_tile) == 3)
+			Int enPassantCol = b.enPassant();
+			if (Board::row(m_tile) == 3 && enPassantCol != -1)
 			{
-				if (b.enPassant() == Int(c + 1))
+				if (enPassantCol == Int(c + 1))
 				{
 					v.push_back(m_tile - BOARD_SIZE + 1);
 				}
-				else if (b.enPassant() == Int(c - 1))
+				else if (enPassantCol == Int(c - 1))
 				{
 					v.push_back(m_tile - BOARD_SIZE - 1);
 				}

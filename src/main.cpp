@@ -37,6 +37,7 @@ int main()
 	// std::cout << "Total time for benchInCheck: " << ms_int.count() << "ms" << std::endl;
 	// perft(4) : 197 281
 	// perft(5) : 4 865 351
+	// perft(5) : 4 865 609 with en passant + castle
 
 	// RES should be : 
 	// 1

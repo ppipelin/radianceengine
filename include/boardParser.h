@@ -159,12 +159,21 @@ public:
 		else if (typeid(*fromPiece) == typeid(Pawn))
 		{
 			// En passant
-			if (!Board::sameColumn(from, to) && abs(Int(Board::row(from)) - Int(Board::row(to))) > 1)
+			if (!Board::sameColumn(from, to) && m_board->board()[to] == nullptr)
 			{
 				// Should never be nullptr
-				UInt enPassantTile = to - (fromPiece->isWhite() ? -8 : 8);
+				UInt enPassantTile = to + (fromPiece->isWhite() ? -BOARD_SIZE : BOARD_SIZE);
 				delete m_board->board()[enPassantTile];
 				m_board->board()[enPassantTile] = nullptr;
+				// Remove in color table
+				if (fromPiece->isWhite())
+				{
+					m_board->blackPos().erase(std::find(m_board->blackPos().begin(), m_board->blackPos().end(), enPassantTile));
+				}
+				else
+				{
+					m_board->whitePos().erase(std::find(m_board->whitePos().begin(), m_board->whitePos().end(), enPassantTile));
+				}
 			}
 		}
 
