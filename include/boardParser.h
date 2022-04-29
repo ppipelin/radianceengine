@@ -40,6 +40,7 @@ public:
 				i = nullptr;
 			}
 		}
+		delete m_board;
 	}
 
 	BoardParser(const BoardParser &b)
