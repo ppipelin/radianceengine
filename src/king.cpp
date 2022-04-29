@@ -23,7 +23,7 @@ void King::canMove(const Board &b, std::vector<UInt> &v) const
 		}
 	}
 	//	Go bottom
-	UInt	backward = m_tile - BOARD_SIZE;
+	Int	backward = m_tile - BOARD_SIZE;
 	if (backward >= 0 && !Board::botRow(m_tile))
 	{
 		if (!left && (b[backward - 1] == nullptr || b[backward - 1]->isWhite() != m_isWhite))

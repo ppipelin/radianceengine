@@ -43,7 +43,8 @@ target_include_directories(sioclient PRIVATE
 
 ############
 
-target_compile_options(chessengine PRIVATE -W4 ${OpenMP_CXX_FLAGS})
+# target_compile_options(chessengine PRIVATE -W4 ${OpenMP_CXX_FLAGS})
+target_compile_options(chessengine PRIVATE -W4)
 
 set_target_properties(sioclient PROPERTIES COMPILE_FLAGS "-w")
 
@@ -59,7 +60,8 @@ target_compile_definitions(chessengine PRIVATE _WIN32_WINNT=0x0A00)
 
 ############ omp
 
-find_package(OpenMP REQUIRED)
+# find_package(OpenMP REQUIRED)
 
 ############ link libs
-target_link_libraries(chessengine PRIVATE ${OpenMP_CXX_FLAGS} sioclient)
+target_link_libraries(chessengine PRIVATE sioclient)
+# target_link_libraries(chessengine PRIVATE ${OpenMP_CXX_FLAGS} sioclient)

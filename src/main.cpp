@@ -14,10 +14,24 @@ int main()
 	BoardParser boardParser = BoardParser();
 	Client	client = Client(boardParser);
 	client.connect();
+	// Kiwipete position
+	// 1 -	           48 -- Result: 48
+	// 2	-         2 039          2 043
+	// 3	-        97 862         97 763
+	// 4 -     4 085 603
+	// 5 -   193 690 690
+	// 6 - 8 031 647 685
+	boardParser.fillBoard("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R");
 
-	// boardParser.fillBoard("rnb1kbnr/pppp1ppp/8/4p3/7q/5P1P/PPPPP1P1/RNBQKBNR");
-	// boardParser.fillBoard("rnbqkbnr/pppppppp/8/5N2/8/5B2/PPPPPPPP/RNBQK2R");
-	// boardParser.fillBoard("r3k2r/pppppppp/8/1bnq1N1n/4b3/5B2/PPPPPPPP/RNBQK2R");
+	// Position 5
+	// 1 -        	44 -- Result: 41
+	// 2 - 	    1 486
+	// 3 - 	   62 379
+	// 4 - 	2 103 487
+	// 5	- 89 941 194
+
+	boardParser.fillBoard("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
+
 	// boardParser.displayCLI();
 	// std::cout << std::endl;
 	// boardParser.displayCout();
@@ -37,7 +51,16 @@ int main()
 	// std::cout << "Total time for benchInCheck: " << ms_int.count() << "ms" << std::endl;
 	// perft(4) : 197 281
 	// perft(5) : 4 865 351
+	auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+	std::cout << "Total time for benchInCheck: " << ms_int.count() << "ms" << std::endl;
+
+	// Classic Perft Results
+	// perft(4) : 197 281 - 1 976ms
+	// perft(5) : 4 865 351 
 	// perft(5) : 4 865 609 with en passant + castle
+	// perft(5) : 4 865 609 - 47 796ms with correct delete
+	// perft(6) : 119 060 324 - 1 207 806ms
+
 
 	// RES should be : 
 	// 1

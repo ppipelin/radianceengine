@@ -11,6 +11,9 @@
 #include "knight.h"
 
 #include "board.h"
+
+#include <sstream>
+
 /**
 	* @brief This class is used to parse the board and is aware of the Piece's type.
 	* @details To be able to know the if castle is available, it contains the movePiece()	function.
@@ -69,6 +72,11 @@ public:
 		}
 		m_board->whitePos() = b.boardParsed()->whitePos();
 		m_board->blackPos() = b.boardParsed()->blackPos();
+
+		m_board->m_castleAvailableQueenWhite = b.boardParsed()->m_castleAvailableQueenWhite;
+		m_board->m_castleAvailableKingWhite = b.boardParsed()->m_castleAvailableKingWhite;
+		m_board->m_castleAvailableQueenBlack = b.boardParsed()->m_castleAvailableQueenBlack;
+		m_board->m_castleAvailableKingBlack = b.boardParsed()->m_castleAvailableKingBlack;
 	}
 
 	// Mutators
@@ -127,34 +135,21 @@ public:
 						movePiece(BOARD_SIZE2 - 1, BOARD_SIZE2 - 3);
 					}
 				}
-
 				// We have moved, we need to set the turn back
 				m_isWhiteTurn = !m_isWhiteTurn;
 			}
 		}
 		else if (typeid(*fromPiece) == typeid(Rook))
 		{
-			if (fromPiece->isWhite())
+			// if (fromPiece->isWhite())
+			// {
+			if (Board::column(from) == 7)
 			{
-				if (from == BOARD_SIZE - 1)
-				{
-					boardParsed()->m_castleAvailableKingWhite = false;
-				}
-				else if (from == 0)
-				{
-					boardParsed()->m_castleAvailableQueenWhite = false;
-				}
+				boardParsed()->m_castleAvailableKingWhite = false;
 			}
-			else
+			else if (Board::column(from) == 0)
 			{
-				if (from == BOARD_SIZE2 - 1)
-				{
-					boardParsed()->m_castleAvailableKingBlack = false;
-				}
-				else if (from == BOARD_SIZE2 - BOARD_SIZE)
-				{
-					boardParsed()->m_castleAvailableQueenBlack = false;
-				}
+				boardParsed()->m_castleAvailableQueenWhite = false;
 			}
 		}
 		else if (typeid(*fromPiece) == typeid(Pawn))
@@ -213,15 +208,19 @@ public:
 	bool fillBoard(std::string fen)
 	{
 
-		// #pragma omp parallel for // Impossible because counter changes because of fen digit system
-		// for ( std::int16_t counter = 0; counter < BOARD_SIZE2; ++counter )
+		std::stringstream sstream(fen);
+		std::string word;
+		std::vector<std::string> words{};
+		while (std::getline(sstream, word, ' '))
+		{
+			words.push_back(word);
+		}
 
-		// till 63
 		m_board->whitePos().clear();
 		m_board->blackPos().clear();
 		m_board->whitePos().reserve(BOARD_SIZE * 2);
 		m_board->blackPos().reserve(BOARD_SIZE * 2);
-		for (UInt counter = BOARD_SIZE2 - BOARD_SIZE; const auto & c : fen)
+		for (UInt counter = BOARD_SIZE2 - BOARD_SIZE; const auto & c : words[0])
 		{
 			if (isdigit(c))
 			{
@@ -306,6 +305,46 @@ public:
 				break;
 			}
 			++counter;
+		}
+
+		if (words.size() > 1 && words[1] == "w")
+		{
+			m_isWhiteTurn = true;
+		}
+		else
+		{
+			m_isWhiteTurn = false;
+		}
+
+		if (words.size() > 3)
+		{
+			m_board->m_castleAvailableQueenWhite = false;
+			m_board->m_castleAvailableKingWhite = false;
+			m_board->m_castleAvailableQueenBlack = false;
+			m_board->m_castleAvailableKingBlack = false;
+			if (words[2] != "-")
+			{
+				if (std::find(words[2].begin(), words[2].end(), 'Q') != words[2].end())
+				{
+					m_board->m_castleAvailableQueenWhite = true;
+				}
+				if (std::find(words[2].begin(), words[2].end(), 'q') != words[2].end())
+				{
+					m_board->m_castleAvailableQueenBlack = true;
+				}
+				if (std::find(words[2].begin(), words[2].end(), 'K') != words[2].end())
+				{
+					m_board->m_castleAvailableKingWhite = true;
+				}
+				if (std::find(words[2].begin(), words[2].end(), 'k') != words[2].end())
+				{
+					m_board->m_castleAvailableKingBlack = true;
+				}
+			}
+		}
+		if (words.size() > 4 && words[3] != "-")
+		{
+			m_board->enPassant(std::stoi(words[3]) - 1);
 		}
 		return true;
 	}
