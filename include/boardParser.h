@@ -11,6 +11,7 @@
 #include "knight.h"
 
 #include "board.h"
+#include "cMove.h"
 
 #include <sstream>
 
@@ -86,18 +87,58 @@ public:
 
 	const bool isWhiteTurn() const { return m_isWhiteTurn; }
 
-	void movePiece(UInt	from, UInt to)
+	/**
+		* @brief
+		*
+		* @param move : moving flags as depicted in https://www.chessprogramming.org/Encoding_Moves#From-To_Based
+		* @return true : move successful
+		* @return false : move illegal
+		*/
+	bool movePiece(cMove const &move)
 	{
+		UInt to = move.getTo();
+		UInt from = move.getFrom();
+		UInt flags = move.getFlags();
 		Piece *fromPiece = m_board->board()[from];
 		Piece *toPiece = m_board->board()[to];
 		if (fromPiece == nullptr)
 		{
 			err("moving a nullptr");
-			return;
+			return false;
 		}
 		// Disable castle if king/rook is moved
 		if (typeid(*fromPiece) == typeid(King))
 		{
+			// if castling we move the rook before disabling castling
+			if (move.getFlags() == 2)
+			{
+				if (fromPiece->isWhite() && !boardParsed()->m_castleAvailableKingWhite)
+				{
+					return false;
+				}
+				if (!fromPiece->isWhite() && !boardParsed()->m_castleAvailableKingBlack)
+				{
+					return false;
+				}
+				movePiece(cMove(from + 3, from + 3 - 2));
+				// We have moved, we need to set the turn back
+				m_isWhiteTurn = !m_isWhiteTurn;
+			}
+			else if (move.getFlags() == 3)
+			{
+				if (m_isWhiteTurn && !boardParsed()->m_castleAvailableQueenWhite)
+				{
+					return false;
+				}
+				if (!m_isWhiteTurn && !boardParsed()->m_castleAvailableQueenBlack)
+				{
+					return false;
+				}
+				movePiece(cMove(from - 4, from - 4 + 3));
+				// We have moved, we need to set the turn back
+				m_isWhiteTurn = !m_isWhiteTurn;
+			}
+
 			if (fromPiece->isWhite())
 			{
 				boardParsed()->m_castleAvailableKingWhite = false;
@@ -108,48 +149,30 @@ public:
 				boardParsed()->m_castleAvailableKingBlack = false;
 				boardParsed()->m_castleAvailableQueenBlack = false;
 			}
-			// if actually castling
-			if (abs(Int(to) - Int(from)) == 2)
-			{
-				if (fromPiece->isWhite())
-				{
-					// Queen Castle
-					if (to < from)
-					{
-						movePiece(0, 3);
-					}
-					else
-					{
-						movePiece(BOARD_SIZE - 1, BOARD_SIZE - 3);
-					}
-				}
-				else
-				{
-					// Queen Castle
-					if (to < from)
-					{
-						movePiece(BOARD_SIZE2 - BOARD_SIZE, BOARD_SIZE2 - BOARD_SIZE + 3);
-					}
-					else
-					{
-						movePiece(BOARD_SIZE2 - 1, BOARD_SIZE2 - 3);
-					}
-				}
-				// We have moved, we need to set the turn back
-				m_isWhiteTurn = !m_isWhiteTurn;
-			}
 		}
 		else if (typeid(*fromPiece) == typeid(Rook))
 		{
-			// if (fromPiece->isWhite())
-			// {
-			if (Board::column(from) == 7)
+			if (fromPiece->isWhite())
 			{
-				boardParsed()->m_castleAvailableKingWhite = false;
+				if (Board::column(from) == 7)
+				{
+					boardParsed()->m_castleAvailableKingWhite = false;
+				}
+				else if (Board::column(from) == 0)
+				{
+					boardParsed()->m_castleAvailableQueenWhite = false;
+				}
 			}
-			else if (Board::column(from) == 0)
+			else
 			{
-				boardParsed()->m_castleAvailableQueenWhite = false;
+				if (Board::column(from) == 7)
+				{
+					boardParsed()->m_castleAvailableKingBlack = false;
+				}
+				else if (Board::column(from) == 0)
+				{
+					boardParsed()->m_castleAvailableQueenBlack = false;
+				}
 			}
 		}
 		else if (typeid(*fromPiece) == typeid(Pawn))
@@ -171,6 +194,29 @@ public:
 					m_board->whitePos().erase(std::find(m_board->whitePos().begin(), m_board->whitePos().end(), enPassantTile));
 				}
 			}
+
+			if (flags >= 8)
+			{
+				m_board->board()[to] = nullptr;
+				delete m_board->board()[to];
+				if (((move.m_move >> 12) & 0x3) == 0)
+				{
+					fromPiece = new Knight(to, fromPiece->isWhite(), false);
+				}
+				else if (((move.m_move >> 12) & 0x3) == 1)
+				{
+					fromPiece = new Bishop(to, fromPiece->isWhite(), false);
+				}
+				else if (((move.m_move >> 12) & 0x3) == 2)
+				{
+					fromPiece = new Rook(to, fromPiece->isWhite(), false);
+				}
+				else if (((move.m_move >> 12) & 0x3) == 3)
+				{
+					fromPiece = new Queen(to, fromPiece->isWhite(), false);
+				}
+
+			}
 		}
 
 		if (toPiece != nullptr)
@@ -184,7 +230,7 @@ public:
 		fromPiece->tile() = to;
 
 		// Editing color table
-		if (m_isWhiteTurn)
+		if (fromPiece->isWhite())
 		{
 			m_board->whitePos().erase(std::find(m_board->whitePos().begin(), m_board->whitePos().end(), from));
 			m_board->whitePos().push_back(to);
@@ -195,7 +241,10 @@ public:
 			m_board->blackPos().push_back(to);
 		}
 		m_isWhiteTurn = !m_isWhiteTurn;
+
+		// Updates enPassant if possible next turn
 		m_board->enPassant(typeid(*fromPiece) == typeid(Pawn) && fabs(Int(from) - Int(to)) == 16 ? Board::column(to) : -1);
+		return true;
 	}
 
 	/**
@@ -352,7 +401,7 @@ public:
 	bool inCheck(bool isWhite) const
 	{
 		UInt kingPos = 0;
-		std::vector<UInt> vTotal = std::vector<UInt>();
+		std::vector<cMove> vTotal = std::vector<cMove>();
 		// finding king
 		for (const UInt tile : (isWhite ? m_board->whitePos() : m_board->blackPos()))
 		{
@@ -366,7 +415,7 @@ public:
 		// computing all oponents moves
 		for (const UInt tile : (!isWhite ? m_board->whitePos() : m_board->blackPos()))
 		{
-			std::vector<UInt> v;
+			std::vector<cMove> v;
 			const Piece *piece = m_board->board()[tile];
 			if (piece == nullptr)
 			{
@@ -377,7 +426,7 @@ public:
 		}
 
 		// TODO: parallelize
-		return std::find(vTotal.begin(), vTotal.end(), kingPos) != vTotal.end();
+		return std::find_if(vTotal.begin(), vTotal.end(), [kingPos](const auto &ele) {return ele.getTo() == kingPos;}) != vTotal.end();
 	}
 
 	void displayCout()
@@ -481,7 +530,7 @@ public:
 		{
 			out.append(" ");
 		}
-		std::cout << out << std::string("|") << std::endl;
+		std::cout << out << std::string("|") << std::endl << std::endl;
 	}
 
 	/**
@@ -492,7 +541,7 @@ public:
 	{
 		std::string out;
 		const Piece *piece = m_board->board()[tile];
-		std::vector<UInt> v = std::vector<UInt>();
+		std::vector<cMove> v = std::vector<cMove>();
 		if (piece != nullptr)
 		{
 			piece->canMove(*m_board, v);
@@ -502,7 +551,7 @@ public:
 		{
 			const Piece *value = m_board->board()[counter];
 			out.append("|");
-			if (std::find(v.begin(), v.end(), counter) != v.end())
+			if (std::find_if(v.begin(), v.end(), [counter](const auto &ele) {return ele.getTo() == counter;}) != v.end())
 			{
 				out.append("X");
 			}
@@ -521,7 +570,7 @@ public:
 			}
 		}
 		out.append("|");
-		if (std::find(v.begin(), v.end(), BOARD_SIZE - 1) != v.end())
+		if (std::find_if(v.begin(), v.end(), [](const auto &ele) {return ele.getTo() == BOARD_SIZE - 1;}) != v.end())
 		{
 			out.append("X");
 		}
@@ -538,6 +587,6 @@ public:
 			}
 		}
 
-		std::cout << out << std::string("|") << std::endl;
+		std::cout << out << std::string("|") << std::endl << std::endl;
 	}
 };

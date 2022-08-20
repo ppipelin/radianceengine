@@ -1,6 +1,6 @@
 #include "king.h"
 
-void King::canMove(const Board &b, std::vector<UInt> &v) const
+void King::canMove(const Board &b, std::vector<cMove> &v) const
 {
 	v.reserve(8);
 	const bool left = Board::leftCol(m_tile);
@@ -11,15 +11,15 @@ void King::canMove(const Board &b, std::vector<UInt> &v) const
 	{
 		if (!left && (b[forward - 1] == nullptr || b[forward - 1]->isWhite() != m_isWhite))
 		{
-			v.push_back(forward - 1);
+			v.push_back(cMove(m_tile, forward - 1, b[forward - 1] == nullptr ? 0 : 4));
 		}
 		if (!right && (b[forward + 1] == nullptr || b[forward + 1]->isWhite() != m_isWhite))
 		{
-			v.push_back(forward + 1);
+			v.push_back(cMove(m_tile, forward + 1, b[forward + 1] == nullptr ? 0 : 4));
 		}
 		if (b[forward] == nullptr || b[forward]->isWhite() != m_isWhite)
 		{
-			v.push_back(forward);
+			v.push_back(cMove(m_tile, forward, b[forward] == nullptr ? 0 : 4));
 		}
 	}
 	//	Go bottom
@@ -28,35 +28,35 @@ void King::canMove(const Board &b, std::vector<UInt> &v) const
 	{
 		if (!left && (b[backward - 1] == nullptr || b[backward - 1]->isWhite() != m_isWhite))
 		{
-			v.push_back(backward - 1);
+			v.push_back(cMove(m_tile, backward - 1, b[backward - 1] == nullptr ? 0 : 4));
 		}
 		if (!right && (b[backward + 1] == nullptr || b[backward + 1]->isWhite() != m_isWhite))
 		{
-			v.push_back(backward + 1);
+			v.push_back(cMove(m_tile, backward + 1, b[backward + 1] == nullptr ? 0 : 4));
 		}
 		if (b[backward] == nullptr || b[backward]->isWhite() != m_isWhite)
 		{
-			v.push_back(backward);
+			v.push_back(cMove(m_tile, backward, b[backward] == nullptr ? 0 : 4));
 		}
 	}
 	//	Go left
 	if (!left && (b[m_tile - 1] == nullptr || b[m_tile - 1]->isWhite() != m_isWhite))
 	{
-		v.push_back(m_tile - 1);
+		v.push_back(cMove(m_tile, m_tile - 1, b[m_tile - 1] == nullptr ? 0 : 4));
 	}
 	//	Go right
 	if (!right && (b[m_tile + 1] == nullptr || b[m_tile + 1]->isWhite() != m_isWhite))
 	{
-		v.push_back(m_tile + 1);
+		v.push_back(cMove(m_tile, m_tile + 1, b[m_tile + 1] == nullptr ? 0 : 4));
 	}
 
 	// Castling
-	// Queen	side
+	// Queen side
 	if (m_isWhite && b.m_castleAvailableQueenWhite || !m_isWhite && b.m_castleAvailableQueenBlack)
 	{
 		if (b[m_tile - 1] == nullptr && b[m_tile - 2] == nullptr && b[m_tile - 3] == nullptr)
 		{
-			v.push_back(m_tile - 2);
+			v.push_back(cMove(m_tile, m_tile - 2, 3));
 		}
 	}
 
@@ -65,7 +65,7 @@ void King::canMove(const Board &b, std::vector<UInt> &v) const
 	{
 		if (b[m_tile + 1] == nullptr && b[m_tile + 2] == nullptr)
 		{
-			v.push_back(m_tile + 2);
+			v.push_back(cMove(m_tile, m_tile + 2, 2));
 		}
 	}
 }

@@ -72,7 +72,7 @@ void drop(sio::event &e)
 void dragStart(sio::event &e)
 {
 	std::cout << "dragStart: " << e.get_message()->get_string() << std::endl;
-	std::vector<UInt> v;
+	std::vector<cMove> v;
 	Piece *piece = (*bParserConnect.boardParsed())[Board::toTiles(e.get_message()->get_string())];
 	piece->canMove(*bParserConnect.boardParsed(), v);
 	// std::cout << "v0: " << v[0] << std::endl;

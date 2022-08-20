@@ -18,7 +18,7 @@ private:
 	std::array<Piece *, BOARD_SIZE2> m_board;
 	std::vector<UInt> m_whitePos;
 	std::vector<UInt> m_blackPos;
-	// Column if the en passant has been done, -1 otherwise.
+	// Column if the en passant can be done next turn, happens when a pawn double forward at row 1/6, -1 otherwise.
 	Int m_enPassant;
 
 public:

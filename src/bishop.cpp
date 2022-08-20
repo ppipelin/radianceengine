@@ -1,11 +1,11 @@
 #include "bishop.h"
 
-void Bishop::canMove(const Board &b, std::vector<UInt> &v) const
+void Bishop::canMove(const Board &b, std::vector<cMove> &v) const
 {
 	std::vector<Int> directions = { 9, -9, 7, -7 };
 	for (Int direction : directions)
 	{
-		std::vector<UInt> w;
+		std::vector<cMove> w;
 		sliding(b, direction, w);
 		v.insert(v.end(), w.begin(), w.end());
 	}

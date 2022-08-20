@@ -1,6 +1,6 @@
 #include "piece.h"
 
-void Piece::sliding(const Board &b, Int direction, std::vector<UInt> &v) const
+void Piece::sliding(const Board &b, Int direction, std::vector<cMove> &v) const
 {
 	if (b[m_tile] == nullptr)
 	{
@@ -20,12 +20,12 @@ void Piece::sliding(const Board &b, Int direction, std::vector<UInt> &v) const
 				{
 					if (b[i]->isWhite() != b[m_tile]->isWhite())
 					{
-						v.push_back(i);
+						v.push_back(cMove(m_tile, i, 4));
 					}
 					// break even if there is a pin
 					break;
 				}
-				v.push_back(i);
+				v.push_back(cMove(m_tile, i));
 			}
 			// Check right and left column
 			if ((Board::rightCol(i) && (direction == BOARD_SIZE + 1 || direction == 1)) || (Board::leftCol(i) && direction == BOARD_SIZE - 1))
@@ -45,12 +45,12 @@ void Piece::sliding(const Board &b, Int direction, std::vector<UInt> &v) const
 				{
 					if (b[i]->isWhite() != b[m_tile]->isWhite())
 					{
-						v.push_back(UInt(i));
+						v.push_back(cMove(m_tile, i, 4));
 					}
 					// break even if there is a pin
 					break;
 				}
-				v.push_back(UInt(i));
+				v.push_back(cMove(m_tile, i));
 			}
 			// Check right and left column
 			if ((Board::rightCol(i) && direction == -Int(BOARD_SIZE) + 1) || (Board::leftCol(i) && (direction == -Int(BOARD_SIZE) - 1 || direction == -1)))

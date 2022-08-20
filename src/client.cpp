@@ -1,4 +1,6 @@
 #include "client.h"
+#include "cMove.h"
+#include "utils.h"
 
 Client::Client(BoardParser &boardParser)
 {
@@ -20,17 +22,18 @@ void Client::drop(sio::event &e)
 		return;
 	UInt from = Board::toTiles(fromString);
 	UInt to = Board::toTiles(toString);
+	cMove move = cMove(from, to);
 
 	const Piece *piece = (*m_boardParser->boardParsed())[from];
 
-	if (piece == nullptr || piece->isWhite() != m_boardParser->isWhiteTurn() || !piece->canMove(*(m_boardParser->boardParsed()), to))
+	if (piece == nullptr || piece->isWhite() != m_boardParser->isWhiteTurn() || !piece->canMove(*(m_boardParser->boardParsed()), move))
 	{
 		// Have to send the cancel message to the server.
 		m_currentSocket->emit("cpp_unmakeLastMove");
 		return;
 	}
 	BoardParser boardParser = BoardParser(*m_boardParser);
-	boardParser.movePiece(from, to);
+	boardParser.movePiece(move);
 	if (boardParser.inCheck(piece->isWhite()))
 	{
 		// In check, have to send the cancel message to the server.
@@ -38,7 +41,7 @@ void Client::drop(sio::event &e)
 		return;
 	}
 
-	m_boardParser->movePiece(from, to);
+	m_boardParser->movePiece(move);
 	// std::cout << m_boardParser->boardParsed()->board()[Board::toTiles(fromString)]->str() << " from " << m_boardParser->boardParsed()->board()[Board::toTiles(e.get_messages()[0]->get_string())]->tile() << std::endl;
 	// std::cout << m_boardParser->boardParsed()->board()[Board::toTiles(toString)]->str() << " to " << m_boardParser->boardParsed()->board()[Board::toTiles(e.get_messages()[1]->get_string())]->tile() << std::endl;
 }
@@ -46,7 +49,7 @@ void Client::drop(sio::event &e)
 void Client::dragStart(sio::event &e)
 {
 	std::cout << "dragStart: " << e.get_message()->get_string() << std::endl;
-	std::vector<UInt> v;
+	std::vector<cMove> v;
 	Piece *piece = (*m_boardParser->boardParsed())[Board::toTiles(e.get_message()->get_string())];
 	piece->canMove(*m_boardParser->boardParsed(), v);
 	std::cout << "sending: " << utils::to_string(v) << std::endl;

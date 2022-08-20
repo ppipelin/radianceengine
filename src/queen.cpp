@@ -1,11 +1,11 @@
 #include "queen.h"
 
-void Queen::canMove(const Board &b, std::vector<UInt> &v) const
+void Queen::canMove(const Board &b, std::vector<cMove> &v) const
 {
 	std::vector<Int> directions = { 1, -1, 8, -8, 9, -9, 7, -7 };
 	for (Int direction : directions)
 	{
-		std::vector<UInt> w;
+		std::vector<cMove> w;
 		sliding(b, direction, w);
 		v.insert(v.end(), w.begin(), w.end());
 	}

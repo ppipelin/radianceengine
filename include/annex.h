@@ -2,6 +2,7 @@
 
 #include "include.h"
 #include "boardParser.h"
+#include "cMove.h"
 
 #include <chrono>
 
@@ -74,12 +75,12 @@ void benchInCheck(bool display = false, UInt multiplier = 1)
 	*/
 UInt perft(BoardParser &b, UInt depth = 1)
 {
-	std::vector<std::pair<UInt, UInt> > moveList = std::vector<std::pair<UInt, UInt> >();
+	std::vector<cMove> moveList = std::vector<cMove>();
 	UInt nodes = 0;
 	for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
 	{
 		// #define TEST_CHECK_COVERING
-		std::vector<UInt> subMoveList = std::vector<UInt>();
+		std::vector<cMove> subMoveList = std::vector<cMove>();
 		const Piece *piece = b.boardParsed()->board()[tile];
 		if (piece == nullptr || (piece->isWhite() != b.isWhiteTurn()))
 		{
@@ -90,14 +91,7 @@ UInt perft(BoardParser &b, UInt depth = 1)
 			warn("is wrong turn");
 		}
 		piece->canMove(*b.boardParsed(), subMoveList);
-		std::vector<std::pair<UInt, UInt> > subMoveListPairs = std::vector<std::pair<UInt, UInt> >();
-		subMoveListPairs.reserve(subMoveList.size());
-		for (UInt to : subMoveList)
-		{
-			subMoveListPairs.push_back(std::make_pair(tile, to));
-		}
-
-		moveList.insert(moveList.end(), subMoveListPairs.begin(), subMoveListPairs.end());
+		moveList.insert(moveList.end(), subMoveList.begin(), subMoveList.end());
 	}
 	if (depth == 0)
 	{
@@ -111,15 +105,31 @@ UInt perft(BoardParser &b, UInt depth = 1)
 		wasInCheck = true;
 	}
 #endif
-	for (std::pair<UInt, UInt> move : moveList)
+	for (const cMove move : moveList)
 	{
 		BoardParser b2 = BoardParser(b);
-		b2.movePiece(move.first, move.second);
+		if (!b2.movePiece(move))
+		{
+			continue;
+		}
 		// We assert that we are not in check after we just moved
 		if (b2.inCheck(!b2.isWhiteTurn()))
 		{
 			// We don't count illegal moves
 			continue;
+		}
+		// Castling over a controlled tile is illegal
+		if (move.getFlags() == 2 || move.getFlags() == 3)
+		{
+			cMove moveCastle = cMove(move.getFrom(), move.getTo());
+			UInt to = move.getFlags() == 2 ? moveCastle.getFrom() + 1 : moveCastle.getFrom() - 1;
+			BoardParser b3 = BoardParser(b);
+			moveCastle.setTo(to);
+			b3.movePiece(moveCastle);
+			if (b3.inCheck(!b3.isWhiteTurn()))
+			{
+				continue;
+			}
 		}
 #ifdef TEST_CHECK_COVERING
 		if (wasInCheck)

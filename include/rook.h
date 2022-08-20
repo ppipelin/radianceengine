@@ -15,7 +15,7 @@ public:
 		m_neverMoved = p.neverMoved();
 	}
 
-	void canMove(const Board &b, std::vector<UInt> &v) const;
+	void canMove(const Board &b, std::vector<cMove> &v) const;
 
 	bool exists() const override;
 

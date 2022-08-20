@@ -30,15 +30,3 @@ static void err(std::string str)
 {
 	std::cout << "ERR: " << str << std::endl;
 }
-
-namespace utils {
-	static std::string to_string(std::vector<UInt> v)
-	{
-		std::string s = "";
-		for (UInt i : v)
-		{
-			s += std::to_string(i) + " ";
-		}
-		return s;
-	}
-}

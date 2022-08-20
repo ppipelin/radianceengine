@@ -2,6 +2,7 @@
 
 #include "include.h"
 #include "board.h"
+#include "cMove.h"
 
 /**
 	* @brief Piece class.
@@ -56,7 +57,7 @@ public:
 		* @param b current board.
 		* @param v	vector of tiles where Piece can move.
 		*/
-	virtual void canMove(const Board &, std::vector<UInt> &) const
+	virtual void canMove(const Board &, std::vector<cMove> &) const
 	{}
 
 	/**
@@ -67,14 +68,14 @@ public:
 		* @return true
 		* @return false
 		*/
-	virtual bool canMove(const Board &b, UInt to) const
+	virtual bool canMove(const Board &b, cMove move) const
 	{
-		std::vector<UInt> v = std::vector<UInt>();
+		std::vector<cMove> v = std::vector<cMove>();
 		canMove(b, v);
-		return std::find(v.begin(), v.end(), to) != v.end();
+		return std::find_if(v.begin(), v.end(), [move](const auto &ele) {return ele.getTo() == move.getTo();}) != v.end();
 	}
 
-	void sliding(const Board &b, Int direction, std::vector<UInt> &v) const;
+	void sliding(const Board &b, Int direction, std::vector<cMove> &v) const;
 
 	const bool isWhite() const;
 
