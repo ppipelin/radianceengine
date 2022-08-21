@@ -73,7 +73,7 @@ void benchInCheck(bool display = false, UInt multiplier = 1)
 	* @param depth
 	* @return UInt number of possibles position after all possible moves on b
 	*/
-UInt perft(BoardParser &b, UInt depth = 1)
+UInt perft(BoardParser &b, UInt depth = 1, bool verbose = false)
 {
 	std::vector<cMove> moveList = std::vector<cMove>();
 	UInt nodes = 0;
@@ -138,7 +138,12 @@ UInt perft(BoardParser &b, UInt depth = 1)
 			b2.displayCLI();
 		}
 #endif
-		nodes += perft(b2, depth - 1);
+		UInt nodesNumber = perft(b2, depth - 1);
+		if (verbose)
+		{
+			std::cout << Board::toString(move.getFrom()) << Board::toString(move.getTo()) << " : " << nodesNumber << std::endl;
+		}
+		nodes += nodesNumber;
 	}
 	return nodes;
 }

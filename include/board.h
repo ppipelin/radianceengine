@@ -122,4 +122,9 @@ public:
 		}
 		catch (const std::exception &) { return 0; }
 	}
+
+	static std::string toString(const UInt tile)
+	{
+		return std::string(1, char('a' + tile % BOARD_SIZE)) + std::string(1, char('1' + (tile / BOARD_SIZE)));
+	}
 };

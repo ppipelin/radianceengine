@@ -30,7 +30,7 @@ int main()
 	// 5 -   193 690 690
 	// 6 - 8 031 647 685
 	boardParser.fillBoard("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -"); // Pos 2 - 3 passed
-	boardParser.fillBoard("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -"); // Pos 3 - 2 passed
+	// boardParser.fillBoard("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -"); // Pos 3 - 6 passed
 	// boardParser.fillBoard("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"); // Pos 4 - 3 passed
 	// Position 5
 	// 1 -           	44 -- Result: 44
@@ -52,9 +52,9 @@ int main()
 	// }
 	// boardParser.displayCLIWhiteBlack();
 
-	int perft_value = 3;
+	int perft_value = 4;
 	auto t1 = std::chrono::high_resolution_clock::now();
-	std::cout << "perft(" << perft_value << ") : " << perft(boardParser, perft_value) << std::endl;
+	std::cout << "perft(" << perft_value << ") : " << perft(boardParser, perft_value, true) << std::endl;
 	auto t2 = std::chrono::high_resolution_clock::now();
 	auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
 	std::cout << "Total time for benchInCheck: " << ms_int.count() << "ms" << std::endl;
