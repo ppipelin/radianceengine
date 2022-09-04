@@ -32,9 +32,9 @@ io.on("connection", (socket) => {
 		socket.broadcast.emit("dragStartToCPP", source);
 	});
 
-	socket.on("cpp_moveset", (movevset) => {
-		console.log("forwarding moveset ", movevset);
-		socket.broadcast.emit("moveset", movevset);
+	socket.on("cpp_moveset", (moveset) => {
+		console.log("forwarding moveset ", moveset);
+		socket.broadcast.emit("moveset", moveset);
 	});
 
 	socket.on("cpp_move", (move) => {

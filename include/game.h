@@ -1,27 +1,45 @@
 #pragma once
 
 #include "include.h"
+#include "cMove.h"
 #include "boardParser.h"
+#include "search.h"
+#include "searchRandom.h"
+#include "evaluate.h"
+
 
 /**
- * @brief Game	class
- * @details	This class handles game event.
- * It contains the BoardParser and handles the communication with the UI.
- * It has to communicate with a Search and an Evaluate class.
- * @todo
- * - Support 1v1
- * - Support 1vAI
- */
+	* @brief Game	class
+	* @details	This class handles game event.
+	* It contains the BoardParser and is used by the UI.
+	* It has to communicate with a Search and an Evaluate class.
+	* @todo
+	* - Support 1v1
+	* - Support 1vAI
+	*/
 class Game
 {
-private:
- BoardParser *m_boardParser;
+protected:
+	Search *m_search;
+	Evaluate *m_evaluate;
 
 public:
- Game();
- Game(const Game &g);
- ~Game();
+	BoardParser *m_boardParser;
 
- void makeMove(UInt from, UInt to);
- void unmakeMove(UInt from, UInt to);
+	Game()
+	{
+		m_boardParser = new BoardParser();
+		m_search = new SearchRandom();
+	}
+	Game(const Game &) {}
+	~Game() {}
+
+	cMove nextMove();
+
+	cMove makeNextMove()
+	{
+		cMove move = m_search->nextMove(m_boardParser);
+		m_boardParser->movePiece(move);
+		return move;
+	}
 };

@@ -4,7 +4,7 @@
 #include "cMove.h"
 
 namespace utils {
-	static std::string to_string(std::vector<UInt> v)
+	static std::string to_string(const std::vector<UInt> v)
 	{
 		std::string s = "";
 		for (UInt i : v)
@@ -14,7 +14,7 @@ namespace utils {
 		return s;
 	}
 
-	static std::string to_string(std::vector<cMove> v)
+	static std::string to_string(const std::vector<cMove> v)
 	{
 		std::string s = "";
 		for (cMove i : v)
@@ -22,5 +22,10 @@ namespace utils {
 			s += std::to_string(i.getTo()) + " ";
 		}
 		return s;
+	}
+
+	static std::string to_string(const cMove v)
+	{
+		return std::to_string(v.getFrom()) + "-" + std::to_string(v.getTo());
 	}
 }

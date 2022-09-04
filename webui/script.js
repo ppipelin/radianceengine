@@ -160,9 +160,13 @@ function parseMove(move) {
 }
 
 socket.on("move", (move) => {
-	move_parsed = parseMove(move);
-	console.log("moving: ", move_parsed);
-	m_board.move(move_parsed);
+	const moveSplitted = move.split("-");
+
+	if (isNullOrWhitespaceOrTabs(moveSplitted[0]) || isNullOrWhitespaceOrTabs(moveSplitted[1])) {
+		return "null move";
+	}
+	console.log("moving: ", squareToCoordinates(moveSplitted[0]) + "-" + squareToCoordinates(moveSplitted[1]));
+	m_board.move(squareToCoordinates(moveSplitted[0]) + "-" + squareToCoordinates(moveSplitted[1]));
 	color *= -1;
 });
 
@@ -201,7 +205,7 @@ socket.on("moveset", (moveset) => {
 	for (var move of moves) {
 		if (!parseInt(move)) continue;
 		move = squareToCoordinates(move);
-		console.log("move: ", move);
+		console.log(move);
 		greySquare(move);
 	}
 });

@@ -1,16 +1,21 @@
 #pragma once
 #include "include.h"
 
+/**
+	* @brief chess move described like in https://www.chessprogramming.org/Encoding_Moves
+	*
+	*/
 class cMove
 {
 public:
+	cMove() {}
+
 	cMove(UInt from, UInt to, UInt flags = 0)
 	{
 		m_move = ((flags & 0xf) << 12) | ((from & 0x3f) << 6) | (to & 0x3f);
 	}
 
 	void operator=(cMove a) { m_move = a.m_move; }
-
 
 	UInt getTo() const { return m_move & 0x3f; }
 	UInt getFrom() const { return (m_move >> 6) & 0x3f; }

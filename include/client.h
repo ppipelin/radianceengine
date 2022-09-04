@@ -2,7 +2,7 @@
 
 #include "include.h"
 
-#include "boardParser.h"
+#include "game.h"
 
 #include "sio_client.h"
 
@@ -43,8 +43,7 @@ public:
 class Client
 {
 private:
-	BoardParser *m_boardParser;
-
+	Game *m_game;
 	sio::client m_handler;
 	sio::socket::ptr m_currentSocket;
 
@@ -54,7 +53,7 @@ private:
 	bool m_cya;
 
 public:
-	Client(BoardParser &boardParser);
+	Client(Game &game);
 	Client(const Client &c);
 	~Client();
 
