@@ -6,6 +6,9 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 
 app.use(express.static("./"));
+app.get('/scripts/chessboard-element.bundled.js', function (req, res) {
+	res.sendFile(__dirname + '/node_modules/chessboard-element/bundled/chessboard-element.bundled.js');
+});
 
 app.get("/", (req, res) => {
 	res.sendFile(__dirname + "/index.html");
