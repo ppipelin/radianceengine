@@ -72,11 +72,12 @@ void Pawn::canMove(const Board &b, std::vector<cMove> &v) const
 			}
 		}
 	}
-	if (m_isWhite && Board::row(m_tile + BOARD_SIZE) == BOARD_SIZE - 1 || !m_isWhite && Board::row(m_tile - BOARD_SIZE) == 0)
+	// If we are on the last rank, previous computed moves are promotions
+	if (Board::row(m_tile + BOARD_SIZE) == BOARD_SIZE - 1 || Board::row(m_tile - BOARD_SIZE) == 0)
 	{
 		std::vector<cMove> v_tmp(v);
 		v.clear();
-		v.reserve(v_tmp.capacity());
+		v.reserve(v_tmp.capacity() * 4);
 		for (auto &move : v_tmp)
 		{
 			if (move.isCapture())

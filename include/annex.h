@@ -81,7 +81,7 @@ UInt perft(BoardParser &b, UInt depth = 1, bool verbose = false)
 	{
 		// #define TEST_CHECK_COVERING
 		std::vector<cMove> subMoveList = std::vector<cMove>();
-		const Piece *piece = b.boardParsed()->board()[tile];
+		const Piece *piece = (*b.boardParsed())[tile];
 		if (piece == nullptr || (piece->isWhite() != b.isWhiteTurn()))
 		{
 			continue;

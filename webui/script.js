@@ -167,6 +167,12 @@ socket.on("move", (move) => {
 	}
 	console.log("moving: ", squareToCoordinates(moveSplitted[0]) + "-" + squareToCoordinates(moveSplitted[1]));
 	m_board.move(squareToCoordinates(moveSplitted[0]) + "-" + squareToCoordinates(moveSplitted[1]));
+
+	if (isNullOrWhitespaceOrTabs(moveSplitted[3])) {
+		const piece = m_board.position[squareToCoordinates(moveSplitted[1])];
+		m_board.position[squareToCoordinates(moveSplitted[1])] = piece[1] + moveSplitted[3];
+		m_board.update();
+	}
 	color *= -1;
 });
 

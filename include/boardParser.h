@@ -53,7 +53,7 @@ public:
 		m_isWhiteTurn = b.isWhiteTurn();
 		for (UInt i = 0; i < BOARD_SIZE2; ++i)
 		{
-			Piece *p = b.boardParsed()->board()[i];
+			const Piece *p = b.boardParsed()->board()[i];
 			if (p == nullptr)
 				continue;
 			if (typeid(*p) == typeid(Piece))

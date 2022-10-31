@@ -50,7 +50,7 @@ void King::canMove(const Board &b, std::vector<cMove> &v) const
 		v.push_back(cMove(m_tile, m_tile + 1, b[m_tile + 1] == nullptr ? 0 : 4));
 	}
 
-	// Castling
+	// Castling, checks move is semi-legal (no check verification).
 	// Queen side
 	if (m_isWhite && b.m_castleAvailableQueenWhite || !m_isWhite && b.m_castleAvailableQueenBlack)
 	{
