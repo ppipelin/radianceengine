@@ -77,19 +77,28 @@ UInt perft(BoardParser &b, UInt depth = 1, bool verbose = false)
 {
 	std::vector<cMove> moveList = std::vector<cMove>();
 	UInt nodes = 0;
-	for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
+	std::vector<UInt> tiles;
+	if (b.isWhiteTurn())
+	{
+		tiles = b.boardParsed()->whitePos();
+	}
+	else
+	{
+		tiles = b.boardParsed()->blackPos();
+	}
+	for (const auto tile : tiles)
 	{
 		// #define TEST_CHECK_COVERING
 		std::vector<cMove> subMoveList = std::vector<cMove>();
 		const Piece *piece = (*b.boardParsed())[tile];
-		if (piece == nullptr || (piece->isWhite() != b.isWhiteTurn()))
+		if (piece == nullptr)
 		{
 			continue;
 		}
-		if (piece->isWhite() != b.isWhiteTurn())
-		{
-			warn("is wrong turn");
-		}
+		// if (piece->isWhite() != b.isWhiteTurn())
+		// {
+		// 	warn("is wrong turn");
+		// }
 		piece->canMove(*b.boardParsed(), subMoveList);
 		moveList.insert(moveList.end(), subMoveList.begin(), subMoveList.end());
 	}
