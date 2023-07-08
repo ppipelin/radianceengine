@@ -19,10 +19,11 @@ private:
 	std::vector<UInt> m_whitePos;
 	std::vector<UInt> m_blackPos;
 	// Column if the en passant can be done next turn, happens when a pawn double forward at row 1/6, -1 otherwise.
-	Int m_enPassant;
+	Int m_enPassant = -1;
+	bool m_inCheck = false;
 
 public:
-	bool m_castleAvailableQueenWhite, m_castleAvailableKingWhite, m_castleAvailableQueenBlack, m_castleAvailableKingBlack;
+	bool m_castleAvailableQueenWhite = true, m_castleAvailableKingWhite = true, m_castleAvailableQueenBlack = true, m_castleAvailableKingBlack = true;
 
 	Board()
 	{

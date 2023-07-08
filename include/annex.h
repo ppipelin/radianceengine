@@ -107,6 +107,37 @@ UInt perft(BoardParser &b, UInt depth = 1, bool verbose = false)
 #endif
 	for (const cMove move : moveList)
 	{
+		// Castling
+		if (move.getFlags() == 2 || move.getFlags() == 3)
+		{
+			// Castling from a controlled tile is illegal
+			if (b.inCheck(b.isWhiteTurn()))
+			{
+				continue;
+			}
+			// Castling over a controlled tile is illegal
+			cMove moveCastle = cMove(move.getFrom(), move.getTo());
+			UInt to = move.getFlags() == 2 ? move.getFrom() + 1 : move.getFrom() - 1;
+			BoardParser b3 = BoardParser(b);
+			moveCastle.setTo(to);
+			b3.movePiece(moveCastle);
+			if (b3.inCheck(!b3.isWhiteTurn()))
+			{
+				continue;
+			}
+			// Queen castle requires another check, keeps last board for performances and re-move king
+			if (move.getFlags() == 3)
+			{
+				moveCastle.setFrom(moveCastle.getTo());
+				moveCastle.setTo(move.getFrom() - 2);
+				b3.movePiece(moveCastle);
+				if (b3.inCheck(!b3.isWhiteTurn()))
+				{
+					continue;
+				}
+			}
+		}
+
 		BoardParser b2 = BoardParser(b);
 		if (!b2.movePiece(move))
 		{
@@ -117,19 +148,6 @@ UInt perft(BoardParser &b, UInt depth = 1, bool verbose = false)
 		{
 			// We don't count illegal moves
 			continue;
-		}
-		// Castling over a controlled tile is illegal
-		if (move.getFlags() == 2 || move.getFlags() == 3)
-		{
-			cMove moveCastle = cMove(move.getFrom(), move.getTo());
-			UInt to = move.getFlags() == 2 ? moveCastle.getFrom() + 1 : moveCastle.getFrom() - 1;
-			BoardParser b3 = BoardParser(b);
-			moveCastle.setTo(to);
-			b3.movePiece(moveCastle);
-			if (b3.inCheck(!b3.isWhiteTurn()))
-			{
-				continue;
-			}
 		}
 #ifdef TEST_CHECK_COVERING
 		if (wasInCheck)

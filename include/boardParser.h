@@ -147,36 +147,6 @@ public:
 		// Disable castle if king/rook is moved
 		if (typeid(*fromPiece) == typeid(King))
 		{
-			// if castling we move the rook before disabling castling
-			if (move.getFrom() - move.getTo() == 2)
-			{
-				if (fromPiece->isWhite() && !boardParsed()->m_castleAvailableKingWhite)
-				{
-					return false;
-				}
-				if (!fromPiece->isWhite() && !boardParsed()->m_castleAvailableKingBlack)
-				{
-					return false;
-				}
-				movePiece(cMove(from - 4, from - 4 + 3));
-				// We have moved, we need to set the turn back
-				m_isWhiteTurn = !m_isWhiteTurn;
-			}
-			else if (move.getTo() - move.getFrom() == 2)
-			{
-				if (m_isWhiteTurn && !boardParsed()->m_castleAvailableQueenWhite)
-				{
-					return false;
-				}
-				if (!m_isWhiteTurn && !boardParsed()->m_castleAvailableQueenBlack)
-				{
-					return false;
-				}
-				movePiece(cMove(from + 3, from + 3 - 2));
-				// We have moved, we need to set the turn back
-				m_isWhiteTurn = !m_isWhiteTurn;
-			}
-
 			if (fromPiece->isWhite())
 			{
 				boardParsed()->m_castleAvailableKingWhite = false;
@@ -219,7 +189,7 @@ public:
 			if (!Board::sameColumn(from, to) && m_board->board()[to] == nullptr)
 			{
 				// Should never be nullptr
-				UInt enPassantTile = to + (fromPiece->isWhite() ? -BOARD_SIZE : BOARD_SIZE);
+				UInt enPassantTile = to + (fromPiece->isWhite() ? -Int(BOARD_SIZE) : BOARD_SIZE);
 				delete m_board->board()[enPassantTile];
 				m_board->board()[enPassantTile] = nullptr;
 				// Remove in color table
@@ -259,6 +229,16 @@ public:
 
 		if (toPiece != nullptr)
 		{
+			// This should be the quickest to disable castle when rook is taken
+			if (to == 0)
+				m_board->m_castleAvailableQueenWhite = false;
+			else if (to == 7)
+				m_board->m_castleAvailableKingWhite = false;
+			else if (to == 56)
+				m_board->m_castleAvailableQueenBlack = false;
+			else if (to == 63)
+				m_board->m_castleAvailableKingBlack = false;
+
 			delete m_board->board()[to];
 			// Editing color table for captures
 			if (fromPiece->isWhite())
@@ -288,6 +268,20 @@ public:
 			m_board->blackPos().push_back(to);
 		}
 		m_isWhiteTurn = !m_isWhiteTurn;
+
+		// If castling we move the rook as well
+		if (move.getFlags() == 2)
+		{
+			movePiece(cMove(from + 3, from + 3 - 2));
+			// We have moved, we need to set the turn back
+			m_isWhiteTurn = !m_isWhiteTurn;
+		}
+		else if (move.getFlags() == 3)
+		{
+			movePiece(cMove(from - 4, from - 4 + 3));
+			// We have moved, we need to set the turn back
+			m_isWhiteTurn = !m_isWhiteTurn;
+		}
 
 		// Updates enPassant if possible next turn
 		m_board->enPassant(typeid(*fromPiece) == typeid(Pawn) && fabs(Int(from) - Int(to)) == 16 ? Board::column(to) : -1);
