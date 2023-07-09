@@ -24,6 +24,8 @@ class BoardParser
 private:
 	Board *m_board;
 	bool m_isWhiteTurn;
+	UInt m_whiteKing = 4;
+	UInt m_blackKing = 60;
 	const std::string m_starting = std::string("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 
 public:
@@ -73,6 +75,8 @@ public:
 		}
 		m_board->whitePos() = b.boardParsed()->whitePos();
 		m_board->blackPos() = b.boardParsed()->blackPos();
+		whiteKing(b.whiteKing());
+		blackKing(b.blackKing());
 
 		m_board->m_castleAvailableQueenWhite = b.boardParsed()->m_castleAvailableQueenWhite;
 		m_board->m_castleAvailableKingWhite = b.boardParsed()->m_castleAvailableKingWhite;
@@ -110,6 +114,8 @@ public:
 		}
 		m_board->whitePos() = b.boardParsed()->whitePos();
 		m_board->blackPos() = b.boardParsed()->blackPos();
+		whiteKing(b.whiteKing());
+		blackKing(b.blackKing());
 
 		m_board->m_castleAvailableQueenWhite = b.boardParsed()->m_castleAvailableQueenWhite;
 		m_board->m_castleAvailableKingWhite = b.boardParsed()->m_castleAvailableKingWhite;
@@ -124,6 +130,14 @@ public:
 	const Board *boardParsed() const { return m_board; }
 
 	const bool isWhiteTurn() const { return m_isWhiteTurn; }
+
+	void whiteKing(const UInt whiteKing) { m_whiteKing = whiteKing; }
+
+	const UInt whiteKing() const { return m_whiteKing; }
+
+	void blackKing(const UInt blackKing) { m_blackKing = blackKing; }
+
+	const UInt blackKing() const { return m_blackKing; }
 
 	/**
 		* @brief
@@ -149,11 +163,13 @@ public:
 		{
 			if (fromPiece->isWhite())
 			{
+				whiteKing(to);
 				boardParsed()->m_castleAvailableKingWhite = false;
 				boardParsed()->m_castleAvailableQueenWhite = false;
 			}
 			else
 			{
+				blackKing(to);
 				boardParsed()->m_castleAvailableKingBlack = false;
 				boardParsed()->m_castleAvailableQueenBlack = false;
 			}
@@ -203,6 +219,7 @@ public:
 				}
 			}
 
+			// Promotion
 			if (flags >= 8)
 			{
 				m_board->board()[to] = nullptr;
@@ -223,7 +240,6 @@ public:
 				{
 					fromPiece = new Queen(to, fromPiece->isWhite(), false);
 				}
-
 			}
 		}
 
@@ -240,6 +256,7 @@ public:
 				m_board->m_castleAvailableKingBlack = false;
 
 			delete m_board->board()[to];
+			m_board->board()[to] = nullptr;
 			// Editing color table for captures
 			if (fromPiece->isWhite())
 			{
@@ -351,10 +368,12 @@ public:
 			case 'k':
 				m_board->board()[counter] = new King(counter, false, true);
 				m_board->blackPos().push_back(counter);
+				blackKing(counter);
 				break;
 			case 'K':
 				m_board->board()[counter] = new King(counter, true, true);
 				m_board->whitePos().push_back(counter);
+				whiteKing(counter);
 				break;
 			case 'q':
 				m_board->board()[counter] = new Queen(counter, false, true);
@@ -442,20 +461,12 @@ public:
 
 	bool inCheck(bool isWhite) const
 	{
-		UInt kingPos = 0;
+		UInt kingPos = whiteKing();
 		std::vector<cMove> vTotal = std::vector<cMove>();
-		// finding king
-		for (const UInt tile : (isWhite ? m_board->whitePos() : m_board->blackPos()))
-		{
-			const Piece *piece = m_board->board()[tile];
-			if (piece != nullptr && typeid(*piece) == typeid(King))
-			{
-				kingPos = tile;
-				break;
-			}
-		}
-		// computing all oponents moves
-		for (const UInt tile : (!isWhite ? m_board->whitePos() : m_board->blackPos()))
+		if (!isWhite)
+			kingPos = blackKing();
+		// Compute all oponents moves
+		for (const auto tile : (!isWhite ? m_board->whitePos() : m_board->blackPos()))
 		{
 			std::vector<cMove> v;
 			const Piece *piece = m_board->board()[tile];

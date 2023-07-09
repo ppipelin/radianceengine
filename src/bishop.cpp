@@ -2,7 +2,7 @@
 
 void Bishop::canMove(const Board &b, std::vector<cMove> &v) const
 {
-	std::vector<Int> directions = { 9, -9, 7, -7 };
+	std::vector<Int> directions = { -9, -7, 7, 9 };
 	for (Int direction : directions)
 	{
 		std::vector<cMove> w;
