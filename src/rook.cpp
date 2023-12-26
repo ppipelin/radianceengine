@@ -2,7 +2,7 @@
 
 void Rook::canMove(const Board &b, std::vector<cMove> &v) const
 {
-	std::vector<Int> directions = { 1, -1, 8, -8 };
+	std::vector<Int> directions{ 1, -1, 8, -8 }; // constexpr in c++20 still limited
 	for (Int direction : directions)
 	{
 		std::vector<cMove> w;

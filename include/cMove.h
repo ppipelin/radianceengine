@@ -9,13 +9,14 @@ class cMove
 {
 public:
 	cMove() {}
+	cMove(const cMove &c) { m_move = c.m_move; }
 
 	cMove(UInt from, UInt to, UInt flags = 0)
 	{
 		m_move = ((flags & 0xf) << 12) | ((from & 0x3f) << 6) | (to & 0x3f);
 	}
 
-	void operator=(cMove a) { m_move = a.m_move; }
+	void operator=(cMove c) { m_move = c.m_move; }
 
 	UInt getTo() const { return m_move & 0x3f; }
 	UInt getFrom() const { return (m_move >> 6) & 0x3f; }
@@ -25,7 +26,9 @@ public:
 	void setFrom(UInt from) { m_move &= ~0xfc0; m_move |= (from & 0x3f) << 6; }
 	void setFlags(UInt flags) { m_move &= ~0xF000;	m_move |= (flags & 0x0f) << 12; }
 
-	bool isCapture() const { return (4 == getFlags() || getFlags() == 5); }
+	bool isCapture() const { return (getFlags() == 4 || getFlags() == 5); }
+	bool isCastle() const { return (getFlags() == 2 || getFlags() == 3); }
+	bool isPromotion() const { return getFlags() >= 8; }
 
 	UInt getButterflyIndex() const { return m_move & 0x0fff; }
 	bool operator==(cMove a) const { return (m_move & 0xffff) == (a.m_move & 0xffff); }

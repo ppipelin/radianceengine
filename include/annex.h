@@ -117,7 +117,7 @@ UInt perft(BoardParser &b, UInt depth = 1, bool verbose = false)
 	for (const cMove move : moveList)
 	{
 		// Castling
-		if (move.getFlags() == 2 || move.getFlags() == 3)
+		if (move.isCastle())
 		{
 			// Castling from a controlled tile is illegal
 			if (b.inCheck(b.isWhiteTurn()))

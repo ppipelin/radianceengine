@@ -220,7 +220,7 @@ public:
 			}
 
 			// Promotion
-			if (flags >= 8)
+			if (move.isPromotion())
 			{
 				m_board->board()[to] = nullptr;
 				delete m_board->board()[to];
@@ -287,13 +287,13 @@ public:
 		m_isWhiteTurn = !m_isWhiteTurn;
 
 		// If castling we move the rook as well
-		if (move.getFlags() == 2)
+		if (flags == 2)
 		{
 			movePiece(cMove(from + 3, from + 3 - 2));
 			// We have moved, we need to set the turn back
 			m_isWhiteTurn = !m_isWhiteTurn;
 		}
-		else if (move.getFlags() == 3)
+		else if (flags == 3)
 		{
 			movePiece(cMove(from - 4, from - 4 + 3));
 			// We have moved, we need to set the turn back
@@ -313,7 +313,7 @@ public:
 		* @return true if board was successfully filled.
 		* @return false else
 		*/
-	bool fillBoard(std::string fen)
+	bool fillBoard(const std::string &fen)
 	{
 
 		std::stringstream sstream(fen);

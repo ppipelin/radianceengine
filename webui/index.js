@@ -4,8 +4,12 @@ const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
+// import * from "chessboard-element/lib";
+// require("chessboard-element");
 
 app.use(express.static("./"));
+// app.use(express.static("./node_modules/chessboard-element/"));
+// app.use("/scripts", express.static(__dirname + "/node_modules/chessboard-element/bundled/"));
 app.get('/scripts/chessboard-element.bundled.js', function (req, res) {
 	res.sendFile(__dirname + '/node_modules/chessboard-element/bundled/chessboard-element.bundled.js');
 });

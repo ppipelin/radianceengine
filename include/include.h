@@ -13,9 +13,9 @@ typedef std::uint_fast16_t UInt;
 typedef std::int_fast16_t Int;
 typedef std::uint_fast8_t SUInt;
 
-const UInt BOARD_SIZE = 8; // final is possible ?
-const UInt BOARD_SIZE2 = 8 * 8; // final is possible ?
-const Int MAX_EVAL = INT_FAST16_MAX; // final is possible ?
+constexpr UInt BOARD_SIZE = 8;
+constexpr UInt BOARD_SIZE2 = 8 * 8;
+constexpr Int MAX_EVAL = INT_FAST16_MAX;
 
 static void debug(std::string str)
 {
