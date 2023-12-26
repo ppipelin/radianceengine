@@ -26,8 +26,8 @@ public:
 	void setFrom(UInt from) { m_move &= ~0xfc0; m_move |= (from & 0x3f) << 6; }
 	void setFlags(UInt flags) { m_move &= ~0xF000;	m_move |= (flags & 0x0f) << 12; }
 
-	bool isCapture() const { return (getFlags() == 4 || getFlags() == 5); }
-	bool isCastle() const { return (getFlags() == 2 || getFlags() == 3); }
+	bool isCapture() const { return bool(getFlags() & 0x4); }
+	bool isCastle() const { return bool((getFlags() ^ 0x2) <= 1); }
 	bool isPromotion() const { return getFlags() >= 8; }
 
 	UInt getButterflyIndex() const { return m_move & 0x0fff; }
