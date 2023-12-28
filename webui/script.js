@@ -53,6 +53,7 @@ m_board.addEventListener("drop", (e) => {
 		}
 	}
 
+	console.log("TARGET :", m_board.position[target]);
 	// Addressing en passant
 	if (
 		piece[1] == "P" &&
@@ -68,8 +69,24 @@ m_board.addEventListener("drop", (e) => {
 		m_board.position[enPassantTile] = undefined;
 	}
 
-	console.log("dropping " + piece + " : " + source + "-" + target);
-	socket.emit("drop", piece, source, target);
+	// Addressing promotion, only doing queen for now
+	console.log("HERE2 " + target + "----" + piece + " --- " + piece[0] + "Q")
+	var piece2 = piece;
+	if (
+		piece[1].toLowerCase() == "p" &&
+		(target[1] == 8 || target[1] == 1)
+	) {
+		m_board.position[target] = piece[0] + "Q";
+		piece2 = m_board.position[target];
+		console.log("HERE 3 " + target + " = " + m_board.position[target]);
+		// m_board.update();
+	}
+
+	console.log("dropping " + piece2 + " : " + source + "-" + target);
+	console.log("HERE 4 " + target + " = " + m_board.position[target]);
+	socket.emit("drop", piece2, source, target);
+	console.log("HERE 5 " + target + " = " + m_board.position[target]);
+
 });
 
 m_board.addEventListener("drag-start", (e) => {
@@ -160,6 +177,7 @@ function parseMove(move) {
 }
 
 socket.on("move", (move) => {
+	console.log("received move: " + move)
 	const moveSplitted = move.split("-");
 
 	if (isNullOrWhitespaceOrTabs(moveSplitted[0]) || isNullOrWhitespaceOrTabs(moveSplitted[1])) {
@@ -168,9 +186,11 @@ socket.on("move", (move) => {
 	console.log("moving: ", squareToCoordinates(moveSplitted[0]) + "-" + squareToCoordinates(moveSplitted[1]));
 	m_board.move(squareToCoordinates(moveSplitted[0]) + "-" + squareToCoordinates(moveSplitted[1]));
 
-	if (isNullOrWhitespaceOrTabs(moveSplitted[3])) {
+	if (moveSplitted.length == 3) {
 		const piece = m_board.position[squareToCoordinates(moveSplitted[1])];
-		m_board.position[squareToCoordinates(moveSplitted[1])] = piece[1] + moveSplitted[3];
+		console.log("HERE", piece);
+		console.log(piece[0] + moveSplitted[2]);
+		m_board.position[squareToCoordinates(moveSplitted[2])] = piece[0] + moveSplitted[2];
 		m_board.update();
 	}
 	color *= -1;

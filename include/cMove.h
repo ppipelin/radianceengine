@@ -16,7 +16,7 @@ public:
 		m_move = ((flags & 0xf) << 12) | ((from & 0x3f) << 6) | (to & 0x3f);
 	}
 
-	void operator=(cMove c) { m_move = c.m_move; }
+	cMove operator=(cMove c) { m_move = c.m_move; return c; }
 
 	UInt getTo() const { return m_move & 0x3f; }
 	UInt getFrom() const { return (m_move >> 6) & 0x3f; }
@@ -37,4 +37,10 @@ public:
 
 	// protected:
 	UInt m_move; // Has to be 16 bits
+};
+
+enum Move : UInt
+{
+	MOVE_NONE,
+	MOVE_NULL = 65
 };

@@ -5,8 +5,10 @@
 #include "boardParser.h"
 #include "search.h"
 #include "searchRandom.h"
+#include "searchMaterialist.h"
 #include "evaluate.h"
-
+#include "evaluateShannon.h"
+#include "utils.h"
 
 /**
 	* @brief Game	class
@@ -29,16 +31,18 @@ public:
 	Game()
 	{
 		m_boardParser = new BoardParser();
-		m_search = new SearchRandom();
+		// m_search = new SearchRandom();
+		m_search = new SearchMaterialist();
+		m_evaluate = new EvaluateShannon();
 	}
 	Game(const Game &) {}
 	~Game() {}
 
-	cMove nextMove();
-
 	cMove makeNextMove()
 	{
-		cMove move = m_search->nextMove(m_boardParser);
+		// cMove move = m_search->nextMove(m_boardParser);
+		cMove move = m_search->nextMove(m_boardParser, m_evaluate);
+		std::string a = utils::to_string(move);
 		m_boardParser->movePiece(move);
 		return move;
 	}

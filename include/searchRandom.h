@@ -9,35 +9,35 @@ public:
 	SearchRandom(const SearchRandom &) {}
 	~SearchRandom() {}
 
-	cMove nextMove(BoardParser *b) override
+	cMove nextMove(const BoardParser &b, const Evaluate &) const override
 	{
 		std::vector<cMove> moveList = std::vector<cMove>();
 		for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
 		{
-			std::vector<cMove> subMoveList = std::vector<cMove>();
-			const Piece *piece = b->boardParsed()->board()[tile];
-			if (piece == nullptr || (piece->isWhite() != b->isWhiteTurn()))
+			const Piece *piece = b.boardParsed()->board()[tile];
+			if (piece == nullptr || (piece->isWhite() != b.isWhiteTurn()))
 			{
 				continue;
 			}
-			if (piece->isWhite() != b->isWhiteTurn())
+			if (piece->isWhite() != b.isWhiteTurn())
 			{
 				warn("is wrong turn");
 			}
-			piece->canMove(*b->boardParsed(), subMoveList);
+			std::vector<cMove> subMoveList = std::vector<cMove>();
+			piece->canMove(*b.boardParsed(), subMoveList);
 			moveList.insert(moveList.end(), subMoveList.begin(), subMoveList.end());
 		}
 		if (moveList.empty())
 		{
 			err("Cannot move after checkmate.");
-			return cMove(0, 0);
+			return cMove();
 		}
 		// Verify not in check
-		BoardParser b2 = BoardParser(*b);
+		BoardParser b2;
 		cMove move;
 		do
 		{
-			b2 = BoardParser(*b);
+			b2 = BoardParser(b);
 
 			UInt idx = UInt(double(std::rand()) / double(RAND_MAX) * double(moveList.size()));
 			move = moveList[idx];
@@ -47,7 +47,7 @@ public:
 		if (moveList.empty())
 		{
 			err("Cannot move after checkmate.");
-			return cMove(0, 0);
+			return cMove();
 		}
 		return move;
 	}

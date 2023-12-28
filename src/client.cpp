@@ -45,22 +45,24 @@ void Client::drop(sio::event &e)
 	std::string promoteText = "";
 	if (typeid(*piece) == typeid(Pawn) && (Board::row(to) == BOARD_SIZE - 1 || Board::row(to) == 0))
 	{
+		// Currently we do not support choosing the drop promotion, we set to queen
 		move.setFlags(move.getFlags() | 0xb);
-		switch (move.getFlags() << 2)
-		{
-		case 0:
-			promoteText = "-N";
-			break;
-		case 1:
-			promoteText = "-B";
-			break;
-		case 2:
-			promoteText = "-R";
-			break;
-		case 3:
-			promoteText = "-Q";
-			break;
-		}
+		// We only keep last two digits 
+		// switch (move.getFlags() & 0x3)
+		// {
+		// case 0:
+		// 	promoteText = "-N";
+		// 	break;
+		// case 1:
+		// 	promoteText = "-B";
+		// 	break;
+		// case 2:
+		// 	promoteText = "-R";
+		// 	break;
+		// case 3:
+		// 	promoteText = "-Q";
+		// 	break;
+		// }
 	}
 
 	m_game->m_boardParser->movePiece(move);
