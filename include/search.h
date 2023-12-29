@@ -64,7 +64,7 @@ public:
 		return true;
 	}
 
-	std::vector<cMove> generateMoveList(const BoardParser &b, std::vector<cMove> &moveList, bool onlyCapture = false) const
+	std::vector<cMove> generateMoveList(const BoardParser &b, std::vector<cMove> &moveList, bool legalOnly = false, bool onlyCapture = false) const
 	{
 		std::vector<UInt> allyPositions = b.isWhiteTurn() ? b.boardParsed()->whitePos() : b.boardParsed()->blackPos();
 		std::vector<UInt> enemyPositions = !b.isWhiteTurn() ? b.boardParsed()->whitePos() : b.boardParsed()->blackPos();
@@ -88,6 +88,28 @@ public:
 			}
 			moveList.insert(moveList.end(), subMoveList.begin(), subMoveList.end());
 		}
+
+		if (legalOnly)
+		{
+			std::erase_if(moveList, [b](cMove move) {
+				BoardParser b2 = BoardParser(b);
+				b2.movePiece(move);
+				// Prune moves which keep the king in check
+				return b2.inCheck(b.isWhiteTurn());
+				});
+		}
+
 		return moveList;
+	}
+
+	bool inCheckMate(const BoardParser &b, const bool isWhite) const
+	{
+		if (b.inCheck(isWhite))
+		{
+			std::vector<cMove> moveList = std::vector<cMove>();
+			generateMoveList(b, moveList, true);
+			return moveList.empty();
+		}
+		return false;
 	}
 };

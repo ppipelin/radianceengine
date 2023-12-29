@@ -44,11 +44,6 @@ public:
 			b2.movePiece(move);
 			moveList.erase(moveList.begin() + idx);
 		} while (b2.inCheck(!b2.isWhiteTurn()) && !moveList.empty());
-		if (moveList.empty())
-		{
-			err("Cannot move after checkmate.");
-			return cMove();
-		}
 		return move;
 	}
 };

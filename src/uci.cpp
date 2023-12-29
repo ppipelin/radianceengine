@@ -4,10 +4,12 @@
 #include "boardParser.h"
 #include "search.h"
 #include "searchRandom.h"
+#include "searchMaterialist.h"
 #include "evaluate.h"
 #include "evaluateShannon.h"
 
 #include <queue>
+#include <chrono>
 
 namespace {
 	const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -91,9 +93,17 @@ namespace {
 			// else if (token == "infinite")  limits.infinite = 1;
 			// else if (token == "ponder")    ponderMode = true;
 		}
-		SearchRandom search = SearchRandom();
+		// SearchRandom search = SearchRandom();
+		SearchMaterialist search = SearchMaterialist(4);
 		EvaluateShannon evaluate = EvaluateShannon();
+
+		auto t1 = std::chrono::high_resolution_clock::now();
+
 		cMove move = search.nextMove(pos, evaluate);
+
+		auto t2 = std::chrono::high_resolution_clock::now();
+		auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+		std::cout << "Total time for go: " << ms_int.count() << "ms" << std::endl;
 
 		std::cout << "bestmove " << UCI::move(move) << std::endl;
 	}
@@ -106,7 +116,7 @@ namespace {
 /// In addition to the UCI ones, some additional debug commands are also supported.
 void UCI::loop(int argc, char *argv[])
 {
-	BoardParser pos = BoardParser();
+	BoardParser pos;
 	std::string token, cmd;
 
 	pos.fillBoard(startFen);
@@ -197,22 +207,22 @@ cMove UCI::to_move(const BoardParser &pos, std::string &str)
 	UInt to = Board::toTiles(str.substr(2, 2));
 	// Capture flag
 	if ((*pos.boardParsed())[to] != nullptr)
-		flags &= 0x4;
+		flags |= 0x4;
 	if (str.length() == 5)
 	{
 		// The promotion piece character must be lowercased
 		str[4] = char(tolower(str[4]));
-		flags &= 0x8;
+		flags |= 0x8;
 		switch (str[4])
 		{
 		case 'b':
-			flags &= 0x1;
+			flags |= 0x1;
 			break;
 		case 'r':
-			flags &= 0x2;
+			flags |= 0x2;
 			break;
 		case 'q':
-			flags &= 0x3;
+			flags |= 0x3;
 			break;
 		}
 	}
