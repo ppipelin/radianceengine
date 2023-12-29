@@ -8,7 +8,7 @@
 class cMove
 {
 public:
-	cMove() {}
+	cMove() { m_move = 0; }
 	cMove(const cMove &c) { m_move = c.m_move; }
 
 	cMove(UInt from, UInt to, UInt flags = 0)
