@@ -5,7 +5,9 @@
 #include "boardParser.h"
 #include "evaluate.h"
 
-namespace SearchData {
+class Search
+{
+public:
 	struct LimitsType
 	{
 		LimitsType()
@@ -20,17 +22,38 @@ namespace SearchData {
 		int64_t nodes;
 	};
 
-	extern LimitsType Limits;
-}
-class Search
-{
-protected:
-	UInt m_maxDepth;
-public:
-	Search(UInt maxDepth = 1) : m_maxDepth(maxDepth) {}
+	// RootMove struct is used for moves at the root of the tree. For each root move
+	// we store a score and a PV (really a refutation in the case of moves which
+	// fail low). Score is normally set at -VALUE_INFINITE for all non-pv moves.
+	struct RootMove
+	{
+		explicit RootMove() : pv{} {}
+		explicit RootMove(const cMove m) : pv{ m } {}
+		bool operator==(const cMove &m) const { return pv[0] == m; }
+		bool operator<(const RootMove &m) const
+		{
+			// Sort in descending order
+			return m.score != score ? m.score < score
+				: m.previousScore < previousScore;
+		}
+
+		Int score = -MAX_EVAL;
+		Int previousScore = -MAX_EVAL;
+		Int averageScore = -MAX_EVAL;
+		Int uciScore = -MAX_EVAL;
+		bool scoreLowerbound = false;
+		bool scoreUpperbound = false;
+		std::array<cMove, 100> pv;
+		UInt pvDepth = 0;
+	};
+
+	LimitsType Limits;
+
+	Search(const Search::LimitsType &limits) : Limits(limits) {}
 	Search(const Search &) {}
 	~Search() {}
-	virtual cMove nextMove(const BoardParser &, const Evaluate &) const
+
+	virtual cMove nextMove(const BoardParser &, const Evaluate &)
 	{
 		return cMove();
 	}
