@@ -5,11 +5,11 @@
 class SearchRandom : virtual public Search
 {
 public:
-	SearchRandom() {}
-	SearchRandom(const SearchRandom &) {}
+	SearchRandom(const Search::LimitsType &limits) : Search(limits) {}
+	SearchRandom(const SearchRandom &s) : Search(s.Limits) {}
 	~SearchRandom() {}
 
-	cMove nextMove(const BoardParser &b, const Evaluate &) const override
+	cMove nextMove(const BoardParser &b, const Evaluate &) override
 	{
 		std::vector<cMove> moveList = std::vector<cMove>();
 		for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)

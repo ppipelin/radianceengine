@@ -69,7 +69,7 @@ namespace {
 	// with a search.
 	void go(const BoardParser &pos, std::istringstream &is)
 	{
-		SearchData::LimitsType limits;
+		Search::LimitsType limits;
 		std::string token;
 
 		// limits.startTime = now(); // The search starts as early as possible
@@ -93,8 +93,8 @@ namespace {
 			// else if (token == "infinite")  limits.infinite = 1;
 			// else if (token == "ponder")    ponderMode = true;
 		}
-		// SearchRandom search = SearchRandom();
-		SearchMaterialist search = SearchMaterialist(4);
+		// SearchRandom search = SearchRandom(limits);
+		SearchMaterialist search = SearchMaterialist(limits);
 		EvaluateShannon evaluate = EvaluateShannon();
 
 		auto t1 = std::chrono::high_resolution_clock::now();
