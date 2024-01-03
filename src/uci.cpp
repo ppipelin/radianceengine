@@ -122,7 +122,7 @@ void UCI::loop(int argc, char *argv[])
 	pos.fillBoard(startFen);
 
 	std::queue<std::string> q;
-	for (int i = 1; i < argc; ++i)
+	for (UInt i = 1; i < argc; ++i)
 		q.push(std::string(argv[i]));
 	do
 	{
@@ -244,4 +244,30 @@ cMove UCI::to_move(const BoardParser &pos, std::string &str)
 	}
 
 	return cMove(from, to, flags);
+}
+
+// UCI::pv() formats PV information according to the UCI protocol. UCI requires
+// that all (if any) unsearched PV lines are sent using a previous search score.
+std::string UCI::pv(const Search &s, const BoardParser &b, UInt depth)
+{
+	std::stringstream ss;
+	const std::array<Search::RootMove, MAX_PLY> &rootMoves = s.rootMoves;
+	// UInt pvIdx = s.pvIdx;
+
+	for (UInt i = 0; i < s.rootMovesSize; ++i)
+	{
+		if (ss.rdbuf()->in_avail()) // Not at first line
+			ss << "\n";
+
+		ss << "info"
+			<< " depth " << depth
+			<< " multipv " << i
+			<< " score cp " << rootMoves[i].score
+			<< " pv";
+
+		auto a = std::count_if(rootMoves[i].pv.begin(), rootMoves[i].pv.end(), [](const cMove c) { return c != 0; });
+		for (UInt j = 0; j < a; ++j)
+			ss << " " << UCI::move(rootMoves[i].pv[j]);
+	}
+	return ss.str();
 }
