@@ -1,0 +1,28 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "cppvsdbg",
+			"preLaunchTask": "${defaultBuildTask}",
+			"request": "launch",
+			"name": "Go",
+			"program": "${workspaceFolder}/build/Debug/chessengine.exe",
+			"args": [
+				"position startpos moves e2e4",
+				"go",
+			]
+		},
+		{
+			"type": "cppvsdbg",
+			"request": "launch",
+			"name": "Perft",
+			"program": "${workspaceFolder}/build/Debug/chessengine.exe",
+			"args": [
+				"go perft 1",
+			]
+		}
+	]
+}
