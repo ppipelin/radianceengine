@@ -5,6 +5,8 @@
 #include "boardParser.h"
 #include "evaluate.h"
 
+#include <array>
+
 class Search
 {
 public:
@@ -48,6 +50,9 @@ public:
 	};
 
 	LimitsType Limits;
+	UInt pvIdx;
+	std::array<RootMove, MAX_PLY> rootMoves;
+	UInt rootMovesSize = 0;
 
 	Search(const Search::LimitsType &limits) : Limits(limits) {}
 	Search(const Search &) {}
@@ -115,10 +120,44 @@ public:
 		if (legalOnly)
 		{
 			std::erase_if(moveList, [b](cMove move) {
-				BoardParser b2 = BoardParser(b);
+				BoardParser b2(b);
 				b2.movePiece(move);
 				// Prune moves which keep the king in check
 				return b2.inCheck(b.isWhiteTurn());
+				});
+
+			std::erase_if(moveList, [b](cMove move) {
+				// Prune moves which castles in check
+				return b.inCheck(b.isWhiteTurn()) && move.isCastle();
+				});
+
+			std::erase_if(moveList, [b](cMove move) {
+				// Prune moves which castles through check
+				if (move.getFlags() == 0x2)
+				{
+					BoardParser b2(b);
+					b2.movePiece(cMove(move.getFrom(), move.getFrom() + 1));
+					if (b2.inCheck(b.isWhiteTurn())) return true;
+
+					b2 = BoardParser(b);
+					b2.movePiece(cMove(move.getFrom(), move.getFrom() + 2));
+					if (b2.inCheck(b.isWhiteTurn())) return true;
+				}
+				else if (move.getFlags() == 0x3)
+				{
+					BoardParser b2(b);
+					b2.movePiece(cMove(move.getFrom(), move.getFrom() - 1));
+					if (b2.inCheck(b.isWhiteTurn())) return true;
+
+					b2 = BoardParser(b);
+					b2.movePiece(cMove(move.getFrom(), move.getFrom() - 2));
+					if (b2.inCheck(b.isWhiteTurn())) return true;
+
+					b2 = BoardParser(b);
+					b2.movePiece(cMove(move.getFrom(), move.getFrom() - 3));
+					if (b2.inCheck(b.isWhiteTurn())) return true;
+				}
+				return false;
 				});
 		}
 

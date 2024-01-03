@@ -2,6 +2,8 @@
 
 #include "search.h"
 
+#include <algorithm>
+
 class SearchMaterialist : virtual public Search
 {
 public:
@@ -9,8 +11,7 @@ public:
 	SearchMaterialist(const SearchMaterialist &s) : Search(s.Limits) {}
 	~SearchMaterialist() {}
 
-	// Int abSearch(const BoardParser &b, const Evaluate &e, Int alpha, Int beta, UInt depth) const
-	Int search(const BoardParser &b, const Evaluate &e, UInt depth) const
+	Int search(const BoardParser &b, const Evaluate &e, UInt depth)
 	{
 		if (depth <= 0)
 			return e.evaluate(b);
@@ -25,9 +26,13 @@ public:
 			return 0;
 		}
 
+		// Increase depth after early stop
+		++(rootMoves[pvIdx].pvDepth);
+
 		BoardParser b2;
 		Int bestScore = -MAX_EVAL;
 
+		RootMove rootMoveTemp = rootMoves[pvIdx];
 		for (const cMove move : moveList)
 		{
 			b2 = BoardParser(b);
@@ -36,10 +41,18 @@ public:
 			if (score > bestScore)
 			{
 				bestScore = score;
+				rootMoves[pvIdx].pv[rootMoves[pvIdx].pvDepth] = move;
+				rootMoveTemp = rootMoves[pvIdx];
 				if (bestScore == MAX_EVAL)
 					break;
 			}
+			else
+			{
+				// rollback
+				rootMoves[pvIdx] = rootMoveTemp;
+			}
 		}
+		--(rootMoves[pvIdx].pvDepth);
 		return bestScore;
 	}
 
@@ -53,12 +66,22 @@ public:
 			return cMove();
 		}
 
+		rootMovesSize = moveList.size();
+		for (UInt i = 0; i < rootMovesSize; ++i)
+		{
+			rootMoves[i] = RootMove(moveList[i]);
+		}
+
 		BoardParser b2;
-		Int bestScore = -MAX_EVAL;
 		cMove bestMove;
 
-		for (const cMove move : moveList)
+		for (pvIdx = 0; pvIdx < rootMovesSize; ++pvIdx)
 		{
+			cMove move = rootMoves[pvIdx].pv[0];
+			if (move.isCapture() && move.getTo() == 11) //  && (*b.boardParsed())[60] != nullptr
+			{
+				std::cout << "";
+			}
 			b2 = BoardParser(b);
 			b2.movePiece(move);
 			Int score;
@@ -66,15 +89,10 @@ public:
 				score = e.evaluate(b2);
 			else
 				score = -search(b2, e, Limits.depth - 1);
-
-			if (score > bestScore)
-			{
-				bestScore = score;
-				bestMove = move;
-				if (bestScore == MAX_EVAL)
-					break;
-			}
+			rootMoves[pvIdx].score = score;
 		}
-		return bestMove;
+		std::stable_sort(rootMoves.begin(), rootMoves.end());
+		std::cout << UCI::pv(*this, b, Limits.depth) << std::endl;
+		return rootMoves[0].pv[0];
 	}
 };

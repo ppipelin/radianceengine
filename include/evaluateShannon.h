@@ -38,7 +38,7 @@ public:
 
 			// Isolated pawn
 			UInt pieceColumn = Board::column(i);
-			if (std::find(pawnColumns.begin(), pawnColumns.end(), pieceColumn + 1) == pawnColumns.end() && std::find(pawnColumns.begin(), pawnColumns.end(), pieceColumn - 1) == pawnColumns.end())
+			if (std::find(pawnColumns.begin(), pawnColumns.end(), pieceColumn + 1) == pawnColumns.end() || std::find(pawnColumns.begin(), pawnColumns.end(), pieceColumn - 1) == pawnColumns.end())
 			{
 				score -= 1;
 			}
@@ -80,31 +80,31 @@ public:
 				if (p == nullptr)
 					continue;
 				if (typeid(*p) == typeid(King))
-					score += 2000;
+					score += 20000;
 				else if (typeid(*p) == typeid(Queen))
-					score += 90;
+					score += 900;
 				else if (typeid(*p) == typeid(Rook))
-					score += 50;
+					score += 500;
 				else if (typeid(*p) == typeid(Bishop))
-					score += 30;
+					score += 300;
 				else if (typeid(*p) == typeid(Knight))
-					score += 30;
+					score += 300;
 				else if (typeid(*p) == typeid(Pawn))
 				{
-					score += 10;
+					score += 100;
 					pawnPositions.push_back(pieceIdx);
 					pawnColumns.push_back(Board::column(pieceIdx));
 				}
 
 				std::vector<cMove> moveset;
 				p->canMove(*b.boardParsed(), moveset);
-				score += 1 * Int(moveset.size());
+				score += 10 * Int(moveset.size());
 			}
 
-			score += pawnMalus(b, pawnPositions, pawnColumns);
+			score += 50 * pawnMalus(b, pawnPositions, pawnColumns);
 
 			finalScore += i * score;
 		}
-		return finalScore;
+		return (b.isWhiteTurn() ? 1 : -1) * finalScore;
 	}
 };
