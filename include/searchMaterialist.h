@@ -13,6 +13,7 @@ public:
 
 	Int search(const BoardParser &b, const Evaluate &e, UInt depth)
 	{
+		++nodesSearched[pvIdx];
 		if (depth <= 0)
 			return e.evaluate(b);
 
@@ -58,6 +59,7 @@ public:
 
 	cMove nextMove(const BoardParser &b, const Evaluate &e) override
 	{
+		nodesSearched.fill(0);
 		std::vector<cMove> moveList = std::vector<cMove>();
 		generateMoveList(b, moveList, /*legalOnly=*/ true, false);
 
