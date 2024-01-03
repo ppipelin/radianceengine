@@ -53,7 +53,7 @@ namespace UCI {
 	std::string square(UInt s);
 	std::string move(cMove m);
 	cMove to_move(const BoardParser &pos, std::string &str);
-	std::string pv(const Search &s, const BoardParser &b, UInt depth);
+	std::string pv(const Search &s, UInt depth);
 
 } // namespace UCI
 

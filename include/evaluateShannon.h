@@ -107,7 +107,7 @@ public:
 				score += 10 * Int(moveset.size());
 			}
 
-			score += pawnMalus(b, pawnPositions, pawnColumns);
+			score += 50 * pawnMalus(b, pawnPositions, pawnColumns);
 
 			finalScore += i * score;
 		}

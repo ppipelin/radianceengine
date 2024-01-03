@@ -70,7 +70,7 @@ namespace {
 	// go() is called when the engine receives the "go" UCI command. The function
 	// sets the thinking time and other parameters from the input string, then starts
 	// with a search.
-	void go(const BoardParser &pos, std::istringstream &is)
+	void go(BoardParser &pos, std::istringstream &is)
 	{
 		Search::LimitsType limits;
 		std::string token;
@@ -100,16 +100,17 @@ namespace {
 		if (limits.perft > 0)
 		{
 			auto t1 = std::chrono::high_resolution_clock::now();
-			std::cout << "info nodes : " << Search::perft(pos, limits.perft) << std::endl;
+			UInt nodes = Search::perft(pos, limits.perft, true);
+			std::cout << "info nodes " << nodes;
 			auto t2 = std::chrono::high_resolution_clock::now();
 			auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-			std::cout << "info time " << ms_int.count() << std::endl;
+			std::cout << " time " << ms_int.count() << std::endl;
 		}
 		else
 		{
 			if ((pos.isWhiteTurn() ? limits.time[WHITE] : limits.time[BLACK]) != 0 && (pos.isWhiteTurn() ? limits.time[WHITE] : limits.time[BLACK]) < 120 * 1000)
 			{
-				limits.depth = 2;
+				limits.depth = 3;
 			}
 			else
 			{
@@ -146,7 +147,7 @@ void UCI::loop(int argc, char *argv[])
 	pos.fillBoard(startFen);
 
 	std::queue<std::string> q;
-	for (int i = 1; i < argc; ++i)
+	for (UInt i = 1; i < argc; ++i)
 		q.push(std::string(argv[i]));
 	{
 		// q.push("position startpos moves e2e3");
@@ -335,13 +336,13 @@ cMove UCI::to_move(const BoardParser &pos, std::string &str)
 
 // UCI::pv() formats PV information according to the UCI protocol. UCI requires
 // that all (if any) unsearched PV lines are sent using a previous search score.
-std::string UCI::pv(const Search &s, const BoardParser &b, UInt depth)
+std::string UCI::pv(const Search &s, UInt depth)
 {
 	std::stringstream ss;
 	const std::array<Search::RootMove, MAX_PLY> &rootMoves = s.rootMoves;
 
 	// for (Int i = s.rootMovesSize - 1; i >= 0; --i)
-	for (Int i = 1; i < 1; ++i)
+	for (Int i = 0; i < 1; ++i)
 	{
 		// Not at first line
 		if (ss.rdbuf()->in_avail())
