@@ -5,6 +5,7 @@
 #include "search.h"
 #include "searchRandom.h"
 #include "searchMaterialist.h"
+#include "searchMaterialistNegamax.h"
 #include "evaluate.h"
 #include "evaluateShannon.h"
 
@@ -93,8 +94,10 @@ namespace {
 			// else if (token == "infinite")  limits.infinite = 1;
 			// else if (token == "ponder")    ponderMode = true;
 		}
+		limits.depth = 4;
 		// SearchRandom search = SearchRandom(limits);
-		SearchMaterialist search = SearchMaterialist(limits);
+		// SearchMaterialist search = SearchMaterialist(limits);
+		SearchMaterialistNegamax search = SearchMaterialistNegamax(limits);
 		EvaluateShannon evaluate = EvaluateShannon();
 
 		auto t1 = std::chrono::high_resolution_clock::now();
@@ -122,7 +125,7 @@ void UCI::loop(int argc, char *argv[])
 	pos.fillBoard(startFen);
 
 	std::queue<std::string> q;
-	for (UInt i = 1; i < argc; ++i)
+	for (int i = 1; i < argc; ++i)
 		q.push(std::string(argv[i]));
 	{
 		// q.push("position startpos moves e2e3");
