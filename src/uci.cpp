@@ -148,6 +148,8 @@ void UCI::loop(int argc, char *argv[])
 			// So, 'ponderhit' is sent if pondering was done on the same move that the user
 			// has played. The search should continue, but should also switch from pondering
 			// to the normal search.
+			else if (token == "d")
+				pos.displayCLI();
 			else if (token == "ponderhit")
 				std::cout << "UCI - ponderhit received" << std::endl;
 			else if (token == "uci")
