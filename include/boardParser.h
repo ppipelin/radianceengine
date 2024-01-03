@@ -284,6 +284,7 @@ public:
 		fromPiece->tile() = to;
 
 		// Editing color table
+		// TODO : use std::replace_if ? or std::replace to avoid loop over all vector
 		if (fromPiece->isWhite())
 		{
 			m_board->whitePos().erase(std::find(m_board->whitePos().begin(), m_board->whitePos().end(), from));
