@@ -261,6 +261,7 @@ std::string UCI::pv(const Search &s, const BoardParser &b, UInt depth)
 
 		ss << "info"
 			<< " depth " << depth
+			<< " nodes " << s.nodesSearched[i]
 			<< " multipv " << i
 			<< " score cp " << rootMoves[i].score
 			<< " pv";

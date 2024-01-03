@@ -52,6 +52,7 @@ public:
 	LimitsType Limits;
 	UInt pvIdx;
 	std::array<RootMove, MAX_PLY> rootMoves;
+	std::array<int, MAX_PLY> nodesSearched;
 	UInt rootMovesSize = 0;
 
 	Search(const Search::LimitsType &limits) : Limits(limits) {}
