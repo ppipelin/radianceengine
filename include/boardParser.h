@@ -89,8 +89,16 @@ public:
 		// Guard self assignment
 		if (this == &b)
 			return *this;
-		// m_board = new Board(*b.boardParsed());
-		m_board = new Board();
+
+		// Delete previous data before overriding, keep m_board
+		for (auto &i : m_board->board())
+		{
+			if (i != nullptr)
+			{
+				delete i;
+				i = nullptr;
+			}
+		}
 		m_isWhiteTurn = b.isWhiteTurn();
 		for (UInt i = 0; i < BOARD_SIZE2; ++i)
 		{
@@ -222,23 +230,23 @@ public:
 			// Promotion
 			if (move.isPromotion())
 			{
-				m_board->board()[to] = nullptr;
-				delete m_board->board()[to];
+				delete m_board->board()[from];
+				m_board->board()[from] = nullptr;
 				if (((move.m_move >> 12) & 0x3) == 0)
 				{
-					fromPiece = new Knight(to, fromPiece->isWhite(), false);
+					fromPiece = new Knight(from, fromPiece->isWhite(), false);
 				}
 				else if (((move.m_move >> 12) & 0x3) == 1)
 				{
-					fromPiece = new Bishop(to, fromPiece->isWhite(), false);
+					fromPiece = new Bishop(from, fromPiece->isWhite(), false);
 				}
 				else if (((move.m_move >> 12) & 0x3) == 2)
 				{
-					fromPiece = new Rook(to, fromPiece->isWhite(), false);
+					fromPiece = new Rook(from, fromPiece->isWhite(), false);
 				}
 				else if (((move.m_move >> 12) & 0x3) == 3)
 				{
-					fromPiece = new Queen(to, fromPiece->isWhite(), false);
+					fromPiece = new Queen(from, fromPiece->isWhite(), false);
 				}
 			}
 		}
@@ -337,7 +345,7 @@ public:
 					if (m_board->board()[counter] != nullptr)
 					{
 						delete m_board->board()[counter];
-						m_board->board()[counter] = NULL;
+						m_board->board()[counter] = nullptr;
 					}
 					++counter;
 				}
@@ -352,7 +360,7 @@ public:
 			if (c != '/' && m_board->board()[counter] != nullptr)
 			{
 				delete m_board->board()[counter];
-				m_board->board()[counter] = NULL;
+				m_board->board()[counter] = nullptr;
 			}
 
 			switch (c)
@@ -409,9 +417,6 @@ public:
 				break;
 			case '/':
 				counter -= BOARD_SIZE * 2 + 1;
-				break;
-			default:
-				m_board->board()[counter] = nullptr;
 				break;
 			}
 			++counter;
