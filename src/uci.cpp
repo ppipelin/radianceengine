@@ -124,6 +124,60 @@ void UCI::loop(int argc, char *argv[])
 	std::queue<std::string> q;
 	for (UInt i = 1; i < argc; ++i)
 		q.push(std::string(argv[i]));
+	{
+		// q.push("position startpos moves e2e3");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3");
+		// q.push("go");
+		// q.push("position startpos moves d7d5 d1h5 d8d7 g1f3 c7c5");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5");
+		// q.push("go");
+		// q.push(" position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3 f5d3");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3 f5d3 e5d3");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3 f5d3 e5d3 h8g8");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3 f5d3 e5d3 h8g8 d3f4");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3 f5d3 e5d3 h8g8 d3f4 f8d6");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3 f5d3 e5d3 h8g8 d3f4 f8d6 f4d5");
+		// q.push("go");
+		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3 f5d3 e5d3 h8g8 d3f4 f8d6 f4d5 g8g2");
+		// q.push("go");
+	}
 	do
 	{
 		do // do-while until queue is empty
@@ -131,10 +185,14 @@ void UCI::loop(int argc, char *argv[])
 			if (!q.empty())
 			{
 				cmd = q.front();
+				std::cout << "queue (" << q.size() << ") command: " << cmd << std::endl;
 				q.pop();
 			}
-			if (argc == 1 && !getline(std::cin, cmd)) // Wait for an input or an end-of-file (EOF) indication
-				cmd = "quit";
+			else
+			{
+				if (argc == 1 && !getline(std::cin, cmd)) // Wait for an input or an end-of-file (EOF) indication
+					cmd = "quit";
+			}
 
 			std::istringstream is(cmd);
 
