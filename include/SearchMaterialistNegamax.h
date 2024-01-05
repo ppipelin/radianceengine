@@ -24,6 +24,11 @@ public:
 		if (alpha < stand_pat)
 			alpha = stand_pat;
 
+
+		// Early quit for quiesce
+		if (rootMoves[pvIdx].pvDepth >= 7)
+			return alpha;
+
 		std::vector<cMove> moveListCaptures = std::vector<cMove>();
 		generateMoveList(b, moveListCaptures, /*legalOnly=*/ true, true);
 
@@ -32,6 +37,10 @@ public:
 		{
 			return alpha;
 		}
+
+		// Increase depth after early stop
+		++(rootMoves[pvIdx].pvDepth);
+
 		BoardParser b2;
 
 		for (const cMove move : moveListCaptures)
@@ -41,10 +50,16 @@ public:
 			Int score = -quiesce(b2, e, -beta, -alpha);
 
 			if (score >= beta)
+			{
+				--(rootMoves[pvIdx].pvDepth);
 				return beta;
+			}
 			if (score > alpha)
+			{
 				alpha = score;
+			}
 		}
+		--(rootMoves[pvIdx].pvDepth);
 		return alpha;
 	}
 
