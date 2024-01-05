@@ -230,23 +230,25 @@ public:
 			// Promotion
 			if (move.isPromotion())
 			{
+				// Before delete we store the data we need
+				const bool isWhite = fromPiece->isWhite();
 				delete m_board->board()[from];
 				m_board->board()[from] = nullptr;
 				if (((move.m_move >> 12) & 0x3) == 0)
 				{
-					fromPiece = new Knight(from, fromPiece->isWhite(), false);
+					fromPiece = new Knight(from, isWhite, false);
 				}
 				else if (((move.m_move >> 12) & 0x3) == 1)
 				{
-					fromPiece = new Bishop(from, fromPiece->isWhite(), false);
+					fromPiece = new Bishop(from, isWhite, false);
 				}
 				else if (((move.m_move >> 12) & 0x3) == 2)
 				{
-					fromPiece = new Rook(from, fromPiece->isWhite(), false);
+					fromPiece = new Rook(from, isWhite, false);
 				}
 				else if (((move.m_move >> 12) & 0x3) == 3)
 				{
-					fromPiece = new Queen(from, fromPiece->isWhite(), false);
+					fromPiece = new Queen(from, isWhite, false);
 				}
 			}
 		}

@@ -253,7 +253,7 @@ std::string UCI::move(cMove m)
 	std::string move = Board::toString(from) + Board::toString(to);
 
 	if (m.isPromotion())
-		move += "nbrq"[m.getFlags() << 2 >> 2]; // keep last two bits
+		move += "nbrq"[m.getFlags() & 0x3]; // keep last two bits
 
 	return move;
 }
