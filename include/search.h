@@ -182,18 +182,15 @@ public:
 				BoardParser b2(b);
 				b2.movePiece(move);
 				// Prune moves which keep the king in check
-				return b2.inCheck(b.isWhiteTurn());
-				});
+				if (b2.inCheck(b.isWhiteTurn())) return true;
 
-			std::erase_if(moveList, [b](cMove move) {
 				// Prune moves which castles in check
-				return move.isCastle() && b.inCheck(b.isWhiteTurn());
-				});
-			std::erase_if(moveList, [b](cMove move) {
+				if (move.isCastle() && b.inCheck(b.isWhiteTurn())) return true;
+
 				// Prune moves which castles through check
 				if (move.getFlags() == 0x2)
 				{
-					BoardParser b2(b);
+					b2 = BoardParser(b);
 					b2.movePiece(cMove(move.getFrom(), move.getFrom() + 1));
 					if (b2.inCheck(b.isWhiteTurn())) return true;
 
@@ -203,7 +200,7 @@ public:
 				}
 				else if (move.getFlags() == 0x3)
 				{
-					BoardParser b2(b);
+					b2 = BoardParser(b);
 					b2.movePiece(cMove(move.getFrom(), move.getFrom() - 1));
 					if (b2.inCheck(b.isWhiteTurn())) return true;
 
