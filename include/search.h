@@ -103,6 +103,7 @@ public:
 			const Piece *piece = b.boardParsed()->board()[tile];
 			if (piece == nullptr)
 			{
+				err("nullptr piece");
 				continue;
 			}
 			if (piece->isWhite() != b.isWhiteTurn())
@@ -122,6 +123,28 @@ public:
 
 		if (legalOnly)
 		{
+			// #define optLegalOnly
+#ifdef optLegalOnly
+			// Look for attacked squares
+			std::vector<cMove> moveListAttack;
+			for (UInt tileIdx = 0; tileIdx < enemyPositions.size(); ++tileIdx)
+			{
+				UInt tile = enemyPositions[tileIdx];
+				const Piece *piece = b.boardParsed()->board()[tile];
+				if (piece == nullptr)
+				{
+					err("nullptr piece");
+					continue;
+				}
+				if (piece->isWhite() == b.isWhiteTurn())
+				{
+					err("is wrong turn");
+					continue;
+				}
+				std::vector<cMove> subMoveList = std::vector<cMove>();
+				piece->canMove(*b.boardParsed(), subMoveList);
+				moveListAttack.insert(moveListAttack.end(), subMoveList.begin(), subMoveList.end());
+			}
 			std::erase_if(moveList, [b](cMove move) {
 				BoardParser b2(b);
 				b2.movePiece(move);
@@ -131,9 +154,41 @@ public:
 
 			std::erase_if(moveList, [b](cMove move) {
 				// Prune moves which castles in check
-				return b.inCheck(b.isWhiteTurn()) && move.isCastle();
+				return move.isCastle() && b.inCheck(b.isWhiteTurn());
 				});
 
+			std::erase_if(moveList, [moveListAttack](cMove move) {
+				// Prune moves which castles through check
+				if (!move.isCastle())
+				{
+					return false;
+				}
+				if (move.getFlags() == 0x2)
+				{
+					return (std::find(moveListAttack.begin(), moveListAttack.end(), move.getFrom() + 1) != moveListAttack.end()) ||
+						(std::find(moveListAttack.begin(), moveListAttack.end(), move.getFrom() + 2) != moveListAttack.end());
+				}
+				else if (move.getFlags() == 0x3)
+				{
+					return (std::find(moveListAttack.begin(), moveListAttack.end(), move.getFrom() - 1) != moveListAttack.end()) ||
+						(std::find(moveListAttack.begin(), moveListAttack.end(), move.getFrom() - 2) != moveListAttack.end()) ||
+						(std::find(moveListAttack.begin(), moveListAttack.end(), move.getFrom() - 3) != moveListAttack.end());
+				}
+				return false;
+				});
+#endif
+#ifndef optLegalOnly
+			std::erase_if(moveList, [b](cMove move) {
+				BoardParser b2(b);
+				b2.movePiece(move);
+				// Prune moves which keep the king in check
+				return b2.inCheck(b.isWhiteTurn());
+				});
+
+			std::erase_if(moveList, [b](cMove move) {
+				// Prune moves which castles in check
+				return move.isCastle() && b.inCheck(b.isWhiteTurn());
+				});
 			std::erase_if(moveList, [b](cMove move) {
 				// Prune moves which castles through check
 				if (move.getFlags() == 0x2)
@@ -162,6 +217,7 @@ public:
 				}
 				return false;
 				});
+#endif
 		}
 		return moveList;
 	}
