@@ -11,6 +11,7 @@
 
 #include <queue>
 #include <chrono>
+#include <numeric>
 
 namespace {
 	const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -325,8 +326,8 @@ std::string UCI::pv(const Search &s, const BoardParser &b, UInt depth)
 
 		ss << "info"
 			<< " depth " << depth
-			<< " nodes " << s.nodesSearched[i]
-			<< " multipv " << i
+			<< " nodes " << std::accumulate(s.nodesSearched.begin(), s.nodesSearched.end(), 0)
+			<< " multipv " << i + 1
 			<< " score cp " << rootMoves[i].score
 			<< " pv";
 
