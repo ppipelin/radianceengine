@@ -8,6 +8,7 @@
 #include "searchMaterialistNegamax.h"
 #include "evaluate.h"
 #include "evaluateShannon.h"
+#include "evaluateShannonHeuristics.h"
 
 #include <queue>
 #include <chrono>
@@ -106,7 +107,8 @@ namespace {
 			// SearchRandom search = SearchRandom(limits);
 			// SearchMaterialist search = SearchMaterialist(limits);
 			SearchMaterialistNegamax search = SearchMaterialistNegamax(limits);
-			EvaluateShannon evaluate = EvaluateShannon();
+			// EvaluateShannon evaluate = EvaluateShannon();
+			EvaluateShannonHeuristics evaluate = EvaluateShannonHeuristics();
 
 			cMove move = search.nextMove(pos, evaluate);
 			std::cout << "bestmove " << UCI::move(move) << std::endl;
@@ -319,7 +321,7 @@ std::string UCI::pv(const Search &s, const BoardParser &b, UInt depth)
 	std::stringstream ss;
 	const std::array<Search::RootMove, MAX_PLY> &rootMoves = s.rootMoves;
 
-	for (UInt i = 0; i < 1; ++i) // s.rootMovesSize
+	for (UInt i = 0; i < s.rootMovesSize; ++i) // s.rootMovesSize
 	{
 		// Not at first line
 		if (ss.rdbuf()->in_avail())
