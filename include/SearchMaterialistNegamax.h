@@ -93,7 +93,6 @@ public:
 			return 0;
 		}
 
-		// Increase depth after early stop
 		++(rootMoves[pvIdx].pvDepth);
 
 		BoardParser b2;
@@ -130,9 +129,12 @@ public:
 			{
 				--(rootMoves[pvIdx].pvDepth);
 				++pvIdx;
+				++(rootMoves[pvIdx].pvDepth);
 			}
 		}
-		--(rootMoves[pvIdx].pvDepth);
+		if (PvNode)
+			--(rootMoves[pvIdx].pvDepth);
+
 		return alpha;
 	}
 
