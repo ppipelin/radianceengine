@@ -21,7 +21,7 @@ public:
 	{
 		++nodesSearched[pvIdx];
 		if (Search::inCheckMate(b, b.isWhiteTurn()))
-			return MAX_EVAL; // not sure, could be alpha or beta ?
+			return -MAX_EVAL;
 		// In order to get the quiescence search to terminate, plies are usually restricted to moves that deal directly with the threat,
 		// such as moves that capture and recapture (often called a 'capture search') in chess
 		Int stand_pat = e.evaluate(b);
@@ -30,9 +30,8 @@ public:
 		if (alpha < stand_pat)
 			alpha = stand_pat;
 
-
 		// Early quit for quiesce
-		if (rootMoves[pvIdx].pvDepth >= 7)
+		if (rootMoves[pvIdx].pvDepth >= 6)
 			return alpha;
 
 		std::vector<cMove> moveListCaptures = std::vector<cMove>();
@@ -44,25 +43,34 @@ public:
 			return alpha;
 		}
 
-		// Increase depth after early stop
 		++(rootMoves[pvIdx].pvDepth);
 
 		BoardParser b2;
 
+		RootMove rootMoveTemp = rootMoves[pvIdx];
 		for (const cMove move : moveListCaptures)
 		{
 			b2 = BoardParser(b);
 			b2.movePiece(move);
+
 			Int score = -quiesce(b2, e, -beta, -alpha);
 
 			if (score >= beta)
 			{
+				// beta cutoff
 				--(rootMoves[pvIdx].pvDepth);
 				return beta;
 			}
 			if (score > alpha)
 			{
+				rootMoves[pvIdx].pv[rootMoves[pvIdx].pvDepth - 1] = move;
+				rootMoveTemp = rootMoves[pvIdx];
+				// alpha acts like max in MiniMax
 				alpha = score;
+			}
+			else
+			{
+				rootMoves[pvIdx] = rootMoveTemp;
 			}
 		}
 		--(rootMoves[pvIdx].pvDepth);
@@ -80,8 +88,8 @@ public:
 
 		if (depth <= 0)
 		{
-			return e.evaluate(b);
-			// return quiesce(b, e, alpha, beta);
+			// return e.evaluate(b);
+			return quiesce(b, e, alpha, beta);
 		}
 		std::vector<cMove> moveList;
 		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
@@ -112,7 +120,7 @@ public:
 			}
 			if (score > alpha)
 			{
-				rootMoves[pvIdx].pv[rootMoves[pvIdx].pvDepth] = move;
+				rootMoves[pvIdx].pv[rootMoves[pvIdx].pvDepth - 1] = move;
 				rootMoveTemp = rootMoves[pvIdx];
 				// alpha acts like max in MiniMax
 				alpha = score;

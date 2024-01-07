@@ -102,6 +102,7 @@ namespace {
 		}
 		else
 		{
+			limits.depth = 4;
 			// SearchRandom search = SearchRandom(limits);
 			// SearchMaterialist search = SearchMaterialist(limits);
 			SearchMaterialistNegamax search = SearchMaterialistNegamax(limits);
