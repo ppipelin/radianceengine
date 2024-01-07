@@ -20,7 +20,7 @@ public:
 		}
 
 		std::vector<cMove> searchmoves;
-		int movestogo, depth, mate, perft, infinite;
+		UInt movestogo, depth, mate, perft, infinite;
 		int64_t nodes;
 	};
 
