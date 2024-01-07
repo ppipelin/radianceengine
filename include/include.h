@@ -15,7 +15,7 @@ typedef std::uint_fast8_t SUInt;
 
 constexpr UInt BOARD_SIZE = 8;
 constexpr UInt BOARD_SIZE2 = 8 * 8;
-constexpr Int MAX_EVAL = INT_FAST16_MAX;
+constexpr Int MAX_EVAL = 100000;
 constexpr UInt MAX_PLY = 246;
 
 static void debug(std::string str)
