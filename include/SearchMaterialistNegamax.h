@@ -21,7 +21,7 @@ public:
 	{
 		++nodesSearched[pvIdx];
 		if (Search::inCheckMate(b, b.isWhiteTurn()))
-			return -MAX_EVAL;
+			return -MAX_EVAL + rootMoves[pvIdx].pvDepth;
 		// In order to get the quiescence search to terminate, plies are usually restricted to moves that deal directly with the threat,
 		// such as moves that capture and recapture (often called a 'capture search') in chess
 		Int stand_pat = e.evaluate(b);
@@ -97,7 +97,7 @@ public:
 		if (moveList.empty())
 		{
 			if (b.inCheck(b.isWhiteTurn()))
-				return -MAX_EVAL;
+				return -MAX_EVAL + rootMoves[pvIdx].pvDepth;
 			return 0;
 		}
 
