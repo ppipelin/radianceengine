@@ -6,6 +6,12 @@
 
 class SearchMaterialistNegamax : virtual public Search
 {
+	enum NodeType
+	{
+		NonPV,
+		PV,
+		Root
+	};
 public:
 	SearchMaterialistNegamax(const Search::LimitsType &limits) : Search(limits) {}
 	SearchMaterialistNegamax(const SearchMaterialistNegamax &s) : Search(s.Limits) {}
@@ -14,7 +20,7 @@ public:
 	Int quiesce(const BoardParser &b, const Evaluate &e, Int alpha, Int beta)
 	{
 		++nodesSearched[pvIdx];
-		if (inCheckMate(b, b.isWhiteTurn()))
+		if (Search::inCheckMate(b, b.isWhiteTurn()))
 			return MAX_EVAL; // not sure, could be alpha or beta ?
 		// In order to get the quiescence search to terminate, plies are usually restricted to moves that deal directly with the threat,
 		// such as moves that capture and recapture (often called a 'capture search') in chess
@@ -30,7 +36,7 @@ public:
 			return alpha;
 
 		std::vector<cMove> moveListCaptures = std::vector<cMove>();
-		generateMoveList(b, moveListCaptures, /*legalOnly=*/ true, true);
+		Search::generateMoveList(b, moveListCaptures, /*legalOnly=*/ true, true);
 
 		// Quiet position
 		if (moveListCaptures.empty())
@@ -64,15 +70,21 @@ public:
 	}
 
 	// https://www.chessprogramming.org/Alpha-Beta
+	template <NodeType nodeType>
 	Int abSearch(const BoardParser &b, const Evaluate &e, Int alpha, Int beta, UInt depth)
 	{
 		++nodesSearched[pvIdx];
-		if (depth <= 0)
-			// return e.evaluate(b);
-			return quiesce(b, e, alpha, beta);
 
+		constexpr bool PvNode = nodeType != NonPV;
+		constexpr bool rootNode = nodeType == Root;
+
+		if (depth <= 0)
+		{
+			return e.evaluate(b);
+			// return quiesce(b, e, alpha, beta);
+		}
 		std::vector<cMove> moveList;
-		generateMoveList(b, moveList, /*legalOnly=*/ true, false);
+		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
 
 		if (moveList.empty())
 		{
@@ -92,10 +104,11 @@ public:
 			b2 = BoardParser(b);
 			b2.movePiece(move);
 
-			Int score = -abSearch(b2, e, -beta, -alpha, depth - 1);
+			Int score = -abSearch<PV>(b2, e, -beta, -alpha, depth - 1);
 			if (score >= beta)
 			{
 				// beta cutoff
+				--(rootMoves[pvIdx].pvDepth);
 				return beta;
 			}
 			if (score > alpha)
@@ -104,27 +117,40 @@ public:
 				rootMoveTemp = rootMoves[pvIdx];
 				// alpha acts like max in MiniMax
 				alpha = score;
+				if (rootNode)
+				{
+					rootMoves[pvIdx].score = score;
+				}
 			}
 			else
 			{
 				rootMoves[pvIdx] = rootMoveTemp;
+			}
+			if (rootNode)
+			{
+				--(rootMoves[pvIdx].pvDepth);
+				++pvIdx;
 			}
 		}
 		--(rootMoves[pvIdx].pvDepth);
 		return alpha;
 	}
 
-	// Iterative deepening algorithm
 	cMove nextMove(const BoardParser &b, const Evaluate &e) override
 	{
+		// Compute rootMoves
 		UInt currentDepth = Limits.depth;
 		std::vector<cMove> moveList;
-		generateMoveList(b, moveList, /*legalOnly=*/ true, false);
+		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
 
 		if (moveList.empty())
 		{
 			err("Cannot move.");
 			return cMove();
+		}
+		else if (moveList.size() == 1)
+		{
+			return moveList[1];
 		}
 
 		rootMovesSize = moveList.size();
@@ -133,31 +159,18 @@ public:
 			rootMoves[i] = RootMove(moveList[i]);
 		}
 
-		BoardParser b2;
-		Int bestScore = -MAX_EVAL;
-
+		// Iterative deepening algorithm
 		while (currentDepth <= Limits.depth)
 		{
 			// Some variables have to be reset
+			for (UInt i = 0; i < rootMovesSize; ++i)
+				rootMoves[i].previousScore = rootMoves[i].score;
 			nodesSearched.fill(0);
+			pvIdx = 0;
 
-			for (pvIdx = 0; pvIdx < rootMovesSize; ++pvIdx)
-			{
-				cMove move = rootMoves[pvIdx].pv[0];
-				b2 = BoardParser(b);
-				b2.movePiece(move);
-				Int score;
-				if (currentDepth == 0)
-					score = e.evaluate(b2);
-				else
-				{
-					score = -abSearch(b2, e, -MAX_EVAL, +MAX_EVAL, currentDepth - 1);
-				}
-				rootMoves[pvIdx].score = score;
-			}
+			abSearch<Root>(b, e, -MAX_EVAL, MAX_EVAL, currentDepth);
 			std::stable_sort(rootMoves.begin(), rootMoves.end());
 			std::cout << UCI::pv(*this, b, currentDepth) << std::endl;
-
 			++currentDepth;
 		}
 		return rootMoves[0].pv[0];

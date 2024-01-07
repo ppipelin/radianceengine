@@ -316,11 +316,11 @@ std::string UCI::pv(const Search &s, const BoardParser &b, UInt depth)
 {
 	std::stringstream ss;
 	const std::array<Search::RootMove, MAX_PLY> &rootMoves = s.rootMoves;
-	// UInt pvIdx = s.pvIdx;
 
-	for (UInt i = 0; i < s.rootMovesSize; ++i)
+	for (UInt i = 0; i < 1; ++i) // s.rootMovesSize
 	{
-		if (ss.rdbuf()->in_avail()) // Not at first line
+		// Not at first line
+		if (ss.rdbuf()->in_avail())
 			ss << "\n";
 
 		ss << "info"

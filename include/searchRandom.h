@@ -32,6 +32,10 @@ public:
 			err("Cannot move after checkmate.");
 			return cMove();
 		}
+		else if (moveList.size() == 1)
+		{
+			return moveList[1];
+		}
 		// Verify not in check
 		BoardParser b2;
 		cMove move;
