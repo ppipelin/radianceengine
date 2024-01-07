@@ -94,21 +94,24 @@ namespace {
 			// else if (token == "infinite")  limits.infinite = 1;
 			// else if (token == "ponder")    ponderMode = true;
 		}
-		limits.depth = 4;
-		// SearchRandom search = SearchRandom(limits);
-		// SearchMaterialist search = SearchMaterialist(limits);
-		SearchMaterialistNegamax search = SearchMaterialistNegamax(limits);
-		EvaluateShannon evaluate = EvaluateShannon();
-
 		auto t1 = std::chrono::high_resolution_clock::now();
+		if (limits.perft > 0)
+		{
+			std::cout << "Nodes searched: " << Search::perft(pos, limits.perft) << std::endl;
+		}
+		else
+		{
+			// SearchRandom search = SearchRandom(limits);
+			// SearchMaterialist search = SearchMaterialist(limits);
+			SearchMaterialistNegamax search = SearchMaterialistNegamax(limits);
+			EvaluateShannon evaluate = EvaluateShannon();
 
-		cMove move = search.nextMove(pos, evaluate);
-
+			cMove move = search.nextMove(pos, evaluate);
+			std::cout << "bestmove " << UCI::move(move) << std::endl;
+		}
 		auto t2 = std::chrono::high_resolution_clock::now();
 		auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
 		std::cout << "Total time for go: " << ms_int.count() << "ms" << std::endl;
-
-		std::cout << "bestmove " << UCI::move(move) << std::endl;
 	}
 }
 

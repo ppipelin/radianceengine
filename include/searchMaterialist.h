@@ -18,7 +18,7 @@ public:
 			return e.evaluate(b);
 
 		std::vector<cMove> moveList = std::vector<cMove>();
-		generateMoveList(b, moveList, /*legalOnly=*/ true, false);
+		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
 
 		if (moveList.empty())
 		{
@@ -61,7 +61,7 @@ public:
 	{
 		nodesSearched.fill(0);
 		std::vector<cMove> moveList = std::vector<cMove>();
-		generateMoveList(b, moveList, /*legalOnly=*/ true, false);
+		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
 
 		if (moveList.empty())
 		{
