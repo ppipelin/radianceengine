@@ -93,7 +93,7 @@ public:
 		return true;
 	}
 
-	std::vector<cMove> generateMoveList(const BoardParser &b, std::vector<cMove> &moveList, bool legalOnly = false, bool onlyCapture = false) const
+	static std::vector<cMove> generateMoveList(const BoardParser &b, std::vector<cMove> &moveList, bool legalOnly = false, bool onlyCapture = false)
 	{
 		std::vector<UInt> allyPositions = b.isWhiteTurn() ? b.boardParsed()->whitePos() : b.boardParsed()->blackPos();
 		std::vector<UInt> enemyPositions = !b.isWhiteTurn() ? b.boardParsed()->whitePos() : b.boardParsed()->blackPos();
@@ -101,21 +101,23 @@ public:
 		{
 			UInt tile = allyPositions[tileIdx];
 			const Piece *piece = b.boardParsed()->board()[tile];
-			if (piece == nullptr || (piece->isWhite() != b.isWhiteTurn()))
+			if (piece == nullptr)
 			{
 				continue;
 			}
 			if (piece->isWhite() != b.isWhiteTurn())
 			{
-				warn("is wrong turn");
+				err("is wrong turn");
+				continue;
 			}
 			std::vector<cMove> subMoveList = std::vector<cMove>();
 			piece->canMove(*b.boardParsed(), subMoveList);
-			if (onlyCapture)
-			{
-				std::erase_if(subMoveList, [](cMove move) {return !move.isCapture();});
-			}
 			moveList.insert(moveList.end(), subMoveList.begin(), subMoveList.end());
+		}
+
+		if (onlyCapture)
+		{
+			std::erase_if(moveList, [](cMove move) {return !move.isCapture();});
 		}
 
 		if (legalOnly)
@@ -161,18 +163,118 @@ public:
 				return false;
 				});
 		}
-
 		return moveList;
 	}
 
-	bool inCheckMate(const BoardParser &b, const bool isWhite) const
+	static bool inCheckMate(const BoardParser &b, const bool isWhite)
 	{
 		if (b.inCheck(isWhite))
 		{
 			std::vector<cMove> moveList = std::vector<cMove>();
-			generateMoveList(b, moveList, true);
+			Search::generateMoveList(b, moveList, true);
 			return moveList.empty();
 		}
 		return false;
+	}
+
+	/**
+	* @brief perft test from https://www.chessprogramming.org/Perft
+	*
+	* @param b
+	* @param depth
+	* @return UInt number of possibles position after all possible moves on b
+	*/
+	static UInt perft(const BoardParser &b, UInt depth = 1, bool verbose = false)
+	{
+		std::vector<cMove> moveList = std::vector<cMove>();
+		UInt nodes = 0;
+		std::vector<UInt> tiles;
+
+		if (depth == 0)
+		{
+			return 1;
+		}
+
+		// #define opt
+#ifdef opt
+		if (b.isWhiteTurn())
+		{
+			tiles = b.boardParsed()->whitePos();
+		}
+		else
+		{
+			tiles = b.boardParsed()->blackPos();
+		}
+		for (const auto tile : tiles)
+		{
+			std::vector<cMove> subMoveList = std::vector<cMove>();
+			const Piece *piece = (*b.boardParsed())[tile];
+			if (piece == nullptr)
+			{
+				continue;
+			}
+
+			piece->canMove(*b.boardParsed(), subMoveList);
+			moveList.insert(moveList.end(), subMoveList.begin(), subMoveList.end());
+		}
+#endif
+#ifndef opt
+		Search::generateMoveList(b, moveList, /*legalOnly =*/ true);
+#endif
+		for (const cMove move : moveList)
+		{
+#ifdef opt
+			// Castling
+			if (move.isCastle())
+			{
+				// Castling from a controlled tile is illegal
+				if (b.inCheck(b.isWhiteTurn()))
+				{
+					continue;
+				}
+				// Castling over a controlled tile is illegal
+				cMove moveCastle = cMove(move.getFrom(), move.getTo());
+				UInt to = move.getFlags() == 2 ? move.getFrom() + 1 : move.getFrom() - 1;
+				BoardParser b3 = BoardParser(b);
+				moveCastle.setTo(to);
+				b3.movePiece(moveCastle);
+				if (b3.inCheck(!b3.isWhiteTurn()))
+				{
+					continue;
+				}
+				// Queen castle requires another check, keeps last board for performances and re-move king
+				if (move.getFlags() == 3)
+				{
+					moveCastle.setFrom(moveCastle.getTo());
+					moveCastle.setTo(move.getFrom() - 2);
+					b3.movePiece(moveCastle);
+					if (b3.inCheck(!b3.isWhiteTurn()))
+					{
+						continue;
+					}
+				}
+			}
+#endif
+			BoardParser b2(b);
+			if (!b2.movePiece(move))
+			{
+				continue;
+			}
+#ifdef opt
+			// We assert that we are not in check after we just moved
+			if (b2.inCheck(!b2.isWhiteTurn()))
+			{
+				// We don't count illegal moves
+				continue;
+			}
+#endif
+			UInt nodesNumber = perft(b2, depth - 1);
+			if (verbose)
+			{
+				std::cout << Board::toString(move.getFrom()) << Board::toString(move.getTo()) << " : " << nodesNumber << std::endl;
+			}
+			nodes += nodesNumber;
+		}
+		return nodes;
 	}
 };
