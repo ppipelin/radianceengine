@@ -96,10 +96,14 @@ namespace {
 			// else if (token == "infinite")  limits.infinite = 1;
 			// else if (token == "ponder")    ponderMode = true;
 		}
-		auto t1 = std::chrono::high_resolution_clock::now();
+
 		if (limits.perft > 0)
 		{
-			std::cout << "Nodes searched: " << Search::perft(pos, limits.perft) << std::endl;
+			auto t1 = std::chrono::high_resolution_clock::now();
+			std::cout << "info nodes : " << Search::perft(pos, limits.perft) << std::endl;
+			auto t2 = std::chrono::high_resolution_clock::now();
+			auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+			std::cout << "info time " << ms_int.count() << std::endl;
 		}
 		else
 		{
@@ -117,12 +121,15 @@ namespace {
 			// EvaluateShannon evaluate = EvaluateShannon();
 			EvaluateShannonHeuristics evaluate = EvaluateShannonHeuristics();
 
+			auto t1 = std::chrono::high_resolution_clock::now();
+
 			cMove move = search.nextMove(pos, evaluate);
+
+			auto t2 = std::chrono::high_resolution_clock::now();
+			auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+			std::cout << "info time " << ms_int.count() << std::endl;
 			std::cout << "bestmove " << UCI::move(move) << std::endl;
 		}
-		auto t2 = std::chrono::high_resolution_clock::now();
-		auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-		std::cout << "Total time for go: " << ms_int.count() << "ms" << std::endl;
 	}
 }
 
@@ -328,7 +335,8 @@ std::string UCI::pv(const Search &s, const BoardParser &b, UInt depth)
 	std::stringstream ss;
 	const std::array<Search::RootMove, MAX_PLY> &rootMoves = s.rootMoves;
 
-	for (UInt i = 0; i < s.rootMovesSize; ++i) // s.rootMovesSize
+	// for (Int i = s.rootMovesSize - 1; i >= 0; --i)
+	for (Int i = 1; i < 1; ++i)
 	{
 		// Not at first line
 		if (ss.rdbuf()->in_avail())
