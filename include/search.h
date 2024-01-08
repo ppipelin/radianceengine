@@ -7,20 +7,27 @@
 
 #include <array>
 
+enum Color
+{
+	WHITE,
+	BLACK,
+	COLOR_NB = 2
+};
+
 class Search
 {
 public:
+
 	struct LimitsType
 	{
 		LimitsType()
 		{
 			// Init explicitly due to broken value-initialization of non POD in MSVC
-			movestogo = depth = mate = perft = infinite = 0;
-			nodes = 0;
+			time[WHITE] = time[BLACK] = movestogo = depth = mate = perft = infinite = nodes = 0;
 		}
 
 		std::vector<cMove> searchmoves;
-		UInt movestogo, depth, mate, perft, infinite;
+		UInt movestogo, depth, mate, perft, infinite, time[COLOR_NB];
 		int64_t nodes;
 	};
 
