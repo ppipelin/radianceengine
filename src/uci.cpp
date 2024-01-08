@@ -83,8 +83,8 @@ namespace {
 				while (is >> token)
 					// limits.searchmoves.push_back(UCI::to_move(pos, token));
 					;
-			// else if (token == "wtime")     is >> limits.time[WHITE];
-			// else if (token == "btime")     is >> limits.time[BLACK];
+			else if (token == "wtime")     is >> limits.time[WHITE];
+			else if (token == "btime")     is >> limits.time[BLACK];
 			// else if (token == "winc")      is >> limits.inc[WHITE];
 			// else if (token == "binc")      is >> limits.inc[BLACK];
 			// else if (token == "movestogo") is >> limits.movestogo;
@@ -103,7 +103,14 @@ namespace {
 		}
 		else
 		{
-			limits.depth = 4;
+			if ((pos.isWhiteTurn() ? limits.time[WHITE] : limits.time[BLACK]) != 0 && (pos.isWhiteTurn() ? limits.time[WHITE] : limits.time[BLACK]) < 120 * 1000)
+			{
+				limits.depth = 2;
+			}
+			else
+			{
+				limits.depth = 4;
+			}
 			// SearchRandom search = SearchRandom(limits);
 			// SearchMaterialist search = SearchMaterialist(limits);
 			SearchMaterialistNegamax search = SearchMaterialistNegamax(limits);
