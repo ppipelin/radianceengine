@@ -231,7 +231,10 @@ void UCI::loop(int argc, char *argv[])
 			// has played. The search should continue, but should also switch from pondering
 			// to the normal search.
 			else if (token == "d")
+			{
 				pos.displayCLI();
+				std::cout << pos.fen() << std::endl;
+			}
 			else if (token == "ponderhit")
 				std::cout << "UCI - ponderhit received" << std::endl;
 			else if (token == "uci")
