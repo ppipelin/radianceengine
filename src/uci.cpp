@@ -245,6 +245,8 @@ void UCI::loop(int argc, char *argv[])
 				go(pos, is);
 			else if (token == "position")
 				position(pos, is);
+			else if (token == "ucinewgame")
+				pos.fillBoard(startFen);
 			else if (token == "isready")
 				std::cout << "readyok" << std::endl;
 			else if (token == "eval")
