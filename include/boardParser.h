@@ -312,7 +312,7 @@ public:
 		}
 
 		// Updates enPassant if possible next turn
-		m_board->enPassant(typeid(*fromPiece) == typeid(Pawn) && fabs(Int(from) - Int(to)) == 16 ? Board::column(to) : -1);
+		m_board->enPassant(typeid(*fromPiece) == typeid(Pawn) && fabs(Int(from) - Int(to)) == 16 ? to : -1);
 
 		return true;
 	}
@@ -326,7 +326,6 @@ public:
 		*/
 	bool fillBoard(const std::string &fen)
 	{
-
 		std::stringstream sstream(fen);
 		std::string word;
 		std::vector<std::string> words{};
@@ -462,9 +461,81 @@ public:
 		}
 		if (words.size() > 4 && words[3] != "-")
 		{
-			m_board->enPassant(std::stoi(words[3]) - 1);
+			m_board->enPassant(Board::toTiles(words[3]));
 		}
 		return true;
+	}
+
+	std::string fen(const bool noEnPassant = false) const
+	{
+		std::string s = "";
+		UInt accumulate = 0;
+		for (UInt i = 56; i != BOARD_SIZE; ++i)
+		{
+			if ((!s.empty() || i != 56) && i % 8 == 0)
+			{
+				i -= 16;
+				if (accumulate != 0)
+				{
+					s += std::to_string(accumulate);
+					accumulate = 0;
+				}
+				s += "/";
+			}
+			const Piece *p = m_board->board()[i];
+			if (p == nullptr)
+			{
+				++accumulate;
+			}
+			else
+			{
+				if (accumulate != 0)
+				{
+					s += std::to_string(accumulate);
+					accumulate = 0;
+				}
+				if (typeid(*p) == typeid(King))
+					s += p->isWhite() ? "K" : "k";
+				else if (typeid(*p) == typeid(Queen))
+					s += p->isWhite() ? "Q" : "q";
+				else if (typeid(*p) == typeid(Rook))
+					s += p->isWhite() ? "R" : "r";
+				else if (typeid(*p) == typeid(Bishop))
+					s += p->isWhite() ? "B" : "b";
+				else if (typeid(*p) == typeid(Knight))
+					s += p->isWhite() ? "N" : "n";
+				else if (typeid(*p) == typeid(Pawn))
+					s += p->isWhite() ? "P" : "p";
+			}
+		}
+		if (accumulate != 0)
+		{
+			s += std::to_string(accumulate);
+			accumulate = 0;
+		}
+
+		s += isWhiteTurn() ? " w " : " b ";
+
+		std::string caslteStr = "";
+		if (m_board->m_castleAvailableKingWhite)
+			caslteStr += "K";
+		if (m_board->m_castleAvailableQueenWhite)
+			caslteStr += "Q";
+		if (m_board->m_castleAvailableKingBlack)
+			caslteStr += "k";
+		if (m_board->m_castleAvailableQueenBlack)
+			caslteStr += "q";
+
+		if (caslteStr.empty())
+			caslteStr = "-";
+		s += caslteStr;
+
+		s += " ";
+
+		Int enPassant = m_board->enPassant();
+		s += noEnPassant || enPassant == -1 ? "-" : Board::toString(enPassant);
+
+		return s;
 	}
 
 	bool inCheck(bool isWhite) const
