@@ -82,7 +82,7 @@ public:
 
 			score += (i == 1 ? scorePieceWhite : scorePieceBlack);
 
-			score += 50 * pawnMalus(b, pawnPositions, pawnColumns);
+			score += pawnMalus(b, pawnPositions, pawnColumns);
 
 			finalScore += i * score;
 		}
