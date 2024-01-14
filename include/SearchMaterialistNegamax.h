@@ -21,6 +21,8 @@ public:
 	SearchMaterialistNegamax(const SearchMaterialistNegamax &s) : Search(s.Limits) {}
 	~SearchMaterialistNegamax() {}
 
+#define unMoveTest
+
 	Int quiesce(BoardParser &b, const Evaluate &e, Int alpha, Int beta)
 	{
 		++nodesSearched[pvIdx];
@@ -55,10 +57,13 @@ public:
 		for (const cMove move : moveListCaptures)
 		{
 			Piece *lastCapturedPiece = nullptr;
-			UInt castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
+			BoardParser::State s;
+			s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
+			s.enPassant = b.boardParsed()->enPassant();
+
 			b.movePiece(move, &lastCapturedPiece);
 			Int score = -quiesce(b, e, -beta, -alpha);
-			b.unMovePiece(move, castleInfo, lastCapturedPiece);
+			b.unMovePiece(move, s, lastCapturedPiece);
 
 			if (score >= beta)
 			{
@@ -114,11 +119,23 @@ public:
 		for (const cMove move : moveList)
 		{
 			Piece *lastCapturedPiece = nullptr;
-			UInt castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
+			BoardParser::State s;
+			s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
+			s.enPassant = b.boardParsed()->enPassant();
+
+#ifdef unMoveTest
+			BoardParser b2(b);
+#endif
 			b.movePiece(move, &lastCapturedPiece);
 			Int score = -abSearch<PV>(b, e, -beta, -alpha, depth - 1);
-			if (!b.unMovePiece(move, castleInfo, lastCapturedPiece))
+			if (!b.unMovePiece(move, s, lastCapturedPiece))
 				err("Can't unmove piece with move " + UCI::move(move));
+#ifdef unMoveTest
+			if (b != b2)
+			{
+				b.displayCLI();
+			}
+#endif
 
 			if (score >= beta)
 			{
@@ -223,7 +240,7 @@ public:
 		}
 
 		// Iterative deepening algorithm
-		std::copy(rootMoves.begin(), rootMoves.end(), rootMovesPrevious.begin());
+		std::copy(rootMoves.begin(), rootMoves.begin() + rootMovesSize, rootMovesPrevious.begin());
 		while (true)
 		{
 			// Some variables have to be reset
@@ -232,7 +249,16 @@ public:
 			nodesSearched.fill(0);
 			pvIdx = 0;
 
+#ifdef unMoveTest
+			BoardParser b2(b);
+#endif
 			abSearch<Root>(b, e, -MAX_EVAL, MAX_EVAL, currentDepth);
+#ifdef unMoveTest
+			if (b != b2)
+			{
+				b.displayCLI();
+			}
+#endif
 
 			TimePoint t(b.isWhiteTurn() ? Limits.time[WHITE] : Limits.time[BLACK]);
 			// Incomplete search rollback
@@ -242,8 +268,8 @@ public:
 			}
 			else
 			{
-				std::copy(rootMoves.begin(), rootMoves.end(), rootMovesPrevious.begin());
-				std::stable_sort(rootMovesPrevious.begin(), rootMovesPrevious.end());
+				std::copy(rootMoves.begin(), rootMoves.begin() + rootMovesSize, rootMovesPrevious.begin());
+				std::stable_sort(rootMovesPrevious.begin(), rootMovesPrevious.begin() + rootMovesSize);
 				std::cout << UCI::pv(*this, currentDepth) << std::endl;
 			}
 
@@ -254,6 +280,7 @@ public:
 			if (Limits.depth && currentDepth > Limits.depth || t && outOutTime(t))
 				break;
 		}
+		std::stable_sort(rootMoves.begin(), rootMoves.end());
 		return rootMoves[0].pv[0];
 	}
 };
