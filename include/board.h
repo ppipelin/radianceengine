@@ -20,7 +20,6 @@ private:
 	std::vector<UInt> m_blackPos;
 	// Column if the en passant can be done next turn, happens when a pawn double forward at row 1/6, -1 otherwise.
 	Int m_enPassant = -1;
-	bool m_inCheck = false;
 
 public:
 	bool m_castleAvailableQueenWhite = true, m_castleAvailableKingWhite = true, m_castleAvailableQueenBlack = true, m_castleAvailableKingBlack = true;
@@ -54,6 +53,28 @@ public:
 	Piece *operator[](std::size_t idx) { return board()[idx]; }
 
 	const Piece *operator[](std::size_t idx) const { return board()[idx]; }
+
+	bool operator==(const Board &b) const
+	{
+		auto wp = whitePos();
+		auto wp2 = b.whitePos();
+		auto bp = blackPos();
+		auto bp2 = b.blackPos();
+		std::sort(wp.begin(), wp.end());
+		std::sort(wp2.begin(), wp2.end());
+		std::sort(bp.begin(), bp.end());
+		std::sort(bp2.begin(), bp2.end());
+		if (wp != wp2 || bp != bp2)
+			return false;
+
+		if (m_castleAvailableQueenWhite != b.m_castleAvailableQueenWhite || m_castleAvailableKingWhite != b.m_castleAvailableKingWhite ||
+			m_castleAvailableQueenBlack != b.m_castleAvailableQueenBlack || m_castleAvailableKingBlack != b.m_castleAvailableKingBlack)
+			return false;
+
+		if (enPassant() != b.enPassant())
+			return false;
+		return true;
+	}
 
 	std::vector<UInt> &whitePos() { return m_whitePos; }
 
