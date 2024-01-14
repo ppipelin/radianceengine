@@ -25,7 +25,7 @@ public:
 		std::sort(pawnColumsUnique.begin(), pawnColumsUnique.end());
 		const auto last = std::unique(pawnColumsUnique.begin(), pawnColumsUnique.end());
 		pawnColumsUnique.erase(last, pawnColumsUnique.end());
-		score -= Int(pawnColumns.size() - pawnColumsUnique.size());
+		score -= 50 * Int(pawnColumns.size() - pawnColumsUnique.size());
 
 		for (const auto &i : pawnPositions)
 		{
@@ -34,14 +34,19 @@ public:
 			// Should never be out of range because a pawn cannot be on a last rank
 			if (piece->isWhite() ? (*b.boardParsed())[i + BOARD_SIZE] != nullptr : (*b.boardParsed())[i - BOARD_SIZE] != nullptr)
 			{
-				score -= 1;
+				// Increased when blocked by opponent
+				if (piece->isWhite() ? !(*b.boardParsed())[i + BOARD_SIZE]->isWhite() : (*b.boardParsed())[i - BOARD_SIZE]->isWhite())
+					score -= 50;
+				else
+					score -= 25;
+
 			}
 
 			// Isolated pawn
 			UInt pieceColumn = Board::column(i);
 			if (std::find(pawnColumns.begin(), pawnColumns.end(), pieceColumn + 1) == pawnColumns.end() || std::find(pawnColumns.begin(), pawnColumns.end(), pieceColumn - 1) == pawnColumns.end())
 			{
-				score -= 1;
+				score -= 50;
 			}
 		}
 		return score;
@@ -102,7 +107,7 @@ public:
 				score += 10 * Int(moveset.size());
 			}
 
-			score += 50 * pawnMalus(b, pawnPositions, pawnColumns);
+			score += pawnMalus(b, pawnPositions, pawnColumns);
 
 			finalScore += i * score;
 		}
