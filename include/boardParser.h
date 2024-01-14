@@ -168,6 +168,7 @@ public:
 	{
 		UInt castleInfo = 0b1111;
 		Int enPassant = -1;
+		Piece *lastCapturedPiece = nullptr;
 	};
 
 	// Mutators
@@ -345,7 +346,7 @@ public:
 		* @return true : move successful
 		* @return false : move illegal
 		*/
-	bool unMovePiece(const cMove &move, const State &s, Piece *lastCapturedPiece = nullptr)
+	bool unMovePiece(const cMove &move, State &s)
 	{
 		UInt to = move.getTo();
 		UInt from = move.getFrom();
@@ -397,16 +398,16 @@ public:
 
 
 		// Updates enPassant if possible next turn
-		if (lastCapturedPiece != nullptr)
+		if (s.lastCapturedPiece != nullptr)
 		{
 			UInt localTo = to;
-			if (lastCapturedPiece->tile() != to)
-				localTo = lastCapturedPiece->isWhite() ? to + 8 : to - 8;
+			if (s.lastCapturedPiece->tile() != to)
+				localTo = s.lastCapturedPiece->isWhite() ? to + 8 : to - 8;
 
-			m_board->board()[localTo] = lastCapturedPiece;
+			m_board->board()[localTo] = s.lastCapturedPiece;
 
 			// Editing color table for captures
-			if (lastCapturedPiece->isWhite())
+			if (s.lastCapturedPiece->isWhite())
 			{
 				m_board->whitePos().push_back(localTo);
 			}
@@ -416,7 +417,7 @@ public:
 			}
 		}
 
-		lastCapturedPiece = nullptr;
+		s.lastCapturedPiece = nullptr;
 		m_isWhiteTurn = !m_isWhiteTurn;
 
 		// If castling we move the rook as well

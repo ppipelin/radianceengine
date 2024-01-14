@@ -56,14 +56,14 @@ public:
 		RootMove rootMoveTemp = rootMoves[pvIdx];
 		for (const cMove move : moveListCaptures)
 		{
-			Piece *lastCapturedPiece = nullptr;
 			BoardParser::State s;
 			s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
 			s.enPassant = b.boardParsed()->enPassant();
+			s.lastCapturedPiece = nullptr;
 
-			b.movePiece(move, &lastCapturedPiece);
+			b.movePiece(move, &s.lastCapturedPiece);
 			Int score = -quiesce(b, e, -beta, -alpha);
-			b.unMovePiece(move, s, lastCapturedPiece);
+			b.unMovePiece(move, s);
 
 			if (score >= beta)
 			{
@@ -118,17 +118,17 @@ public:
 		RootMove rootMoveTemp = rootMoves[pvIdx];
 		for (const cMove move : moveList)
 		{
-			Piece *lastCapturedPiece = nullptr;
 			BoardParser::State s;
 			s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
 			s.enPassant = b.boardParsed()->enPassant();
+			s.lastCapturedPiece = nullptr;
 
 #ifdef unMoveTest
 			BoardParser b2(b);
 #endif
-			b.movePiece(move, &lastCapturedPiece);
+			b.movePiece(move, &s.lastCapturedPiece);
 			Int score = -abSearch<PV>(b, e, -beta, -alpha, depth - 1);
-			if (!b.unMovePiece(move, s, lastCapturedPiece))
+			if (!b.unMovePiece(move, s))
 				err("Can't unmove piece with move " + UCI::move(move));
 #ifdef unMoveTest
 			if (b != b2)

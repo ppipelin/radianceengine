@@ -23,7 +23,6 @@ private:
 
 public:
 	bool m_castleAvailableQueenWhite = true, m_castleAvailableKingWhite = true, m_castleAvailableQueenBlack = true, m_castleAvailableKingBlack = true;
-	bool m_castleAvailableQueenWhitePrevious = true, m_castleAvailableKingWhitePrevious = true, m_castleAvailableQueenBlackPrevious = true, m_castleAvailableKingBlackPrevious = true;
 
 	Board()
 	{

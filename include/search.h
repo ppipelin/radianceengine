@@ -212,9 +212,10 @@ public:
 #ifndef optLegalOnly
 			std::erase_if(moveList, [b](cMove move) {
 				BoardParser b2(b);
-				Piece *lastCapturedPiece = nullptr;
+				BoardParser::State s;
+				s.lastCapturedPiece = nullptr;
 				cMove lastMove = move;
-				b2.movePiece(lastMove, &lastCapturedPiece);
+				b2.movePiece(lastMove, &s.lastCapturedPiece);
 				// Prune moves which keep the king in check
 				if (b2.inCheck(!b2.isWhiteTurn()))
 					return true;
@@ -226,33 +227,36 @@ public:
 				// Prune moves which castles through check
 				if (move.getFlags() == 0x2)
 				{
-					UInt castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
+					s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
+					s.enPassant = b.boardParsed()->enPassant();
 
-					b2.unMovePiece(lastMove, castleInfo, lastCapturedPiece);
+					b2.unMovePiece(lastMove, s);
 					lastMove = cMove(move.getFrom(), move.getFrom() + 1);
-					b2.movePiece(lastMove, &lastCapturedPiece);
+					b2.movePiece(lastMove, &s.lastCapturedPiece);
 					if (b2.inCheck(b.isWhiteTurn()))
 						return true;
-					b2.unMovePiece(lastMove, castleInfo, lastCapturedPiece);
+					b2.unMovePiece(lastMove, s);
 
 					lastMove = cMove(move.getFrom(), move.getFrom() + 2);
-					b2.movePiece(lastMove, &lastCapturedPiece);
+					b2.movePiece(lastMove, &s.lastCapturedPiece);
 					if (b2.inCheck(b.isWhiteTurn()))
 						return true;
 				}
 				else if (move.getFlags() == 0x3)
 				{
-					UInt castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
+					BoardParser::State s;
+					s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
+					s.enPassant = b.boardParsed()->enPassant();
 
-					b2.unMovePiece(lastMove, castleInfo, lastCapturedPiece);
+					b2.unMovePiece(lastMove, s);
 					lastMove = cMove(move.getFrom(), move.getFrom() - 1);
-					b2.movePiece(lastMove, &lastCapturedPiece);
+					b2.movePiece(lastMove, &s.lastCapturedPiece);
 					if (b2.inCheck(b.isWhiteTurn()))
 						return true;
 
-					b2.unMovePiece(lastMove, castleInfo, lastCapturedPiece);
+					b2.unMovePiece(lastMove, s);
 					lastMove = cMove(move.getFrom(), move.getFrom() - 2);
-					b2.movePiece(lastMove, &lastCapturedPiece);
+					b2.movePiece(lastMove, &s.lastCapturedPiece);
 					if (b2.inCheck(b.isWhiteTurn()))
 						return true;
 
@@ -382,11 +386,14 @@ public:
 				}
 			}
 #endif
-			Piece *lastCapturedPiece = nullptr;
-			UInt castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
-			if (!b.movePiece(move, &lastCapturedPiece))
+			BoardParser::State s;
+			s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
+			s.enPassant = b.boardParsed()->enPassant();
+			s.lastCapturedPiece = nullptr;
+
+			if (!b.movePiece(move, &s.lastCapturedPiece))
 			{
-				b.unMovePiece(move, castleInfo, lastCapturedPiece);
+				b.unMovePiece(move, s);
 				continue;
 			}
 #ifdef opt
@@ -398,7 +405,7 @@ public:
 			}
 #endif
 			UInt nodesNumber = perft(b, depth - 1);
-			b.unMovePiece(move, castleInfo, lastCapturedPiece);
+			b.unMovePiece(move, s);
 			if (verbose)
 			{
 				std::cout << Board::toString(move.getFrom()) << Board::toString(move.getTo()) << " : " << nodesNumber << std::endl;
