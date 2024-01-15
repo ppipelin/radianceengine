@@ -340,7 +340,6 @@ std::string UCI::pv(const Search &s, UInt depth)
 			<< " nodes " << nodes
 			<< " nps " << nodes * 1000 / s.elapsed()
 			<< " time " << s.elapsed()
-
 			<< " multipv " << i + 1
 			<< " score cp " << s.rootMovesPrevious[i].score
 			<< " pv";

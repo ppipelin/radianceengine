@@ -31,7 +31,7 @@ public:
 		return (now() - Limits.startTime);
 	}
 
-	inline bool outOutTime(const TimePoint &t) const
+	inline bool outOfTime(const TimePoint &t) const
 	{
 		return elapsed() > (t / 20);
 	}
@@ -76,7 +76,7 @@ public:
 	};
 
 	LimitsType Limits;
-	UInt pvIdx;
+	UInt pvIdx = 0;
 	std::array<RootMove, MAX_PLY> rootMoves;
 	std::array<RootMove, MAX_PLY> rootMovesPrevious;
 	std::array<int, MAX_PLY> nodesSearched;
