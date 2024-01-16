@@ -254,7 +254,10 @@ public:
 		{
 			// Some variables have to be reset
 			for (UInt i = 0; i < rootMovesSize; ++i)
-				rootMoves[i].previousScore = rootMoves[i].score;
+			{
+				rootMoves[i].previousScore = std::move(rootMoves[i].score);
+				rootMoves[i].score = -MAX_EVAL;
+			}
 
 			// Reset aspiration window starting size
 			Int prev = rootMoves[0].averageScore;
