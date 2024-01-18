@@ -40,6 +40,8 @@ public:
 		std::vector<cMove> moveListCaptures = std::vector<cMove>();
 		Search::generateMoveList(b, moveListCaptures, /*legalOnly=*/ true, true);
 
+		Search::orderMoves(b, moveListCaptures);
+
 		// Quiet position
 		if (moveListCaptures.empty())
 		{
@@ -96,6 +98,8 @@ public:
 		}
 		std::vector<cMove> moveList;
 		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
+
+		Search::orderMoves(b, moveList);
 
 		if (moveList.empty())
 		{
@@ -195,6 +199,8 @@ public:
 		UInt currentDepth = Limits.depth;
 		std::vector<cMove> moveList;
 		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
+
+		Search::orderMoves(b, moveList);
 
 		if (moveList.empty())
 		{

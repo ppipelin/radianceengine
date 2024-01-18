@@ -46,6 +46,8 @@ public:
 		m_neverMoved = p.m_neverMoved;
 	}
 
+	virtual UInt value() const { return 0; }
+
 	// Mutators
 	UInt &tile() { return m_tile; }
 
