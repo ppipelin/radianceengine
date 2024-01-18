@@ -1,5 +1,6 @@
 #pragma once
 
+#include "include.h"
 #include "search.h"
 
 #include <algorithm>
@@ -20,7 +21,7 @@ public:
 	SearchMaterialistNegamax(const SearchMaterialistNegamax &s) : Search(s.Limits) {}
 	~SearchMaterialistNegamax() {}
 
-	Int quiesce(const BoardParser &b, const Evaluate &e, Int alpha, Int beta)
+	Int quiesce(BoardParser &b, const Evaluate &e, Int alpha, Int beta)
 	{
 		++nodesSearched[pvIdx];
 		if (Search::inCheckMate(b, b.isWhiteTurn()))
@@ -50,15 +51,14 @@ public:
 
 		++(rootMoves[pvIdx].pvDepth);
 
-		BoardParser b2;
-
 		RootMove rootMoveTemp = rootMoves[pvIdx];
 		for (const cMove move : moveListCaptures)
 		{
-			b2 = BoardParser(b);
-			b2.movePiece(move);
-
-			Int score = -quiesce(b2, e, -beta, -alpha);
+			Piece *lastCapturedPiece = nullptr;
+			UInt castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
+			b.movePiece(move, &lastCapturedPiece);
+			Int score = -quiesce(b, e, -beta, -alpha);
+			b.unMovePiece(move, castleInfo, lastCapturedPiece);
 
 			if (score >= beta)
 			{
@@ -84,7 +84,7 @@ public:
 
 	// https://www.chessprogramming.org/Alpha-Beta
 	template <NodeType nodeType>
-	Int abSearch(const BoardParser &b, const Evaluate &e, Int alpha, Int beta, UInt depth)
+	Int abSearch(BoardParser &b, const Evaluate &e, Int alpha, Int beta, UInt depth)
 	{
 		++nodesSearched[pvIdx];
 
@@ -93,8 +93,8 @@ public:
 
 		if (depth <= 0)
 		{
-			// return e.evaluate(b);
-			return quiesce(b, e, alpha, beta);
+			return e.evaluate(b);
+			// return quiesce(b, e, alpha, beta);
 		}
 		std::vector<cMove> moveList;
 		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
@@ -110,15 +110,16 @@ public:
 
 		++(rootMoves[pvIdx].pvDepth);
 
-		BoardParser b2;
-
 		RootMove rootMoveTemp = rootMoves[pvIdx];
 		for (const cMove move : moveList)
 		{
-			b2 = BoardParser(b);
-			b2.movePiece(move);
+			Piece *lastCapturedPiece = nullptr;
+			UInt castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
+			b.movePiece(move, &lastCapturedPiece);
+			Int score = -abSearch<PV>(b, e, -beta, -alpha, depth - 1);
+			if (!b.unMovePiece(move, castleInfo, lastCapturedPiece))
+				err("Can't unmove piece with move " + UCI::move(move));
 
-			Int score = -abSearch<PV>(b2, e, -beta, -alpha, depth - 1);
 			if (score >= beta)
 			{
 				// beta cutoff
@@ -143,6 +144,9 @@ public:
 			if (rootNode)
 			{
 				--(rootMoves[pvIdx].pvDepth);
+				TimePoint t(b.isWhiteTurn() ? Limits.time[WHITE] : Limits.time[BLACK]);
+				if (t && outOutTime(t))
+					return -MAX_EVAL;
 				++pvIdx;
 				++(rootMoves[pvIdx].pvDepth);
 			}
@@ -153,10 +157,10 @@ public:
 		return alpha;
 	}
 
-	cMove nextMove(const BoardParser &b, const Evaluate &e) override
+	cMove nextMove(BoardParser &b, const Evaluate &e) override
 	{
 		// Checking book
-		std::string fen = b.fen();
+		std::string fen = b.fen(/*noEnPassant =*/ true);
 		std::vector<std::string> movesParsed;
 		std::vector<UInt> frequenciesParsed;
 
@@ -196,7 +200,7 @@ public:
 		}
 
 		// Compute rootMoves
-		UInt currentDepth = Limits.depth;
+		UInt currentDepth = 1;
 		std::vector<cMove> moveList;
 		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
 
@@ -212,14 +216,15 @@ public:
 			return moveList[1];
 		}
 
-		rootMovesSize = moveList.size();
+		rootMovesSize = UInt(moveList.size());
 		for (UInt i = 0; i < rootMovesSize; ++i)
 		{
 			rootMoves[i] = RootMove(moveList[i]);
 		}
 
 		// Iterative deepening algorithm
-		while (currentDepth <= Limits.depth)
+		std::copy(rootMoves.begin(), rootMoves.end(), rootMovesPrevious.begin());
+		while (true)
 		{
 			// Some variables have to be reset
 			for (UInt i = 0; i < rootMovesSize; ++i)
@@ -228,9 +233,26 @@ public:
 			pvIdx = 0;
 
 			abSearch<Root>(b, e, -MAX_EVAL, MAX_EVAL, currentDepth);
-			std::stable_sort(rootMoves.begin(), rootMoves.end());
-			std::cout << UCI::pv(*this, b, currentDepth) << std::endl;
+
+			TimePoint t(b.isWhiteTurn() ? Limits.time[WHITE] : Limits.time[BLACK]);
+			// Incomplete search rollback
+			if (t && outOutTime(t))
+			{
+				rootMoves = rootMovesPrevious;
+			}
+			else
+			{
+				std::copy(rootMoves.begin(), rootMoves.end(), rootMovesPrevious.begin());
+				std::stable_sort(rootMovesPrevious.begin(), rootMovesPrevious.end());
+				std::cout << UCI::pv(*this, currentDepth) << std::endl;
+			}
+
 			++currentDepth;
+
+			if (t && outOutTime(t))
+				break;
+			if (Limits.depth && currentDepth > Limits.depth || t && outOutTime(t))
+				break;
 		}
 		return rootMoves[0].pv[0];
 	}

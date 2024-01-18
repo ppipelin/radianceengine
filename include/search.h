@@ -14,21 +14,40 @@ enum Color
 	COLOR_NB = 2
 };
 
+using TimePoint = std::chrono::milliseconds::rep; // A value in milliseconds
+static_assert(sizeof(TimePoint) == sizeof(int64_t), "TimePoint should be 64 bits");
+inline TimePoint now()
+{
+	return std::chrono::duration_cast<std::chrono::milliseconds>
+		(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+
 class Search
 {
 public:
+
+	inline TimePoint elapsed() const
+	{
+		return (now() - Limits.startTime);
+	}
+
+	inline bool outOutTime(const TimePoint &t) const
+	{
+		return elapsed() > (t / 20);
+	}
 
 	struct LimitsType
 	{
 		LimitsType()
 		{
 			// Init explicitly due to broken value-initialization of non POD in MSVC
-			time[WHITE] = time[BLACK] = movestogo = depth = mate = perft = infinite = nodes = 0;
+			movestogo = depth = mate = perft = infinite = nodes = 0;
+			time[WHITE] = time[BLACK] = inc[WHITE] = inc[BLACK] = TimePoint(0);
 		}
 
 		std::vector<cMove> searchmoves;
-		UInt movestogo, depth, mate, perft, infinite, time[COLOR_NB];
-		int64_t nodes;
+		UInt movestogo, depth, mate, perft, infinite, nodes;
+		TimePoint time[COLOR_NB], inc[COLOR_NB], startTime;
 	};
 
 	// RootMove struct is used for moves at the root of the tree. For each root move
@@ -59,6 +78,7 @@ public:
 	LimitsType Limits;
 	UInt pvIdx;
 	std::array<RootMove, MAX_PLY> rootMoves;
+	std::array<RootMove, MAX_PLY> rootMovesPrevious;
 	std::array<int, MAX_PLY> nodesSearched;
 	UInt rootMovesSize = 0;
 
@@ -67,6 +87,11 @@ public:
 	~Search() {}
 
 	virtual cMove nextMove(const BoardParser &, const Evaluate &)
+	{
+		return cMove();
+	}
+
+	virtual cMove nextMove(BoardParser &, const Evaluate &)
 	{
 		return cMove();
 	}
@@ -187,37 +212,55 @@ public:
 #ifndef optLegalOnly
 			std::erase_if(moveList, [b](cMove move) {
 				BoardParser b2(b);
-				b2.movePiece(move);
+				Piece *lastCapturedPiece = nullptr;
+				cMove lastMove = move;
+				b2.movePiece(lastMove, &lastCapturedPiece);
 				// Prune moves which keep the king in check
-				if (b2.inCheck(b.isWhiteTurn())) return true;
+				if (b2.inCheck(!b2.isWhiteTurn()))
+					return true;
 
 				// Prune moves which castles in check
-				if (move.isCastle() && b.inCheck(b.isWhiteTurn())) return true;
+				if (move.isCastle() && b.inCheck(b.isWhiteTurn()))
+					return true;
 
 				// Prune moves which castles through check
 				if (move.getFlags() == 0x2)
 				{
-					b2 = BoardParser(b);
-					b2.movePiece(cMove(move.getFrom(), move.getFrom() + 1));
-					if (b2.inCheck(b.isWhiteTurn())) return true;
+					UInt castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
 
-					b2 = BoardParser(b);
-					b2.movePiece(cMove(move.getFrom(), move.getFrom() + 2));
-					if (b2.inCheck(b.isWhiteTurn())) return true;
+					b2.unMovePiece(lastMove, castleInfo, lastCapturedPiece);
+					lastMove = cMove(move.getFrom(), move.getFrom() + 1);
+					b2.movePiece(lastMove, &lastCapturedPiece);
+					if (b2.inCheck(b.isWhiteTurn()))
+						return true;
+					b2.unMovePiece(lastMove, castleInfo, lastCapturedPiece);
+
+					lastMove = cMove(move.getFrom(), move.getFrom() + 2);
+					b2.movePiece(lastMove, &lastCapturedPiece);
+					if (b2.inCheck(b.isWhiteTurn()))
+						return true;
 				}
 				else if (move.getFlags() == 0x3)
 				{
-					b2 = BoardParser(b);
-					b2.movePiece(cMove(move.getFrom(), move.getFrom() - 1));
-					if (b2.inCheck(b.isWhiteTurn())) return true;
+					UInt castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
 
-					b2 = BoardParser(b);
-					b2.movePiece(cMove(move.getFrom(), move.getFrom() - 2));
-					if (b2.inCheck(b.isWhiteTurn())) return true;
+					b2.unMovePiece(lastMove, castleInfo, lastCapturedPiece);
+					lastMove = cMove(move.getFrom(), move.getFrom() - 1);
+					b2.movePiece(lastMove, &lastCapturedPiece);
+					if (b2.inCheck(b.isWhiteTurn()))
+						return true;
 
-					b2 = BoardParser(b);
-					b2.movePiece(cMove(move.getFrom(), move.getFrom() - 3));
-					if (b2.inCheck(b.isWhiteTurn())) return true;
+					b2.unMovePiece(lastMove, castleInfo, lastCapturedPiece);
+					lastMove = cMove(move.getFrom(), move.getFrom() - 2);
+					b2.movePiece(lastMove, &lastCapturedPiece);
+					if (b2.inCheck(b.isWhiteTurn()))
+						return true;
+
+					// b2.unMovePiece(lastMove, lastCapturedPiece);
+					// lastMove = cMove(move.getFrom(), move.getFrom() - 3);
+					// b2.movePiece(lastMove, &lastCapturedPiece);
+					// if (b2.inCheck(b.isWhiteTurn()))
+					// 	return true;
 				}
 				return false;
 				});
@@ -268,7 +311,7 @@ public:
 	* @param depth
 	* @return UInt number of possibles position after all possible moves on b
 	*/
-	static UInt perft(const BoardParser &b, UInt depth = 1, bool verbose = false)
+	static UInt perft(BoardParser &b, UInt depth = 1, bool verbose = false)
 	{
 		std::vector<cMove> moveList = std::vector<cMove>();
 		UInt nodes = 0;
@@ -339,9 +382,11 @@ public:
 				}
 			}
 #endif
-			BoardParser b2(b);
-			if (!b2.movePiece(move))
+			Piece *lastCapturedPiece = nullptr;
+			UInt castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
+			if (!b.movePiece(move, &lastCapturedPiece))
 			{
+				b.unMovePiece(move, castleInfo, lastCapturedPiece);
 				continue;
 			}
 #ifdef opt
@@ -352,7 +397,8 @@ public:
 				continue;
 			}
 #endif
-			UInt nodesNumber = perft(b2, depth - 1);
+			UInt nodesNumber = perft(b, depth - 1);
+			b.unMovePiece(move, castleInfo, lastCapturedPiece);
 			if (verbose)
 			{
 				std::cout << Board::toString(move.getFrom()) << Board::toString(move.getTo()) << " : " << nodesNumber << std::endl;

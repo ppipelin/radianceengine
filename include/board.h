@@ -23,6 +23,7 @@ private:
 
 public:
 	bool m_castleAvailableQueenWhite = true, m_castleAvailableKingWhite = true, m_castleAvailableQueenBlack = true, m_castleAvailableKingBlack = true;
+	bool m_castleAvailableQueenWhitePrevious = true, m_castleAvailableKingWhitePrevious = true, m_castleAvailableQueenBlackPrevious = true, m_castleAvailableKingBlackPrevious = true;
 
 	Board()
 	{
@@ -34,7 +35,6 @@ public:
 		}
 		m_whitePos.reserve(BOARD_SIZE * 2);
 		m_blackPos.reserve(BOARD_SIZE * 2);
-		m_castleAvailableQueenWhite = m_castleAvailableKingWhite = m_castleAvailableQueenBlack = m_castleAvailableKingBlack = true;
 		m_enPassant = -1;
 	}
 

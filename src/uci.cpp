@@ -75,7 +75,7 @@ namespace {
 		Search::LimitsType limits;
 		std::string token;
 
-		// limits.startTime = now(); // The search starts as early as possible
+		limits.startTime = now(); // The search starts as early as possible
 
 		while (is >> token)
 		{
@@ -108,27 +108,14 @@ namespace {
 		}
 		else
 		{
-			if ((pos.isWhiteTurn() ? limits.time[WHITE] : limits.time[BLACK]) != 0 && (pos.isWhiteTurn() ? limits.time[WHITE] : limits.time[BLACK]) < 120 * 1000)
-			{
-				limits.depth = 3;
-			}
-			else
-			{
-				limits.depth = 4;
-			}
 			// SearchRandom search = SearchRandom(limits);
 			// SearchMaterialist search = SearchMaterialist(limits);
 			SearchMaterialistNegamax search = SearchMaterialistNegamax(limits);
 			// EvaluateShannon evaluate = EvaluateShannon();
 			EvaluateShannonHeuristics evaluate = EvaluateShannonHeuristics();
 
-			auto t1 = std::chrono::high_resolution_clock::now();
-
 			cMove move = search.nextMove(pos, evaluate);
 
-			auto t2 = std::chrono::high_resolution_clock::now();
-			auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-			std::cout << "info time " << ms_int.count() << std::endl;
 			std::cout << "bestmove " << UCI::move(move) << std::endl;
 		}
 	}
@@ -339,7 +326,6 @@ cMove UCI::to_move(const BoardParser &pos, std::string &str)
 std::string UCI::pv(const Search &s, UInt depth)
 {
 	std::stringstream ss;
-	const std::array<Search::RootMove, MAX_PLY> &rootMoves = s.rootMoves;
 
 	// for (Int i = s.rootMovesSize - 1; i >= 0; --i)
 	for (Int i = 0; i < 1; ++i)
@@ -348,16 +334,20 @@ std::string UCI::pv(const Search &s, UInt depth)
 		if (ss.rdbuf()->in_avail())
 			ss << "\n";
 
+		UInt nodes = std::accumulate(s.nodesSearched.begin(), s.nodesSearched.end(), 0);
 		ss << "info"
 			<< " depth " << depth
-			<< " nodes " << std::accumulate(s.nodesSearched.begin(), s.nodesSearched.end(), 0)
+			<< " nodes " << nodes
+			<< " nps " << nodes * 1000 / s.elapsed()
+			<< " time " << s.elapsed()
+
 			<< " multipv " << i + 1
-			<< " score cp " << rootMoves[i].score
+			<< " score cp " << s.rootMovesPrevious[i].score
 			<< " pv";
 
-		auto a = std::count_if(rootMoves[i].pv.begin(), rootMoves[i].pv.end(), [](const cMove c) { return c != 0; });
+		auto a = std::count_if(s.rootMovesPrevious[i].pv.begin(), s.rootMovesPrevious[i].pv.end(), [](const cMove c) { return c != 0; });
 		for (UInt j = 0; j < a; ++j)
-			ss << " " << UCI::move(rootMoves[i].pv[j]);
+			ss << " " << UCI::move(s.rootMovesPrevious[i].pv[j]);
 	}
 	return ss.str();
 }
