@@ -184,17 +184,12 @@ public:
 				return b2.inCheck(b.isWhiteTurn());
 				});
 
-			std::erase_if(moveList, [b](cMove move) {
+			std::erase_if(moveList, [moveListAttack, b](cMove move) {
 				// Prune moves which castles in check
-				return move.isCastle() && b.inCheck(b.isWhiteTurn());
-				});
+				if (move.isCastle())
+					return b.inCheck(b.isWhiteTurn());
 
-			std::erase_if(moveList, [moveListAttack](cMove move) {
 				// Prune moves which castles through check
-				if (!move.isCastle())
-				{
-					return false;
-				}
 				if (move.getFlags() == 0x2)
 				{
 					return (std::find(moveListAttack.begin(), moveListAttack.end(), move.getFrom() + 1) != moveListAttack.end()) ||
@@ -213,6 +208,8 @@ public:
 			std::erase_if(moveList, [b](cMove move) {
 				BoardParser b2(b);
 				BoardParser::State s;
+				s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
+				s.enPassant = b.boardParsed()->enPassant();
 				s.lastCapturedPiece = nullptr;
 				cMove lastMove = move;
 				b2.movePiece(lastMove, &s.lastCapturedPiece);
@@ -224,13 +221,11 @@ public:
 				if (move.isCastle() && b.inCheck(b.isWhiteTurn()))
 					return true;
 
+				b2.unMovePiece(lastMove, s);
+
 				// Prune moves which castles through check
 				if (move.getFlags() == 0x2)
 				{
-					s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
-					s.enPassant = b.boardParsed()->enPassant();
-
-					b2.unMovePiece(lastMove, s);
 					lastMove = cMove(move.getFrom(), move.getFrom() + 1);
 					b2.movePiece(lastMove, &s.lastCapturedPiece);
 					if (b2.inCheck(b.isWhiteTurn()))
@@ -244,11 +239,6 @@ public:
 				}
 				else if (move.getFlags() == 0x3)
 				{
-					BoardParser::State s;
-					s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
-					s.enPassant = b.boardParsed()->enPassant();
-
-					b2.unMovePiece(lastMove, s);
 					lastMove = cMove(move.getFrom(), move.getFrom() - 1);
 					b2.movePiece(lastMove, &s.lastCapturedPiece);
 					if (b2.inCheck(b.isWhiteTurn()))
@@ -259,12 +249,6 @@ public:
 					b2.movePiece(lastMove, &s.lastCapturedPiece);
 					if (b2.inCheck(b.isWhiteTurn()))
 						return true;
-
-					// b2.unMovePiece(lastMove, lastCapturedPiece);
-					// lastMove = cMove(move.getFrom(), move.getFrom() - 3);
-					// b2.movePiece(lastMove, &lastCapturedPiece);
-					// if (b2.inCheck(b.isWhiteTurn()))
-					// 	return true;
 				}
 				return false;
 				});

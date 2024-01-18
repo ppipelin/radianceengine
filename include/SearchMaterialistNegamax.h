@@ -26,6 +26,7 @@ public:
 	Int quiesce(BoardParser &b, const Evaluate &e, Int alpha, Int beta)
 	{
 		++nodesSearched[pvIdx];
+
 		if (Search::inCheckMate(b, b.isWhiteTurn()))
 			return -MAX_EVAL + rootMoves[pvIdx].pvDepth;
 		// In order to get the quiescence search to terminate, plies are usually restricted to moves that deal directly with the threat,
@@ -37,10 +38,10 @@ public:
 			alpha = stand_pat;
 
 		// Early quit for quiesce
-		if (rootMoves[pvIdx].pvDepth >= 6)
+		if (rootMoves[pvIdx].pvDepth >= 12)
 			return alpha;
 
-		std::vector<cMove> moveListCaptures = std::vector<cMove>();
+		std::vector<cMove> moveListCaptures;
 		Search::generateMoveList(b, moveListCaptures, /*legalOnly=*/ true, true);
 
 		Search::orderMoves(b, moveListCaptures);
@@ -60,6 +61,7 @@ public:
 			s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
 			s.enPassant = b.boardParsed()->enPassant();
 			s.lastCapturedPiece = nullptr;
+
 #ifdef unMoveTest
 			BoardParser b2(b);
 #endif
@@ -76,12 +78,13 @@ public:
 			if (score >= beta)
 			{
 				// beta cutoff
+				rootMoves[pvIdx] = rootMoveTemp;
 				--(rootMoves[pvIdx].pvDepth);
 				return beta;
 			}
 			if (score > alpha)
 			{
-				rootMoves[pvIdx].pv[rootMoves[pvIdx].pvDepth - 1] = move;
+				// rootMoves[pvIdx].pv[rootMoves[pvIdx].pvDepth - 1] = move;
 				rootMoveTemp = rootMoves[pvIdx];
 				// alpha acts like max in MiniMax
 				alpha = score;
@@ -104,21 +107,30 @@ public:
 		constexpr bool PvNode = nodeType != NonPV;
 		constexpr bool rootNode = nodeType == Root;
 
+		std::vector<cMove> moveList;
 		if (depth <= 0)
 		{
-			return e.evaluate(b);
-			// return quiesce(b, e, alpha, beta);
+			// return e.evaluate(b);
+			return quiesce(b, e, alpha, beta);
 		}
-		std::vector<cMove> moveList;
-		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
-
-		Search::orderMoves(b, moveList);
-
-		if (moveList.empty())
+		if (rootNode)
 		{
-			if (b.inCheck(b.isWhiteTurn()))
-				return -MAX_EVAL + rootMoves[pvIdx].pvDepth;
-			return 0;
+			for (UInt i = 0; i < rootMovesSize; ++i)
+				moveList.push_back(rootMoves[i].pv[0]);
+			// Search::orderMoves(b, moveList);
+		}
+		else
+		{
+			Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
+
+			Search::orderMoves(b, moveList);
+
+			if (moveList.empty())
+			{
+				if (b.inCheck(b.isWhiteTurn()))
+					return -MAX_EVAL + rootMoves[pvIdx].pvDepth;
+				return 0;
+			}
 		}
 
 		++(rootMoves[pvIdx].pvDepth);
@@ -136,8 +148,7 @@ public:
 #endif
 			b.movePiece(move, &s.lastCapturedPiece);
 			Int score = -abSearch<PV>(b, e, -beta, -alpha, depth - 1);
-			if (!b.unMovePiece(move, s))
-				err("Can't unmove piece with move " + UCI::move(move));
+			b.unMovePiece(move, s);
 #ifdef unMoveTest
 			if (b != b2)
 			{
@@ -148,6 +159,7 @@ public:
 			if (score >= beta)
 			{
 				// beta cutoff
+				rootMoves[pvIdx] = rootMoveTemp;
 				--(rootMoves[pvIdx].pvDepth);
 				return beta;
 			}
@@ -173,11 +185,11 @@ public:
 				TimePoint t(b.isWhiteTurn() ? Limits.time[WHITE] : Limits.time[BLACK]);
 				if (t && outOfTime(t) && depth > 1)
 					return -MAX_EVAL;
-				++pvIdx;
-				++(rootMoves[pvIdx].pvDepth);
+				if (++pvIdx < rootMovesSize)
+					++(rootMoves[pvIdx].pvDepth);
 			}
 		}
-		if (PvNode)
+		if (!rootNode)
 			--(rootMoves[pvIdx].pvDepth);
 
 		return alpha;
@@ -265,7 +277,7 @@ public:
 			Int alpha = std::max(prev - delta, -MAX_EVAL);
 			Int beta = std::min(prev + delta, MAX_EVAL);
 			Int failedHighCnt = 0;
-			Int failedHighLowCnt = 0;
+			Int failedLowCnt = 0;
 			// Aspiration window
 			// Disable by alpha = -MAX_EVAL; beta = MAX_EVAL;
 			alpha = -MAX_EVAL; beta = MAX_EVAL;
@@ -289,15 +301,8 @@ public:
 				// Incomplete search rollback
 				if (t && outOfTime(t) && currentDepth > 1)
 				{
-					rootMoves = rootMovesPrevious;
+					std::copy(rootMovesPrevious.begin(), rootMovesPrevious.begin() + rootMovesSize, rootMoves.begin());
 					break;
-				}
-				else
-				{
-					// std::copy(rootMoves.begin(), rootMoves.begin() + rootMovesSize, rootMovesPrevious.begin());
-					// std::stable_sort(rootMovesPrevious.begin(), rootMovesPrevious.begin() + rootMovesSize);
-					// std::stable_sort(rootMoves.begin(), rootMoves.begin() + rootMovesSize);
-					// std::cout << UCI::pv(*this, currentDepth) << std::endl;
 				}
 				// In case of failing low/high increase aspiration window and
 				// re-search, otherwise exit the loop.
@@ -305,10 +310,9 @@ public:
 				{
 					beta = (alpha + beta) / 2;
 					alpha = std::max(rootMoves[0].score - delta, -MAX_EVAL);
-					// warn("info failing low/high");
-					++failedHighLowCnt;
+					++failedLowCnt;
 					failedHighCnt = 0;
-					rootMoves = rootMovesPrevious;
+					std::copy(rootMovesPrevious.begin(), rootMovesPrevious.begin() + rootMovesSize, rootMoves.begin());
 				}
 				else if (rootMoves[0].score >= beta)
 				{
@@ -327,9 +331,8 @@ public:
 				break;
 
 			std::copy(rootMoves.begin(), rootMoves.begin() + rootMovesSize, rootMovesPrevious.begin());
-			std::stable_sort(rootMovesPrevious.begin(), rootMovesPrevious.begin() + rootMovesSize);
-			// std::stable_sort(rootMoves.begin(), rootMoves.begin() + rootMovesSize);
-			std::cout << "info failedHighCnt " << failedHighCnt << " failedHighLowCnt " << failedHighLowCnt << " alpha " << alpha << " beta " << beta << std::endl;
+			std::stable_sort(rootMoves.begin(), rootMoves.begin() + rootMovesSize);
+			std::cout << "info failedHighCnt " << failedHighCnt << " failedLowCnt " << failedLowCnt << " alpha " << alpha << " beta " << beta << std::endl;
 			std::cout << UCI::pv(*this, currentDepth) << std::endl;
 
 			++currentDepth;
@@ -337,7 +340,6 @@ public:
 			if (Limits.depth && currentDepth > Limits.depth)
 				break;
 		}
-		std::stable_sort(rootMoves.begin(), rootMoves.end());
 		return rootMoves[0].pv[0];
 	}
 };

@@ -134,7 +134,7 @@ void UCI::loop(int argc, char *argv[])
 	pos.fillBoard(startFen);
 
 	std::queue<std::string> q;
-	for (UInt i = 1; i < argc; ++i)
+	for (Int i = 1; i < argc; ++i)
 		q.push(std::string(argv[i]));
 	{
 		// q.push("position startpos moves e2e3");
@@ -341,12 +341,12 @@ std::string UCI::pv(const Search &s, UInt depth)
 			<< " nps " << nodes * 1000 / s.elapsed()
 			<< " time " << s.elapsed()
 			<< " multipv " << i + 1
-			<< " score cp " << s.rootMovesPrevious[i].score
+			<< " score cp " << s.rootMoves[i].score
 			<< " pv";
 
-		auto a = std::count_if(s.rootMovesPrevious[i].pv.begin(), s.rootMovesPrevious[i].pv.end(), [](const cMove c) { return c != 0; });
+		auto a = std::count_if(s.rootMoves[i].pv.begin(), s.rootMoves[i].pv.end(), [](const cMove c) { return c != 0; });
 		for (UInt j = 0; j < a; ++j)
-			ss << " " << UCI::move(s.rootMovesPrevious[i].pv[j]);
+			ss << " " << UCI::move(s.rootMoves[i].pv[j]);
 	}
 	return ss.str();
 }

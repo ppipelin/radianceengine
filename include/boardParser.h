@@ -190,11 +190,10 @@ public:
 		* @brief
 		*
 		* @param move : moving flags as depicted in https://www.chessprogramming.org/Encoding_Moves#From-To_Based
-		* @param rookMoveCastle : moving rook during castle
 		* @return true : move successful
 		* @return false : move illegal
 		*/
-	bool movePiece(cMove const &move, Piece **lastCapturedPiece = nullptr, bool rookMoveCastle = false)
+	bool movePiece(cMove const &move, Piece **lastCapturedPiece = nullptr)
 	{
 		UInt to = move.getTo();
 		UInt from = move.getFrom();
@@ -322,13 +321,13 @@ public:
 		// If castling we move the rook as well
 		if (flags == 2)
 		{
-			movePiece(cMove(from + 3, from + 3 - 2), /*lastCapturedPiece =*/ nullptr, /*rookMoveCastle =*/ true);
+			movePiece(cMove(from + 3, from + 3 - 2), /*lastCapturedPiece =*/ nullptr);
 			// We have moved, we need to set the turn back
 			m_isWhiteTurn = !m_isWhiteTurn;
 		}
 		else if (flags == 3)
 		{
-			movePiece(cMove(from - 4, from - 4 + 3), /*lastCapturedPiece =*/ nullptr, /*rookMoveCastle =*/ true);
+			movePiece(cMove(from - 4, from - 4 + 3), /*lastCapturedPiece =*/ nullptr);
 			// We have moved, we need to set the turn back
 			m_isWhiteTurn = !m_isWhiteTurn;
 		}
@@ -346,7 +345,7 @@ public:
 		* @return true : move successful
 		* @return false : move illegal
 		*/
-	bool unMovePiece(const cMove &move, State &s)
+	bool unMovePiece(const cMove &move, const State &s)
 	{
 		UInt to = move.getTo();
 		UInt from = move.getFrom();
@@ -396,7 +395,6 @@ public:
 			m_board->blackPos().push_back(from);
 		}
 
-
 		// Updates enPassant if possible next turn
 		if (s.lastCapturedPiece != nullptr)
 		{
@@ -417,7 +415,6 @@ public:
 			}
 		}
 
-		s.lastCapturedPiece = nullptr;
 		m_isWhiteTurn = !m_isWhiteTurn;
 
 		// If castling we move the rook as well
