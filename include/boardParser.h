@@ -17,7 +17,7 @@
 
 /**
 	* @brief This class is used to parse the board and is aware of the Piece's type.
-	* @details To be able to know the if castle is available, it contains the movePiece()	function.
+	* @details To be able to know the if castle is available, it contains the movePiece() function.
 	*/
 class BoardParser
 {
@@ -168,6 +168,7 @@ public:
 	{
 		UInt castleInfo = 0b1111;
 		Int enPassant = -1;
+		Piece *lastCapturedPiece = nullptr;
 	};
 
 	// Mutators
@@ -192,7 +193,7 @@ public:
 		* @return true : move successful
 		* @return false : move illegal
 		*/
-	bool movePiece(cMove const &move)
+	bool movePiece(cMove const &move, Piece **lastCapturedPiece = nullptr)
 	{
 		UInt to = move.getTo();
 		UInt from = move.getFrom();
@@ -204,6 +205,7 @@ public:
 			err("moving a nullptr");
 			return false;
 		}
+
 		// Disable castle if king/rook is moved
 		if (typeid(*fromPiece) == typeid(King))
 		{
@@ -222,28 +224,10 @@ public:
 		}
 		else if (typeid(*fromPiece) == typeid(Rook))
 		{
-			if (fromPiece->isWhite())
-			{
-				if (Board::column(from) == 7)
-				{
-					boardParsed()->m_castleAvailableKingWhite = false;
-				}
-				else if (Board::column(from) == 0)
-				{
-					boardParsed()->m_castleAvailableQueenWhite = false;
-				}
-			}
-			else
-			{
-				if (Board::column(from) == 7)
-				{
-					boardParsed()->m_castleAvailableKingBlack = false;
-				}
-				else if (Board::column(from) == 0)
-				{
-					boardParsed()->m_castleAvailableQueenBlack = false;
-				}
-			}
+			if (Board::column(from) == 7)
+				(fromPiece->isWhite() ? boardParsed()->m_castleAvailableKingWhite : boardParsed()->m_castleAvailableKingBlack) = false;
+			else	if (Board::column(from) == 0)
+				(fromPiece->isWhite() ? boardParsed()->m_castleAvailableQueenWhite : boardParsed()->m_castleAvailableQueenBlack) = false;
 		}
 		else if (typeid(*fromPiece) == typeid(Pawn))
 		{
@@ -252,7 +236,11 @@ public:
 			{
 				// Should never be nullptr
 				UInt enPassantTile = to + (fromPiece->isWhite() ? -Int(BOARD_SIZE) : BOARD_SIZE);
-				delete m_board->board()[enPassantTile];
+
+				// This if handles legacy behavior providing no pointer to lastCapturedPiece
+				if (lastCapturedPiece != nullptr)
+					*lastCapturedPiece = m_board->board()[enPassantTile];
+
 				m_board->board()[enPassantTile] = nullptr;
 				// Remove in color table
 				if (fromPiece->isWhite())
@@ -273,21 +261,13 @@ public:
 				delete m_board->board()[from];
 				m_board->board()[from] = nullptr;
 				if (((move.m_move >> 12) & 0x3) == 0)
-				{
 					fromPiece = new Knight(from, isWhite, false);
-				}
 				else if (((move.m_move >> 12) & 0x3) == 1)
-				{
 					fromPiece = new Bishop(from, isWhite, false);
-				}
 				else if (((move.m_move >> 12) & 0x3) == 2)
-				{
 					fromPiece = new Rook(from, isWhite, false);
-				}
 				else if (((move.m_move >> 12) & 0x3) == 3)
-				{
 					fromPiece = new Queen(from, isWhite, false);
-				}
 			}
 		}
 
@@ -303,7 +283,10 @@ public:
 			else if (to == 63)
 				m_board->m_castleAvailableKingBlack = false;
 
-			delete m_board->board()[to];
+			// This if handles legacy behavior providing no pointer to lastCapturedPiece
+			if (lastCapturedPiece != nullptr)
+				*lastCapturedPiece = m_board->board()[to];
+
 			m_board->board()[to] = nullptr;
 			// Editing color table for captures
 			if (fromPiece->isWhite())
@@ -338,19 +321,115 @@ public:
 		// If castling we move the rook as well
 		if (flags == 2)
 		{
-			movePiece(cMove(from + 3, from + 3 - 2));
+			movePiece(cMove(from + 3, from + 3 - 2), /*lastCapturedPiece =*/ nullptr);
 			// We have moved, we need to set the turn back
 			m_isWhiteTurn = !m_isWhiteTurn;
 		}
 		else if (flags == 3)
 		{
-			movePiece(cMove(from - 4, from - 4 + 3));
+			movePiece(cMove(from - 4, from - 4 + 3), /*lastCapturedPiece =*/ nullptr);
 			// We have moved, we need to set the turn back
 			m_isWhiteTurn = !m_isWhiteTurn;
 		}
 
 		// Updates enPassant if possible next turn
 		m_board->enPassant(typeid(*fromPiece) == typeid(Pawn) && fabs(Int(from) - Int(to)) == 16 ? to : -1);
+
+		return true;
+	}
+
+	/**
+		* @brief
+		*
+		* @param move : moving flags as depicted in https://www.chessprogramming.org/Encoding_Moves#From-To_Based
+		* @return true : move successful
+		* @return false : move illegal
+		*/
+	bool unMovePiece(const cMove &move, const State &s)
+	{
+		UInt to = move.getTo();
+		UInt from = move.getFrom();
+		UInt flags = move.getFlags();
+		// Piece *fromPiece = m_board->board()[from];
+		Piece *toPiece = m_board->board()[to];
+
+		m_board->board()[from] = toPiece;
+		toPiece->tile() = from;
+		m_board->board()[to] = nullptr;
+
+		boardParsed()->m_castleAvailableKingWhite = s.castleInfo & 0b0100;
+		boardParsed()->m_castleAvailableQueenWhite = s.castleInfo & 0b1000;
+		boardParsed()->m_castleAvailableKingBlack = s.castleInfo & 0b0001;
+		boardParsed()->m_castleAvailableQueenBlack = s.castleInfo & 0b0010;
+		if (typeid(*toPiece) == typeid(King))
+		{
+			if (toPiece->isWhite())
+				whiteKing(from);
+			else
+				blackKing(from);
+		}
+
+		// Was a promotion
+		if (move.isPromotion())
+		{
+			// temporary have to delete and new but shouldbe fixed for speedup
+			// Before delete we store the data we need
+			const bool isWhite = toPiece->isWhite();
+			delete m_board->board()[from];
+			m_board->board()[from] = new Pawn(from, isWhite, false);
+			toPiece = m_board->board()[from];
+		}
+
+		boardParsed()->enPassant(s.enPassant);
+
+		// Editing color table
+		// TODO : use std::replace_if ? or std::replace to avoid loop over all vector
+		if (toPiece->isWhite())
+		{
+			m_board->whitePos().erase(std::find(m_board->whitePos().begin(), m_board->whitePos().end(), to));
+			m_board->whitePos().push_back(from);
+		}
+		else
+		{
+			m_board->blackPos().erase(std::find(m_board->blackPos().begin(), m_board->blackPos().end(), to));
+			m_board->blackPos().push_back(from);
+		}
+
+		// Updates enPassant if possible next turn
+		if (s.lastCapturedPiece != nullptr)
+		{
+			UInt localTo = to;
+			if (s.lastCapturedPiece->tile() != to)
+				localTo = s.lastCapturedPiece->isWhite() ? to + 8 : to - 8;
+
+			m_board->board()[localTo] = s.lastCapturedPiece;
+
+			// Editing color table for captures
+			if (s.lastCapturedPiece->isWhite())
+			{
+				m_board->whitePos().push_back(localTo);
+			}
+			else
+			{
+				m_board->blackPos().push_back(localTo);
+			}
+		}
+
+		m_isWhiteTurn = !m_isWhiteTurn;
+
+		// If castling we move the rook as well
+		if (flags == 2)
+		{
+			unMovePiece(cMove(from + 3, from + 3 - 2), s);
+			// We have moved, we need to set the turn back
+			m_isWhiteTurn = !m_isWhiteTurn;
+		}
+		else if (flags == 3)
+		{
+			unMovePiece(cMove(from - 4, from - 4 + 3), s);
+			// We have moved, we need to set the turn back
+			m_isWhiteTurn = !m_isWhiteTurn;
+		}
 
 		return true;
 	}
