@@ -79,7 +79,7 @@ public:
 	UInt pvIdx = 0;
 	std::array<RootMove, MAX_PLY> rootMoves;
 	std::array<RootMove, MAX_PLY> rootMovesPrevious;
-	std::array<int, MAX_PLY> nodesSearched;
+	std::array<int, MAX_PLY> nodesSearched = { 0 };
 	UInt rootMovesSize = 0;
 
 	Search(const Search::LimitsType &limits) : Limits(limits) {}

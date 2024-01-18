@@ -93,6 +93,9 @@ public:
 			{
 				rootMoves[pvIdx] = rootMoveTemp;
 			}
+			TimePoint t(b.isWhiteTurn() ? Limits.time[WHITE] : Limits.time[BLACK]);
+			if (t && outOfTime(t))
+				break;
 		}
 		--(rootMoves[pvIdx].pvDepth);
 		return alpha;
@@ -303,12 +306,9 @@ public:
 #endif
 
 				TimePoint t(b.isWhiteTurn() ? Limits.time[WHITE] : Limits.time[BLACK]);
-				// Incomplete search rollback
 				if (t && outOfTime(t) && currentDepth > 1)
-				{
-					std::copy(rootMovesPrevious.begin(), rootMovesPrevious.begin() + rootMovesSize, rootMoves.begin());
 					break;
-				}
+
 				// In case of failing low/high increase aspiration window and
 				// re-search, otherwise exit the loop.
 				if (rootMoves[0].score <= alpha)
@@ -328,15 +328,17 @@ public:
 					break;
 
 				delta += delta / 3;
-				if (t && outOfTime(t) && currentDepth > 1)
-					break;
 			}
+			// Incomplete search rollback
 			TimePoint t(b.isWhiteTurn() ? Limits.time[WHITE] : Limits.time[BLACK]);
 			if (t && outOfTime(t) && currentDepth > 1)
+			{
+				std::copy(rootMovesPrevious.begin(), rootMovesPrevious.begin() + rootMovesSize, rootMoves.begin());
 				break;
+			}
 
-			std::copy(rootMoves.begin(), rootMoves.begin() + rootMovesSize, rootMovesPrevious.begin());
 			std::stable_sort(rootMoves.begin(), rootMoves.begin() + rootMovesSize);
+			std::copy(rootMoves.begin(), rootMoves.begin() + rootMovesSize, rootMovesPrevious.begin());
 			std::cout << "info failedHighCnt " << failedHighCnt << " failedLowCnt " << failedLowCnt << " alpha " << alpha << " beta " << beta << std::endl;
 			std::cout << UCI::pv(*this, currentDepth) << std::endl;
 
