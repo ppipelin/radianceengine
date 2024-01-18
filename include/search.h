@@ -226,6 +226,30 @@ public:
 		return moveList;
 	}
 
+
+	struct MoveComparator
+	{
+		MoveComparator(BoardParser b) { this->b = b; }
+		// bool operator() (const cMove &m1, const cMove &m2)
+		// {
+		// 	if (m1.isCapture() ^ m2.isCapture() || !(m1.isCapture() || m2.isCapture())) return m1.isCapture();
+		// 	return (*b.boardParsed())[m1.getTo()]->value() > (*b.boardParsed())[m2.getTo()]->value();
+		// }
+
+		bool operator() (const cMove &m1, const cMove &m2)
+		{
+			return (m1.isCapture() ? Int((*b.boardParsed())[m1.getTo()]->value()) - Int((*b.boardParsed())[m1.getFrom()]->value()) : 0) >
+				(m2.isCapture() ? Int((*b.boardParsed())[m2.getTo()]->value()) - Int((*b.boardParsed())[m2.getFrom()]->value()) : 0);
+		}
+
+		BoardParser b;
+	};
+
+	static void orderMoves(const BoardParser &b, std::vector<cMove> &moveList)
+	{
+		std::sort(moveList.begin(), moveList.end(), MoveComparator(b));
+	}
+
 	static bool inCheckMate(const BoardParser &b, const bool isWhite)
 	{
 		if (b.inCheck(isWhite))
