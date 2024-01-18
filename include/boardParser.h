@@ -501,6 +501,10 @@ public:
 		{
 			m_board->enPassant(Board::toTiles(words[3]));
 		}
+		else
+		{
+			m_board->enPassant(-1);
+		}
 		return true;
 	}
 
