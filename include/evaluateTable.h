@@ -161,8 +161,10 @@ public:
 		}
 
 		// Once ennemy has less pieces our king attacks the other one
-		// Threshold defined as the value of a king, six pawns a bishop and a knight
-		const bool endgame = (b.isWhiteTurn() ? scorePieceBlack : scorePieceWhite) <= 20000 + 6 * 100 + 333 + 305;
+		// King, seven pawns a rook and a bishop
+		const bool endgame = (b.isWhiteTurn() ? scorePieceBlack : scorePieceWhite) <= 20000 + 7 * 100 + 563 + 333;
+		// King, six pawns a bishop and a knight
+		const bool endgameHard = (b.isWhiteTurn() ? scorePieceBlack : scorePieceWhite) <= 20000 + 4 * 100 + 333 + 305;
 
 		for (Int i = -1; i < 2; i += 2)
 		{
@@ -184,7 +186,10 @@ public:
 				if (typeid(*p) == typeid(King))
 				{
 					if (endgame)
-						(i == 1 ? scorePieceWhiteTable : scorePieceBlackTable) += kingEndgameTable[idxTable];
+					{
+						if (!endgameHard)
+							(i == 1 ? scorePieceWhiteTable : scorePieceBlackTable) += kingEndgameTable[idxTable];
+					}
 					else
 						(i == 1 ? scorePieceWhiteTable : scorePieceBlackTable) += kingTable[idxTable];
 				}

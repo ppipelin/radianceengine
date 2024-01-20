@@ -96,34 +96,6 @@ public:
 		return cMove();
 	}
 
-	bool applyMove(BoardParser &b2, const cMove &move) const
-	{
-		// Castling over a controlled tile is illegal so create temporary board to check path
-		if (move.isCastle())
-		{
-			cMove moveCastle = cMove(move);
-			UInt to = move.getFlags() == 2 ? moveCastle.getFrom() + 1 : moveCastle.getFrom() - 1;
-			BoardParser b3 = BoardParser(b2);
-			moveCastle.setTo(to);
-			moveCastle.setFlags(0);
-			b3.movePiece(moveCastle);
-			if (b3.inCheck(!b3.isWhiteTurn()))
-			{
-				return false;
-			}
-		}
-		if (!b2.movePiece(move))
-		{
-			return false;
-		}
-		// We assert that we are not in check after we just moved
-		if (b2.inCheck(!b2.isWhiteTurn()))
-		{
-			// We don't count illegal moves
-			return false;
-		}
-		return true;
-	}
 
 	static std::vector<cMove> generateMoveList(const BoardParser &b, std::vector<cMove> &moveList, bool legalOnly = false, bool onlyCapture = false)
 	{
@@ -279,17 +251,6 @@ public:
 	static void orderMoves(const BoardParser &b, std::vector<cMove> &moveList)
 	{
 		std::sort(moveList.begin(), moveList.end(), MoveComparator(b));
-	}
-
-	static bool inCheckMate(const BoardParser &b, const bool isWhite)
-	{
-		if (b.inCheck(isWhite))
-		{
-			std::vector<cMove> moveList = std::vector<cMove>();
-			Search::generateMoveList(b, moveList, true);
-			return moveList.empty();
-		}
-		return false;
 	}
 
 	/**
