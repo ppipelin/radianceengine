@@ -96,25 +96,15 @@ public:
 		return cMove();
 	}
 
-
-	static std::vector<cMove> generateMoveList(const BoardParser &b, std::vector<cMove> &moveList, bool legalOnly = false, bool onlyCapture = false)
+	static void generateMoveList(BoardParser &b, std::vector<cMove> &moveList, bool legalOnly = false, bool onlyCapture = false)
 	{
 		std::vector<UInt> allyPositions = b.isWhiteTurn() ? b.boardParsed()->whitePos() : b.boardParsed()->blackPos();
 		std::vector<UInt> enemyPositions = !b.isWhiteTurn() ? b.boardParsed()->whitePos() : b.boardParsed()->blackPos();
+		moveList.reserve(MAX_PLY);
 		for (UInt tileIdx = 0; tileIdx < allyPositions.size(); ++tileIdx)
 		{
 			UInt tile = allyPositions[tileIdx];
 			const Piece *piece = b.boardParsed()->board()[tile];
-			if (piece == nullptr)
-			{
-				err("nullptr piece");
-				continue;
-			}
-			if (piece->isWhite() != b.isWhiteTurn())
-			{
-				err("is wrong turn");
-				continue;
-			}
 			std::vector<cMove> subMoveList = std::vector<cMove>();
 			piece->canMove(*b.boardParsed(), subMoveList);
 			moveList.insert(moveList.end(), subMoveList.begin(), subMoveList.end());
@@ -130,33 +120,54 @@ public:
 			// #define optLegalOnly
 #ifdef optLegalOnly
 			// Look for attacked squares
-			std::vector<cMove> moveListAttack;
+			std::array<cMove, MAX_PLY> moveListAttack = {};
+			size_t moveListAttackSize = 0;
 			for (UInt tileIdx = 0; tileIdx < enemyPositions.size(); ++tileIdx)
 			{
 				UInt tile = enemyPositions[tileIdx];
 				const Piece *piece = b.boardParsed()->board()[tile];
-				if (piece == nullptr)
-				{
-					err("nullptr piece");
-					continue;
-				}
-				if (piece->isWhite() == b.isWhiteTurn())
-				{
-					err("is wrong turn");
-					continue;
-				}
 				std::vector<cMove> subMoveList = std::vector<cMove>();
 				piece->canMove(*b.boardParsed(), subMoveList);
-				moveListAttack.insert(moveListAttack.end(), subMoveList.begin(), subMoveList.end());
+				std::copy(subMoveList.begin(), subMoveList.end(), moveListAttack.begin() + moveListAttackSize);
+				moveListAttackSize += subMoveList.size();
 			}
-			std::erase_if(moveList, [b](cMove move) {
-				BoardParser b2(b);
-				b2.movePiece(move);
-				// Prune moves which keep the king in check
-				return b2.inCheck(b.isWhiteTurn());
-				});
 
-			std::erase_if(moveList, [moveListAttack, b](cMove move) {
+			std::erase_if(moveList, [b, moveListAttack, moveListAttackSize](cMove move) mutable {
+				BoardParser::State s(b);
+				b.movePiece(move, &s.lastCapturedPiece);
+				// Prune moves which keep the king in check
+				const bool keepInCheck = b.inCheck(!b.isWhiteTurn());
+				b.unMovePiece(move, s);
+				if (keepInCheck) return true;
+
+				// Prune moves which castles in check
+				if (move.isCastle())
+					return b.inCheck(b.isWhiteTurn(), moveListAttack, moveListAttackSize);
+
+				// Prune moves which castles through check
+				if (move.getFlags() == 0x2)
+				{
+					return (std::find(moveListAttack.begin(), moveListAttack.begin() + moveListAttackSize, move.getFrom() + 1) != moveListAttack.begin() + moveListAttackSize) ||
+						(std::find(moveListAttack.begin(), moveListAttack.begin() + moveListAttackSize, move.getFrom() + 2) != moveListAttack.begin() + moveListAttackSize);
+				}
+				else if (move.getFlags() == 0x3)
+				{
+					return (std::find(moveListAttack.begin(), moveListAttack.begin() + moveListAttackSize, move.getFrom() - 1) != moveListAttack.begin() + moveListAttackSize) ||
+						(std::find(moveListAttack.begin(), moveListAttack.begin() + moveListAttackSize, move.getFrom() - 2) != moveListAttack.begin() + moveListAttackSize) ||
+						(std::find(moveListAttack.begin(), moveListAttack.begin() + moveListAttackSize, move.getFrom() - 3) != moveListAttack.begin() + moveListAttackSize);
+				}
+				return false;
+				});
+#endif
+#ifndef optLegalOnly
+			std::erase_if(moveList, [b](const cMove move) mutable {
+				BoardParser::State s(b);
+				b.movePiece(move, &s.lastCapturedPiece);
+				// Prune moves which keep the king in check
+				bool exit = b.inCheck(!b.isWhiteTurn());
+				b.unMovePiece(move, s);
+				if (exit) return true;
+
 				// Prune moves which castles in check
 				if (move.isCastle())
 					return b.inCheck(b.isWhiteTurn());
@@ -164,69 +175,40 @@ public:
 				// Prune moves which castles through check
 				if (move.getFlags() == 0x2)
 				{
-					return (std::find(moveListAttack.begin(), moveListAttack.end(), move.getFrom() + 1) != moveListAttack.end()) ||
-						(std::find(moveListAttack.begin(), moveListAttack.end(), move.getFrom() + 2) != moveListAttack.end());
-				}
-				else if (move.getFlags() == 0x3)
-				{
-					return (std::find(moveListAttack.begin(), moveListAttack.end(), move.getFrom() - 1) != moveListAttack.end()) ||
-						(std::find(moveListAttack.begin(), moveListAttack.end(), move.getFrom() - 2) != moveListAttack.end()) ||
-						(std::find(moveListAttack.begin(), moveListAttack.end(), move.getFrom() - 3) != moveListAttack.end());
-				}
-				return false;
-				});
-#endif
-#ifndef optLegalOnly
-			std::erase_if(moveList, [b](cMove move) {
-				BoardParser b2(b);
-				BoardParser::State s;
-				s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
-				s.enPassant = b.boardParsed()->enPassant();
-				s.lastCapturedPiece = nullptr;
-				cMove lastMove = move;
-				b2.movePiece(lastMove, &s.lastCapturedPiece);
-				// Prune moves which keep the king in check
-				if (b2.inCheck(!b2.isWhiteTurn()))
-					return true;
-
-				// Prune moves which castles in check
-				if (move.isCastle() && b.inCheck(b.isWhiteTurn()))
-					return true;
-
-				b2.unMovePiece(lastMove, s);
-
-				// Prune moves which castles through check
-				if (move.getFlags() == 0x2)
-				{
-					lastMove = cMove(move.getFrom(), move.getFrom() + 1);
-					b2.movePiece(lastMove, &s.lastCapturedPiece);
-					if (b2.inCheck(b.isWhiteTurn()))
+					cMove lastMove = cMove(move.getFrom(), move.getFrom() + 1);
+					b.movePiece(lastMove, &s.lastCapturedPiece);
+					exit = b.inCheck(!b.isWhiteTurn());
+					b.unMovePiece(lastMove, s);
+					if (exit)
 						return true;
-					b2.unMovePiece(lastMove, s);
 
 					lastMove = cMove(move.getFrom(), move.getFrom() + 2);
-					b2.movePiece(lastMove, &s.lastCapturedPiece);
-					if (b2.inCheck(b.isWhiteTurn()))
+					b.movePiece(lastMove, &s.lastCapturedPiece);
+					exit = b.inCheck(!b.isWhiteTurn());
+					b.unMovePiece(lastMove, s);
+					if (exit)
 						return true;
 				}
 				else if (move.getFlags() == 0x3)
 				{
-					lastMove = cMove(move.getFrom(), move.getFrom() - 1);
-					b2.movePiece(lastMove, &s.lastCapturedPiece);
-					if (b2.inCheck(b.isWhiteTurn()))
+					cMove lastMove = cMove(move.getFrom(), move.getFrom() - 1);
+					b.movePiece(lastMove, &s.lastCapturedPiece);
+					exit = b.inCheck(!b.isWhiteTurn());
+					b.unMovePiece(lastMove, s);
+					if (exit)
 						return true;
 
-					b2.unMovePiece(lastMove, s);
 					lastMove = cMove(move.getFrom(), move.getFrom() - 2);
-					b2.movePiece(lastMove, &s.lastCapturedPiece);
-					if (b2.inCheck(b.isWhiteTurn()))
+					b.movePiece(lastMove, &s.lastCapturedPiece);
+					exit = b.inCheck(!b.isWhiteTurn());
+					b.unMovePiece(lastMove, s);
+					if (exit)
 						return true;
 				}
 				return false;
 				});
 #endif
 		}
-		return moveList;
 	}
 
 

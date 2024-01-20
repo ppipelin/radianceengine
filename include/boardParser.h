@@ -14,6 +14,7 @@
 #include "cMove.h"
 
 #include <sstream>
+#include <algorithm>
 
 /**
 	* @brief This class is used to parse the board and is aware of the Piece's type.
@@ -667,27 +668,30 @@ public:
 		return s;
 	}
 
-	bool inCheck(bool isWhite) const
+	bool inCheck(bool isWhite, std::array<cMove, MAX_PLY> vTotal = std::array<cMove, MAX_PLY>(), size_t arraySize = 0) const
 	{
 		UInt kingPos = whiteKing();
-		std::vector<cMove> vTotal = std::vector<cMove>();
 		if (!isWhite)
 			kingPos = blackKing();
 		// Compute all oponents moves
-		for (const auto tile : (!isWhite ? m_board->whitePos() : m_board->blackPos()))
+		if (arraySize == 0)
 		{
-			std::vector<cMove> v;
-			const Piece *piece = m_board->board()[tile];
-			if (piece == nullptr)
+			for (const auto tile : (!isWhite ? m_board->whitePos() : m_board->blackPos()))
 			{
-				continue;
+				std::vector<cMove> v;
+				const Piece *piece = m_board->board()[tile];
+				if (piece == nullptr)
+				{
+					continue;
+				}
+				piece->canMove(*m_board, v);
+				std::copy(v.begin(), v.end(), vTotal.begin() + arraySize);
+				arraySize += v.size();
 			}
-			piece->canMove(*m_board, v);
-			vTotal.insert(vTotal.end(), v.begin(), v.end());
 		}
 
 		// TODO: parallelize
-		return std::find_if(vTotal.begin(), vTotal.end(), [kingPos](const auto &ele) {return ele.getTo() == kingPos;}) != vTotal.end();
+		return std::find_if(vTotal.begin(), vTotal.begin() + arraySize, [kingPos](const auto &ele) {return ele.getTo() == kingPos;}) != vTotal.begin() + arraySize;
 	}
 
 	void displayCout()

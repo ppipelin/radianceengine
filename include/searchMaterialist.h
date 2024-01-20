@@ -11,7 +11,7 @@ public:
 	SearchMaterialist(const SearchMaterialist &s) : Search(s.Limits) {}
 	~SearchMaterialist() {}
 
-	Int search(const BoardParser &b, const Evaluate &e, UInt depth)
+	Int search(BoardParser &b, const Evaluate &e, UInt depth)
 	{
 		++nodesSearched[pvIdx];
 		if (depth <= 0)
@@ -57,7 +57,7 @@ public:
 		return bestScore;
 	}
 
-	cMove nextMove(const BoardParser &b, const Evaluate &e) override
+	cMove nextMove(BoardParser &b, const Evaluate &e) override
 	{
 		nodesSearched.fill(0);
 		std::vector<cMove> moveList = std::vector<cMove>();
