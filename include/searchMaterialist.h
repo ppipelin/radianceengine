@@ -80,10 +80,6 @@ public:
 		for (pvIdx = 0; pvIdx < rootMovesSize; ++pvIdx)
 		{
 			cMove move = rootMoves[pvIdx].pv[0];
-			if (move.isCapture() && move.getTo() == 11) //  && (*b.boardParsed())[60] != nullptr
-			{
-				std::cout << "";
-			}
 			b2 = BoardParser(b);
 			b2.movePiece(move);
 			Int score;

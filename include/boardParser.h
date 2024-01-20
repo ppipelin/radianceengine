@@ -166,6 +166,14 @@ public:
 
 	struct State
 	{
+		State(const BoardParser &b)
+		{
+			castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
+			enPassant = b.boardParsed()->enPassant();
+			lastCapturedPiece = nullptr;
+		}
+		State() = default;
+
 		UInt castleInfo = 0b1111;
 		Int enPassant = -1;
 		Piece *lastCapturedPiece = nullptr;

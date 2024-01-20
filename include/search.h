@@ -42,7 +42,7 @@ public:
 		{
 			// Init explicitly due to broken value-initialization of non POD in MSVC
 			movestogo = depth = mate = perft = infinite = nodes = 0;
-			time[WHITE] = time[BLACK] = inc[WHITE] = inc[BLACK] = TimePoint(0);
+			time[WHITE] = time[BLACK] = inc[WHITE] = inc[BLACK] = startTime = TimePoint(0);
 		}
 
 		std::vector<cMove> searchmoves;

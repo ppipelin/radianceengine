@@ -38,8 +38,8 @@ public:
 			alpha = stand_pat;
 
 		// Early quit for quiesce
-		if (rootMoves[pvIdx].pvDepth >= 12)
-			return alpha;
+		// if (rootMoves[pvIdx].pvDepth >= 12)
+		// 	return alpha;
 
 		std::vector<cMove> moveListCaptures;
 		Search::generateMoveList(b, moveListCaptures, /*legalOnly=*/ true, true);
@@ -57,10 +57,7 @@ public:
 		RootMove rootMoveTemp = rootMoves[pvIdx];
 		for (const cMove move : moveListCaptures)
 		{
-			BoardParser::State s;
-			s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
-			s.enPassant = b.boardParsed()->enPassant();
-			s.lastCapturedPiece = nullptr;
+			BoardParser::State s(b);
 
 #ifdef unMoveTest
 			BoardParser b2(b);
@@ -147,10 +144,7 @@ public:
 				++(rootMoves[pvIdx].pvDepth);
 				rootMoveTemp = rootMoves[pvIdx];
 			}
-			BoardParser::State s;
-			s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
-			s.enPassant = b.boardParsed()->enPassant();
-			s.lastCapturedPiece = nullptr;
+			BoardParser::State s(b);
 
 #ifdef unMoveTest
 			BoardParser b2(b);
