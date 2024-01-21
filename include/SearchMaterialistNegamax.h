@@ -253,7 +253,7 @@ public:
 		}
 		else if (moveList.size() == 1)
 		{
-			return moveList[1];
+			return moveList[0];
 		}
 
 		rootMovesSize = UInt(moveList.size());
