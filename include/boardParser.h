@@ -51,6 +51,10 @@ public:
 
 	BoardParser(const BoardParser &b)
 	{
+		// Guard self assignment
+		if (this == &b)
+			return;
+
 		m_board = new Board();
 		m_isWhiteTurn = b.isWhiteTurn();
 		for (UInt i = 0; i < BOARD_SIZE2; ++i)
@@ -82,6 +86,8 @@ public:
 		m_board->m_castleAvailableKingWhite = b.boardParsed()->m_castleAvailableKingWhite;
 		m_board->m_castleAvailableQueenBlack = b.boardParsed()->m_castleAvailableQueenBlack;
 		m_board->m_castleAvailableKingBlack = b.boardParsed()->m_castleAvailableKingBlack;
+
+		m_board->enPassant(b.boardParsed()->enPassant());
 	}
 
 	BoardParser &operator=(const BoardParser &b)
@@ -131,6 +137,38 @@ public:
 		m_board->m_castleAvailableKingBlack = b.boardParsed()->m_castleAvailableKingBlack;
 		return *this;
 	}
+
+	bool operator==(const BoardParser &b) const
+	{
+		if (this == &b)
+			return true;
+
+		if (m_isWhiteTurn != b.isWhiteTurn())
+			return false;
+		for (UInt i = 0; i < BOARD_SIZE2; ++i)
+		{
+			Piece *p = b.boardParsed()->board()[i];
+			Piece *p_this = m_board->board()[i];
+			if (p == nullptr && p_this == nullptr)
+				continue;
+			// Shouldn't be any nullptr now
+			if (p == nullptr || p_this == nullptr)
+				return false;
+			if (typeid(*p) != typeid(*p_this))
+				return false;
+		}
+
+		if (whiteKing() != b.whiteKing() || blackKing() != b.blackKing())
+			return false;
+
+		return *boardParsed() == *b.boardParsed();
+	}
+
+	struct State
+	{
+		UInt castleInfo = 0b1111;
+		Int enPassant = -1;
+	};
 
 	// Mutators
 	Board *boardParsed() { return m_board; }
