@@ -133,11 +133,17 @@ public:
 			}
 		}
 
-		++(rootMoves[pvIdx].pvDepth);
+		if (!rootNode)
+			++(rootMoves[pvIdx].pvDepth);
 
 		RootMove rootMoveTemp = rootMoves[pvIdx];
 		for (const cMove move : moveList)
 		{
+			if (rootNode)
+			{
+				++(rootMoves[pvIdx].pvDepth);
+				rootMoveTemp = rootMoves[pvIdx];
+			}
 			BoardParser::State s;
 			s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
 			s.enPassant = b.boardParsed()->enPassant();
@@ -166,7 +172,6 @@ public:
 			if (score > alpha)
 			{
 				rootMoves[pvIdx].pv[rootMoves[pvIdx].pvDepth - 1] = move;
-				rootMoveTemp = rootMoves[pvIdx];
 				// alpha acts like max in MiniMax
 				alpha = score;
 				if (rootNode)
@@ -174,6 +179,7 @@ public:
 					rootMoves[pvIdx].score = score;
 					rootMoves[pvIdx].averageScore = rootMoves[pvIdx].previousScore != -MAX_EVAL ? (2 * rootMoves[pvIdx].score + rootMoves[pvIdx].previousScore) / 3 : rootMoves[pvIdx].score;
 				}
+				rootMoveTemp = rootMoves[pvIdx];
 			}
 			else
 			{
@@ -185,8 +191,7 @@ public:
 				TimePoint t(b.isWhiteTurn() ? Limits.time[WHITE] : Limits.time[BLACK]);
 				if (t && outOfTime(t) && depth > 1)
 					return -MAX_EVAL;
-				if (++pvIdx < rootMovesSize)
-					++(rootMoves[pvIdx].pvDepth);
+				++pvIdx;
 			}
 		}
 		if (!rootNode)
