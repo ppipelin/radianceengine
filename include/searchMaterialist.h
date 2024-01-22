@@ -68,7 +68,7 @@ public:
 			return cMove();
 		}
 
-		rootMovesSize = moveList.size();
+		rootMovesSize = UInt(moveList.size());
 		for (UInt i = 0; i < rootMovesSize; ++i)
 		{
 			rootMoves[i] = RootMove(moveList[i]);
@@ -94,7 +94,7 @@ public:
 			rootMoves[pvIdx].score = score;
 		}
 		std::stable_sort(rootMoves.begin(), rootMoves.end());
-		std::cout << UCI::pv(*this, b, Limits.depth) << std::endl;
+		std::cout << UCI::pv(*this, Limits.depth) << std::endl;
 		return rootMoves[0].pv[0];
 	}
 };

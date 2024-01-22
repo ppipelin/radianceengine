@@ -223,7 +223,7 @@ public:
 
 			abSearch<Root>(b, e, -MAX_EVAL, MAX_EVAL, currentDepth);
 			std::stable_sort(rootMoves.begin(), rootMoves.end());
-			std::cout << UCI::pv(*this, b, currentDepth) << std::endl;
+			std::cout << UCI::pv(*this, currentDepth) << std::endl;
 			++currentDepth;
 		}
 		return rootMoves[0].pv[0];
