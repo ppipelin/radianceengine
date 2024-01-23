@@ -139,25 +139,59 @@ public:
 		RootMove rootMoveTemp = rootMoves[pvIdx];
 		for (const cMove move : moveList)
 		{
+			BoardParser::State s(b);
+			Int score = 0;
 			if (rootNode)
 			{
+				// LMR
+				if (depth >= 2 && pvIdx > 3 && !move.isCapture() && !move.isPromotion() && !b.inCheck(b.isWhiteTurn()))
+				{
+					UInt newDepth = UInt(std::max(1, int(depth) - 4));
+#ifdef unMoveTest
+					BoardParser b2(b);
+#endif
+					b.movePiece(move, &s.lastCapturedPiece);
+					// Full search is mandatory for checks, keep score at zero
+					if (b.inCheck(b.isWhiteTurn()))
+						b.unMovePiece(move, s);
+					else
+					{
+						score = -abSearch<PV>(b, e, -alpha - 1, -alpha, newDepth - 1);
+						b.unMovePiece(move, s);
+#ifdef unMoveTest
+						if (b != b2)
+						{
+							b.displayCLI();
+						}
+#endif
+						// Bypass full-depth search when reduced LMR search does not fail high
+						if (score <= alpha)
+							continue;
+					}
+
+					// Shallower depth failed high so we throw away the result
+					if (newDepth < depth)
+						score = 0;
+				}
 				++(rootMoves[pvIdx].pvDepth);
 				rootMoveTemp = rootMoves[pvIdx];
 			}
-			BoardParser::State s(b);
 
-#ifdef unMoveTest
-			BoardParser b2(b);
-#endif
-			b.movePiece(move, &s.lastCapturedPiece);
-			Int score = -abSearch<PV>(b, e, -beta, -alpha, depth - 1);
-			b.unMovePiece(move, s);
-#ifdef unMoveTest
-			if (b != b2)
+			if (score == 0)
 			{
-				b.displayCLI();
-			}
+#ifdef unMoveTest
+				BoardParser b2(b);
 #endif
+				b.movePiece(move, &s.lastCapturedPiece);
+				score = -abSearch<PV>(b, e, -beta, -alpha, depth - 1);
+				b.unMovePiece(move, s);
+#ifdef unMoveTest
+				if (b != b2)
+				{
+					b.displayCLI();
+				}
+#endif
+			}
 
 			if (score >= beta)
 			{
@@ -275,14 +309,12 @@ public:
 
 			// Reset aspiration window starting size
 			Int prev = rootMoves[0].averageScore;
-			Int delta = prev / 4;
+			Int delta = prev / 2;
 			Int alpha = std::max(prev - delta, -MAX_EVAL);
 			Int beta = std::min(prev + delta, MAX_EVAL);
 			Int failedHighCnt = 0;
-			Int failedLowCnt = 0;
 			// Aspiration window
 			// Disable by alpha = -MAX_EVAL; beta = MAX_EVAL;
-			alpha = -MAX_EVAL; beta = MAX_EVAL;
 			while (true)
 			{
 				nodesSearched.fill(0);
@@ -305,11 +337,11 @@ public:
 
 				// In case of failing low/high increase aspiration window and
 				// re-search, otherwise exit the loop.
+				std::stable_sort(rootMoves.begin(), rootMoves.begin() + rootMovesSize);
 				if (rootMoves[0].score <= alpha)
 				{
 					beta = (alpha + beta) / 2;
 					alpha = std::max(rootMoves[0].score - delta, -MAX_EVAL);
-					++failedLowCnt;
 					failedHighCnt = 0;
 					std::copy(rootMovesPrevious.begin(), rootMovesPrevious.begin() + rootMovesSize, rootMoves.begin());
 				}
@@ -333,7 +365,7 @@ public:
 
 			std::stable_sort(rootMoves.begin(), rootMoves.begin() + rootMovesSize);
 			std::copy(rootMoves.begin(), rootMoves.begin() + rootMovesSize, rootMovesPrevious.begin());
-			std::cout << "info failedHighCnt " << failedHighCnt << " failedLowCnt " << failedLowCnt << " alpha " << alpha << " beta " << beta << std::endl;
+			std::cout << "info failedHighCnt " << failedHighCnt << " alpha " << alpha << " beta " << beta << std::endl;
 			std::cout << UCI::pv(*this, currentDepth) << std::endl;
 
 			++currentDepth;
