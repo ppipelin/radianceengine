@@ -323,7 +323,7 @@ public:
 #ifdef unMoveTest
 				BoardParser b2(b);
 #endif
-				abSearch<Root>(b, e, alpha, beta, currentDepth);
+				Int score = abSearch<Root>(b, e, alpha, beta, currentDepth);
 #ifdef unMoveTest
 				if (b != b2)
 				{
@@ -338,16 +338,16 @@ public:
 				// In case of failing low/high increase aspiration window and
 				// re-search, otherwise exit the loop.
 				std::stable_sort(rootMoves.begin(), rootMoves.begin() + rootMovesSize);
-				if (rootMoves[0].score <= alpha)
+				if (score <= alpha)
 				{
 					beta = (alpha + beta) / 2;
-					alpha = std::max(rootMoves[0].score - delta, -MAX_EVAL);
+					alpha = std::max(score - delta, -MAX_EVAL);
 					failedHighCnt = 0;
 					std::copy(rootMovesPrevious.begin(), rootMovesPrevious.begin() + rootMovesSize, rootMoves.begin());
 				}
-				else if (rootMoves[0].score >= beta)
+				else if (score >= beta)
 				{
-					beta = std::min(rootMoves[0].score + delta, MAX_EVAL);
+					beta = std::min(score + delta, MAX_EVAL);
 					++failedHighCnt;
 				}
 				else
