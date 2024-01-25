@@ -2,12 +2,11 @@
 
 void Queen::canMove(const Board &b, std::vector<cMove> &v) const
 {
-	std::vector<Int> directions{ 1, -1, 8, -8, 9, -9, 7, -7 }; // constexpr in c++20 still limited
-	for (Int direction : directions)
+	v.reserve(27);
+	constexpr std::array<Int, 8> directions{ 1, -1, 8, -8, 9, -9, 7, -7 };
+	for (const Int direction : directions)
 	{
-		std::vector<cMove> w;
-		sliding(b, direction, w);
-		v.insert(v.end(), w.begin(), w.end());
+		sliding(b, direction, v);
 	}
 }
 

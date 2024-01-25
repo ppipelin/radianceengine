@@ -2,12 +2,11 @@
 
 void Bishop::canMove(const Board &b, std::vector<cMove> &v) const
 {
-	std::vector<Int> directions{ -9, -7, 7, 9 }; // constexpr in c++20 still limited
-	for (Int direction : directions)
+	v.reserve(13);
+	constexpr std::array<Int, 4> directions{ -9, -7, 7, 9 };
+	for (const Int direction : directions)
 	{
-		std::vector<cMove> w;
-		sliding(b, direction, w);
-		v.insert(v.end(), w.begin(), w.end());
+		sliding(b, direction, v);
 	}
 }
 
