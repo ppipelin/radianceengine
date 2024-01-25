@@ -33,7 +33,7 @@ public:
 
 	inline bool outOfTime(const TimePoint &t) const
 	{
-		return elapsed() > (t / 20);
+		return elapsed() > (t / 30);
 	}
 
 	struct LimitsType

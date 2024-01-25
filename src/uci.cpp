@@ -139,58 +139,12 @@ void UCI::loop(int argc, char *argv[])
 	for (Int i = 1; i < argc; ++i)
 		q.push(std::string(argv[i]));
 	{
-		// q.push("position startpos moves e2e3");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3");
-		// q.push("go");
-		// q.push("position startpos moves d7d5 d1h5 d8d7 g1f3 c7c5");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5");
-		// q.push("go");
-		// q.push(" position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3 f5d3");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3 f5d3 e5d3");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3 f5d3 e5d3 h8g8");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3 f5d3 e5d3 h8g8 d3f4");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3 f5d3 e5d3 h8g8 d3f4 f8d6");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3 f5d3 e5d3 h8g8 d3f4 f8d6 f4d5");
-		// q.push("go");
-		// q.push("position startpos moves e2e3 d7d5 d1h5 d8d7 g1f3 c7c5 f3e5 g7g6 e5d7 g6h5 d7c5 e8d8 f1b5 e7e5 c5d3 c8f5 d3e5 g8h6 b5d3 f5d3 e5d3 h8g8 d3f4 f8d6 f4d5 g8g2");
-		// q.push("go");
+		// q.push("position fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		// q.push("go depth 4");
+		// q.push("position fen 8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -");
+		// q.push("go depth 4");
+		// q.push("position fen r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
+		// q.push("go depth 4");
 	}
 	do
 	{
