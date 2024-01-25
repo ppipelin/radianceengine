@@ -11,7 +11,7 @@ public:
 
 	cMove nextMove(const BoardParser &b, const Evaluate &) override
 	{
-		std::vector<cMove> moveList = std::vector<cMove>();
+		std::vector<cMove> moveList;
 		for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
 		{
 			const Piece *piece = b.boardParsed()->board()[tile];
@@ -23,7 +23,7 @@ public:
 			{
 				warn("is wrong turn");
 			}
-			std::vector<cMove> subMoveList = std::vector<cMove>();
+			std::vector<cMove> subMoveList;
 			piece->canMove(*b.boardParsed(), subMoveList);
 			moveList.insert(moveList.end(), subMoveList.begin(), subMoveList.end());
 		}

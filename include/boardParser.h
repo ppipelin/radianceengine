@@ -806,7 +806,7 @@ public:
 	{
 		std::string out;
 		const Piece *piece = m_board->board()[tile];
-		std::vector<cMove> v = std::vector<cMove>();
+		std::vector<cMove> v;
 		if (piece != nullptr)
 		{
 			piece->canMove(*m_board, v);

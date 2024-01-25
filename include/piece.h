@@ -72,7 +72,7 @@ public:
 		*/
 	virtual bool canMove(const Board &b, cMove move) const
 	{
-		std::vector<cMove> v = std::vector<cMove>();
+		std::vector<cMove> v;
 		canMove(b, v);
 		return std::find_if(v.begin(), v.end(), [move](const auto &ele) {return ele.getTo() == move.getTo();}) != v.end();
 	}

@@ -105,7 +105,7 @@ public:
 		{
 			UInt tile = allyPositions[tileIdx];
 			const Piece *piece = b.boardParsed()->board()[tile];
-			std::vector<cMove> subMoveList = std::vector<cMove>();
+			std::vector<cMove> subMoveList;
 			piece->canMove(*b.boardParsed(), subMoveList);
 			moveList.insert(moveList.end(), subMoveList.begin(), subMoveList.end());
 		}
@@ -126,7 +126,7 @@ public:
 			{
 				UInt tile = enemyPositions[tileIdx];
 				const Piece *piece = b.boardParsed()->board()[tile];
-				std::vector<cMove> subMoveList = std::vector<cMove>();
+				std::vector<cMove> subMoveList;
 				piece->canMove(*b.boardParsed(), subMoveList);
 				std::copy(subMoveList.begin(), subMoveList.end(), moveListAttack.begin() + moveListAttackSize);
 				moveListAttackSize += subMoveList.size();
@@ -244,7 +244,7 @@ public:
 	*/
 	static UInt perft(BoardParser &b, UInt depth = 1, bool verbose = false)
 	{
-		std::vector<cMove> moveList = std::vector<cMove>();
+		std::vector<cMove> moveList;
 		UInt nodes = 0;
 		std::vector<UInt> tiles;
 
@@ -265,7 +265,7 @@ public:
 		}
 		for (const auto tile : tiles)
 		{
-			std::vector<cMove> subMoveList = std::vector<cMove>();
+			std::vector<cMove> subMoveList;
 			const Piece *piece = (*b.boardParsed())[tile];
 			if (piece == nullptr)
 			{

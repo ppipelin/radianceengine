@@ -17,7 +17,7 @@ public:
 		if (depth <= 0)
 			return e.evaluate(b);
 
-		std::vector<cMove> moveList = std::vector<cMove>();
+		std::vector<cMove> moveList;
 		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
 
 		if (moveList.empty())
@@ -60,7 +60,7 @@ public:
 	cMove nextMove(BoardParser &b, const Evaluate &e) override
 	{
 		nodesSearched.fill(0);
-		std::vector<cMove> moveList = std::vector<cMove>();
+		std::vector<cMove> moveList;
 		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
 
 		if (moveList.empty())
