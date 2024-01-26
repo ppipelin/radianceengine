@@ -13,9 +13,9 @@ public:
 	EvaluateShannon(const EvaluateShannon &) {}
 	~EvaluateShannon() {}
 
-	Int pawnMalus(const BoardParser &b, const std::vector<UInt> &pawnPositions, const std::vector<UInt> &pawnColumns) const
+	Value pawnMalus(const BoardParser &b, const std::vector<UInt> &pawnPositions, const std::vector<UInt> &pawnColumns) const
 	{
-		Int score = 0;
+		Value score = 0;
 		if (pawnPositions.empty())
 		{
 			return score;
@@ -25,7 +25,7 @@ public:
 		std::sort(pawnColumsUnique.begin(), pawnColumsUnique.end());
 		const auto last = std::unique(pawnColumsUnique.begin(), pawnColumsUnique.end());
 		pawnColumsUnique.erase(last, pawnColumsUnique.end());
-		score -= 50 * Int(pawnColumns.size() - pawnColumsUnique.size());
+		score -= 50 * Value(pawnColumns.size() - pawnColumsUnique.size());
 
 		for (const auto &i : pawnPositions)
 		{
@@ -52,7 +52,7 @@ public:
 		return score;
 	}
 
-	Int evaluate(const BoardParser &b) const override
+	Value evaluate(const BoardParser &b) const override
 	{
 		// 200(K-K')
 		//      + 9(Q-Q')
@@ -64,7 +64,7 @@ public:
 		// KQRBNP = number of kings, queens, rooks, bishops, knights and pawns
 		// D,S,I = doubled, blocked and isolated pawns
 		// M = Mobility (the number of legal moves)
-		Int finalScore = 0;
+		Value finalScore = 0;
 		for (Int i = -1; i < 2; i += 2)
 		{
 			std::vector<UInt> table;
@@ -76,7 +76,7 @@ public:
 			{
 				table = b.boardParsed()->whitePos();
 			}
-			Int score = 0;
+			Value score = 0;
 			std::vector<UInt> pawnPositions;
 			std::vector<UInt> pawnColumns;
 
@@ -104,7 +104,7 @@ public:
 
 				std::vector<cMove> moveset;
 				p->canMove(*b.boardParsed(), moveset);
-				score += 10 * Int(moveset.size());
+				score += 10 * Value(moveset.size());
 			}
 
 			score += 50 * pawnMalus(b, pawnPositions, pawnColumns);

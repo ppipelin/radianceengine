@@ -9,7 +9,7 @@ public:
 	Evaluate(const Evaluate &) {}
 	~Evaluate() {}
 
-	virtual Int evaluate(const BoardParser &) const
+	virtual Value evaluate(const BoardParser &) const
 	{
 		return -MAX_EVAL;
 	}

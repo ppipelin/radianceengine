@@ -27,7 +27,7 @@ public:
 
 	// Tables are displayed for white which corresponds to black order of tiles
 	// https://www.chessprogramming.org/Simplified_Evaluation_Function
-	static constexpr std::array<int, 64> pawnTable = {
+	static constexpr std::array<Value, 64> pawnTable = {
 		0,  0,  0,  0,  0,  0,  0,  0,
 		50, 50, 50, 50, 50, 50, 50, 50,
 		10, 10, 20, 30, 30, 20, 10, 10,
@@ -37,7 +37,7 @@ public:
 		5, 10, 10,-20,-20, 10, 10,  5,
 		0,  0,  0,  0,  0,  0,  0,  0 };
 
-	static constexpr std::array<int, 64> knightTable = {
+	static constexpr std::array<Value, 64> knightTable = {
 		-50,-40,-30,-30,-30,-30,-40,-50,
 		-40,-20,  0,  0,  0,  0,-20,-40,
 		-30,  0, 10, 15, 15, 10,  0,-30,
@@ -47,7 +47,7 @@ public:
 		-40,-20,  0,  5,  5,  0,-20,-40,
 		-50,-40,-30,-30,-30,-30,-40,-50 };
 
-	static constexpr std::array<int, 64> bishopTable = {
+	static constexpr std::array<Value, 64> bishopTable = {
 		-20,-10,-10,-10,-10,-10,-10,-20,
 		-10,  0,  0,  0,  0,  0,  0,-10,
 		-10,  0,  5, 10, 10,  5,  0,-10,
@@ -57,7 +57,7 @@ public:
 		-10,  5,  0,  0,  0,  0,  5,-10,
 		-20,-10,-10,-10,-10,-10,-10,-20 };
 
-	static constexpr std::array<int, 64> rookTable = {
+	static constexpr std::array<Value, 64> rookTable = {
 		0,  0,  0,  0,  0,  0,  0,  0,
 		5, 10, 10, 10, 10, 10, 10,  5,
 	-5,  0,  0,  0,  0,  0,  0, -5,
@@ -67,7 +67,7 @@ public:
 	-5,  0,  0,  0,  0,  0,  0, -5,
 		0,  0,  0,  5,  5,  0,  0,  0 };
 
-	static constexpr std::array<int, 64> queenTable = {
+	static constexpr std::array<Value, 64> queenTable = {
 		-20,-10,-10, -5, -5,-10,-10,-20,
 		-10,  0,  0,  0,  0,  0,  0,-10,
 		-10,  0,  5,  5,  5,  5,  0,-10,
@@ -77,7 +77,7 @@ public:
 		-10,  0,  5,  0,  0,  0,  0,-10,
 		-20,-10,-10, -5, -5,-10,-10,-20 };
 
-	static constexpr std::array<int, 64> kingTable = {
+	static constexpr std::array<Value, 64> kingTable = {
 		-30,-40,-40,-50,-50,-40,-40,-30,
 		-30,-40,-40,-50,-50,-40,-40,-30,
 		-30,-40,-40,-50,-50,-40,-40,-30,
@@ -87,7 +87,7 @@ public:
 		20, 20,  0,  0,  0,  0, 20, 20,
 		20, 30, 10,  0,  0, 10, 30, 20 };
 
-	static constexpr std::array<int, 64> kingEndgameTable = {
+	static constexpr std::array<Value, 64> kingEndgameTable = {
 	-50,-40,-30,-20,-20,-30,-40,-50,
 	-30,-20,-10,  0,  0,-10,-20,-30,
 	-30,-10, 20, 30, 30, 20,-10,-30,
@@ -97,9 +97,9 @@ public:
 	-30,-30,  0,  0,  0,  0,-30,-30,
 	-50,-30,-30,-30,-30,-30,-30,-50 };
 
-	Int evaluate(const BoardParser &b) const override
+	Value evaluate(const BoardParser &b) const override
 	{
-		Int finalScore = 0, scorePieceWhite = 0, scorePieceBlack = 0, scorePieceWhiteTable = 0, scorePieceBlackTable = 0;
+		Value finalScore = 0, scorePieceWhite = 0, scorePieceBlack = 0, scorePieceWhiteTable = 0, scorePieceBlackTable = 0;
 		Int movesetWhiteKing = 0, movesetBlackKing = 0;
 
 		for (Int i = -1; i < 2; i += 2)
@@ -109,7 +109,7 @@ public:
 				table = b.boardParsed()->blackPos();
 			else
 				table = b.boardParsed()->whitePos();
-			Int score = 0;
+			Value score = 0;
 			std::vector<UInt> pawnPositions;
 			std::vector<UInt> pawnColumns;
 
@@ -150,7 +150,7 @@ public:
 				if (typeid(*p) == typeid(King))
 					(i == 1 ? movesetWhiteKing : movesetBlackKing) = Int(moveset.size());
 				else
-					score += 10 * Int(moveset.size());
+					score += 10 * Value(moveset.size());
 			}
 
 			score += (i == 1 ? scorePieceWhite : scorePieceBlack);
@@ -173,7 +173,7 @@ public:
 				table = b.boardParsed()->blackPos();
 			else
 				table = b.boardParsed()->whitePos();
-			Int score = 0;
+			Value score = 0;
 
 			for (const auto &pieceIdx : table)
 			{
@@ -220,7 +220,7 @@ public:
 			finalScore += i * score;
 		}
 
-		constexpr Int factor = 1;
+		constexpr Value factor = 1;
 		if (endgame)
 		{
 			finalScore += (b.isWhiteTurn() ? 1 : -1) * (10 * -distanceKings(b));

@@ -283,7 +283,6 @@ std::string UCI::pv(const Search &s, UInt depth)
 {
 	std::stringstream ss;
 
-	// for (Int i = s.rootMovesSize - 1; i >= 0; --i)
 	for (Int i = 0; i < 1; ++i)
 	{
 		// Not at first line

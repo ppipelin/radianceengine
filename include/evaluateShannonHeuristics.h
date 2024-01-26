@@ -25,7 +25,7 @@ public:
 		return std::max(std::abs(r2 - r1), std::abs(f2 - f1));
 	}
 
-	Int evaluate(const BoardParser &b) const override
+	Value evaluate(const BoardParser &b) const override
 	{
 		// 200(K-K')
 		//      + 9(Q-Q')
@@ -37,7 +37,7 @@ public:
 		// KQRBNP = number of kings, queens, rooks, bishops, knights and pawns
 		// D,S,I = doubled, blocked and isolated pawns
 		// M = Mobility (the number of legal moves)
-		Int finalScore = 0, scorePieceWhite = 0, scorePieceBlack = 0;
+		Value finalScore = 0, scorePieceWhite = 0, scorePieceBlack = 0;
 		Int movesetWhiteKing = 0, movesetBlackKing = 0;
 
 		for (Int i = -1; i < 2; i += 2)
@@ -51,7 +51,7 @@ public:
 			{
 				table = b.boardParsed()->whitePos();
 			}
-			Int score = 0;
+			Value score = 0;
 			std::vector<UInt> pawnPositions;
 			std::vector<UInt> pawnColumns;
 
@@ -81,7 +81,7 @@ public:
 				if (typeid(*p) == typeid(King))
 					(i == 1 ? movesetWhiteKing : movesetBlackKing) = Int(moveset.size());
 				else
-					score += 10 * Int(moveset.size());
+					score += 10 * Value(moveset.size());
 			}
 
 			score += (i == 1 ? scorePieceWhite : scorePieceBlack);
@@ -94,7 +94,7 @@ public:
 		// Once ennemy has less pieces our king attacks the other one
 		// Threshold defined as the value of a king, six pawns a bishop and a knight
 		const bool endgame = (b.isWhiteTurn() ? scorePieceBlack : scorePieceWhite) <= 20000 + 6 * 100 + 333 + 305;
-		constexpr Int factor = 1;
+		constexpr Value factor = 1;
 		if (endgame)
 		{
 			finalScore += (b.isWhiteTurn() ? 1 : -1) * (10 * -distanceKings(b));

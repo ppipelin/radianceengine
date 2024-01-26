@@ -65,10 +65,10 @@ public:
 				: m.previousScore < previousScore;
 		}
 
-		Int score = -MAX_EVAL;
-		Int previousScore = -MAX_EVAL;
-		Int averageScore = -MAX_EVAL;
-		Int uciScore = -MAX_EVAL;
+		Value score = -MAX_EVAL;
+		Value previousScore = -MAX_EVAL;
+		Value averageScore = -MAX_EVAL;
+		Value uciScore = -MAX_EVAL;
 		bool scoreLowerbound = false;
 		bool scoreUpperbound = false;
 		std::array<cMove, 100> pv;
@@ -79,7 +79,7 @@ public:
 	UInt pvIdx = 0;
 	std::array<RootMove, MAX_PLY> rootMoves;
 	std::array<RootMove, MAX_PLY> rootMovesPrevious;
-	std::array<int, MAX_PLY> nodesSearched = { 0 };
+	std::array<Int, MAX_PLY> nodesSearched = { 0 };
 	UInt rootMovesSize = 0;
 
 	Search(const Search::LimitsType &limits) : Limits(limits) {}
@@ -313,10 +313,7 @@ public:
 				}
 			}
 #endif
-			BoardParser::State s;
-			s.castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
-			s.enPassant = b.boardParsed()->enPassant();
-			s.lastCapturedPiece = nullptr;
+			BoardParser::State s(b);
 
 			if (!b.movePiece(move, &s.lastCapturedPiece))
 			{

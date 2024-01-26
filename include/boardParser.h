@@ -169,7 +169,7 @@ public:
 	{
 		State(const BoardParser &b)
 		{
-			castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | int(b.boardParsed()->m_castleAvailableKingBlack);
+			castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | UInt(b.boardParsed()->m_castleAvailableKingBlack);
 			enPassant = b.boardParsed()->enPassant();
 			lastCapturedPiece = nullptr;
 		}

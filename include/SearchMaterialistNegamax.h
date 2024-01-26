@@ -23,13 +23,13 @@ public:
 
 	// #define unMoveTest
 
-	Int quiesce(BoardParser &b, const Evaluate &e, Int alpha, Int beta)
+	Value quiesce(BoardParser &b, const Evaluate &e, Value alpha, Value beta)
 	{
 		++nodesSearched[pvIdx];
 
 		// In order to get the quiescence search to terminate, plies are usually restricted to moves that deal directly with the threat,
 		// such as moves that capture and recapture (often called a 'capture search') in chess
-		Int stand_pat = e.evaluate(b);
+		Value stand_pat = e.evaluate(b);
 		if (stand_pat >= beta)
 			return beta;
 		if (alpha < stand_pat)
@@ -63,7 +63,7 @@ public:
 			BoardParser b2(b);
 #endif
 			b.movePiece(move, &s.lastCapturedPiece);
-			Int score = -quiesce(b, e, -beta, -alpha);
+			Value score = -quiesce(b, e, -beta, -alpha);
 			b.unMovePiece(move, s);
 #ifdef unMoveTest
 			if (b != b2)
@@ -100,7 +100,7 @@ public:
 
 	// https://www.chessprogramming.org/Alpha-Beta
 	template <NodeType nodeType>
-	Int abSearch(BoardParser &b, const Evaluate &e, Int alpha, Int beta, UInt depth)
+	Value abSearch(BoardParser &b, const Evaluate &e, Value alpha, Value beta, UInt depth)
 	{
 		++nodesSearched[pvIdx];
 
@@ -140,13 +140,13 @@ public:
 		for (const cMove move : moveList)
 		{
 			BoardParser::State s(b);
-			Int score = 0;
+			Value score = 0;
 			if (rootNode)
 			{
 				// LMR
 				if (depth >= 2 && pvIdx > 3 && !move.isCapture() && !move.isPromotion() && !b.inCheck(b.isWhiteTurn()))
 				{
-					UInt newDepth = UInt(std::max(1, int(depth) - 4));
+					UInt newDepth = UInt(std::max(1, Int(depth) - 4));
 #ifdef unMoveTest
 					BoardParser b2(b);
 #endif
@@ -308,11 +308,11 @@ public:
 			}
 
 			// Reset aspiration window starting size
-			Int prev = rootMoves[0].averageScore;
-			Int delta = prev / 2;
-			Int alpha = std::max(prev - delta, -MAX_EVAL);
-			Int beta = std::min(prev + delta, MAX_EVAL);
-			Int failedHighCnt = 0;
+			Value prev = rootMoves[0].averageScore;
+			Value delta = prev / 2;
+			Value alpha = std::max(prev - delta, -MAX_EVAL);
+			Value beta = std::min(prev + delta, MAX_EVAL);
+			Value failedHighCnt = 0;
 			// Aspiration window
 			// Disable by alpha = -MAX_EVAL; beta = MAX_EVAL;
 			while (true)
@@ -323,7 +323,7 @@ public:
 #ifdef unMoveTest
 				BoardParser b2(b);
 #endif
-				Int score = abSearch<Root>(b, e, alpha, beta, currentDepth);
+				Value score = abSearch<Root>(b, e, alpha, beta, currentDepth);
 #ifdef unMoveTest
 				if (b != b2)
 				{

@@ -11,7 +11,7 @@ public:
 	SearchMaterialist(const SearchMaterialist &s) : Search(s.Limits) {}
 	~SearchMaterialist() {}
 
-	Int search(BoardParser &b, const Evaluate &e, UInt depth)
+	Value search(BoardParser &b, const Evaluate &e, UInt depth)
 	{
 		++nodesSearched[pvIdx];
 		if (depth <= 0)
@@ -31,14 +31,14 @@ public:
 		++(rootMoves[pvIdx].pvDepth);
 
 		BoardParser b2;
-		Int bestScore = -MAX_EVAL;
+		Value bestScore = -MAX_EVAL;
 
 		RootMove rootMoveTemp = rootMoves[pvIdx];
 		for (const cMove move : moveList)
 		{
 			b2 = BoardParser(b);
 			b2.movePiece(move);
-			Int score = -search(b2, e, depth - 1);
+			Value score = -search(b2, e, depth - 1);
 			if (score > bestScore)
 			{
 				bestScore = score;
@@ -82,7 +82,7 @@ public:
 			cMove move = rootMoves[pvIdx].pv[0];
 			b2 = BoardParser(b);
 			b2.movePiece(move);
-			Int score;
+			Value score;
 			if (Limits.depth == 0)
 				score = e.evaluate(b2);
 			else

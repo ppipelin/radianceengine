@@ -7,15 +7,15 @@
 #include <cstdint>
 #include <string>
 #include <chrono>
-// #include <map>
 
-typedef std::uint_fast16_t UInt;
-typedef std::int_fast16_t Int;
-typedef std::uint_fast8_t SUInt;
+using UInt = std::uint_fast16_t;
+using Key = uint64_t;
+using Int = std::int_fast16_t;
+using Value = Int;
 
 constexpr UInt BOARD_SIZE = 8;
 constexpr UInt BOARD_SIZE2 = 8 * 8;
-constexpr Int MAX_EVAL = 100000;
+constexpr Value MAX_EVAL = 100000;
 constexpr UInt MAX_PLY = 246;
 
 static void debug(std::string str)
