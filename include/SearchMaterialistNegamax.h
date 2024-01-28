@@ -69,6 +69,7 @@ public:
 			if (b != b2)
 			{
 				b.displayCLI();
+				std::cout << b.m_materialKey << " " << b2.m_materialKey << std::endl;
 			}
 #endif
 
@@ -162,6 +163,7 @@ public:
 						if (b != b2)
 						{
 							b.displayCLI();
+							std::cout << b.m_materialKey << " " << b2.m_materialKey << std::endl;
 						}
 #endif
 						// Bypass full-depth search when reduced LMR search does not fail high
@@ -189,6 +191,7 @@ public:
 				if (b != b2)
 				{
 					b.displayCLI();
+					std::cout << b.m_materialKey << " " << b2.m_materialKey << std::endl;
 				}
 #endif
 			}
@@ -328,6 +331,7 @@ public:
 				if (b != b2)
 				{
 					b.displayCLI();
+					std::cout << b.m_materialKey << " " << b2.m_materialKey << std::endl;
 				}
 #endif
 

@@ -177,8 +177,10 @@ void UCI::loop(int argc, char *argv[])
 			else if (token == "d")
 			{
 				pos.displayCLI();
-				std::cout << pos.fen() << std::endl;
+				std::cout << "fen: " << pos.fen() << std::endl;
+				std::cout << "zobrist: " << pos.m_materialKey << std::endl;
 			}
+
 			else if (token == "ponderhit")
 				std::cout << "UCI - ponderhit received" << std::endl;
 			else if (token == "uci")
