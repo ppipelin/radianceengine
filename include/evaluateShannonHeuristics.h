@@ -101,7 +101,7 @@ public:
 		constexpr Value factor = 1;
 		if (endgame)
 		{
-			finalScore += (b.isWhiteTurn() ? 1 : -1) * (10 * -distanceKings(b));
+			finalScore += (b.isWhiteTurn() ? 1 : -1) * distanceKings(b);
 			finalScore += 1 * factor * movesetWhiteKing;
 			finalScore += -1 * factor * movesetBlackKing;
 		}
