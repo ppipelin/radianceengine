@@ -108,11 +108,7 @@ public:
 
 		for (Int i = -1; i < 2; i += 2)
 		{
-			std::vector<UInt> table;
-			if (i == -1)
-				table = b.boardParsed()->blackPos();
-			else
-				table = b.boardParsed()->whitePos();
+			std::vector<UInt> table = (i == -1) ? b.boardParsed()->blackPos() : b.boardParsed()->whitePos();
 			Value score = 0;
 			std::vector<UInt> pawnPositions;
 			std::vector<UInt> pawnColumns;
@@ -172,11 +168,7 @@ public:
 
 		for (Int i = -1; i < 2; i += 2)
 		{
-			std::vector<UInt> table;
-			if (i == -1)
-				table = b.boardParsed()->blackPos();
-			else
-				table = b.boardParsed()->whitePos();
+			std::vector<UInt> table = (i == -1) ? b.boardParsed()->blackPos() : b.boardParsed()->whitePos();
 			Value score = 0;
 
 			for (const auto &pieceIdx : table)

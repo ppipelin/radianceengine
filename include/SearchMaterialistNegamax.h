@@ -374,7 +374,6 @@ public:
 
 				// In case of failing low/high increase aspiration window and
 				// re-search, otherwise exit the loop.
-				std::stable_sort(rootMoves.begin(), rootMoves.begin() + rootMovesSize);
 				if (score <= alpha)
 				{
 					beta = (alpha + beta) / 2;
@@ -389,6 +388,8 @@ public:
 				}
 				else
 					break;
+
+				std::stable_sort(rootMoves.begin(), rootMoves.begin() + rootMovesSize);
 
 				delta += delta / 3;
 			}

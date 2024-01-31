@@ -46,19 +46,13 @@ public:
 
 		for (Int i = -1; i < 2; i += 2)
 		{
-			std::vector<UInt> table;
-			if (i == -1)
-			{
-				table = b.boardParsed()->blackPos();
-			}
-			else
-			{
-				table = b.boardParsed()->whitePos();
-			}
+			std::vector<UInt> table = (i == -1) ? b.boardParsed()->blackPos() : b.boardParsed()->whitePos();
 			Value score = 0;
 			std::vector<UInt> pawnPositions;
 			std::vector<UInt> pawnColumns;
-
+			pawnPositions.reserve(8);
+			pawnColumns.reserve(8);
+			std::vector<cMove> moveset;
 			for (const auto &pieceIdx : table)
 			{
 				const Piece *p = b.boardParsed()->board()[pieceIdx];
@@ -80,7 +74,7 @@ public:
 					pawnPositions.push_back(pieceIdx);
 					pawnColumns.push_back(Board::column(pieceIdx));
 				}
-				std::vector<cMove> moveset;
+				moveset.clear();
 				p->canMove(*b.boardParsed(), moveset);
 				if (typeid(*p) == typeid(King))
 					(i == 1 ? movesetWhiteKing : movesetBlackKing) = Int(moveset.size());

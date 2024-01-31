@@ -109,9 +109,7 @@ public:
 		{
 			UInt tile = allyPositions[tileIdx];
 			const Piece *piece = b.boardParsed()->board()[tile];
-			std::vector<cMove> subMoveList;
-			piece->canMove(*b.boardParsed(), subMoveList);
-			moveList.insert(moveList.end(), subMoveList.begin(), subMoveList.end());
+			piece->canMove(*b.boardParsed(), moveList);
 		}
 
 		if (onlyCapture)
@@ -218,23 +216,23 @@ public:
 
 	struct MoveComparator
 	{
-		MoveComparator(BoardParser b) { this->b = b; }
+		MoveComparator(BoardParser &b) : b(b) {};
 		// bool operator() (const cMove &m1, const cMove &m2)
 		// {
 		// 	if (m1.isCapture() ^ m2.isCapture() || !(m1.isCapture() || m2.isCapture())) return m1.isCapture();
 		// 	return (*b.boardParsed())[m1.getTo()]->value() > (*b.boardParsed())[m2.getTo()]->value();
 		// }
 
-		bool operator() (const cMove &m1, const cMove &m2)
+		bool operator() (const cMove &m1, const cMove &m2) const
 		{
 			return (m1.isCapture() && m1.getFlags() != 0x5 ? Int((*b.boardParsed())[m1.getTo()]->value()) - Int((*b.boardParsed())[m1.getFrom()]->value()) : 0) >
 				(m2.isCapture() && m2.getFlags() != 0x5 ? Int((*b.boardParsed())[m2.getTo()]->value()) - Int((*b.boardParsed())[m2.getFrom()]->value()) : 0);
 		}
 
-		BoardParser b;
+		BoardParser &b;
 	};
 
-	static void orderMoves(const BoardParser &b, std::vector<cMove> &moveList)
+	static void orderMoves(BoardParser &b, std::vector<cMove> &moveList)
 	{
 		std::sort(moveList.begin(), moveList.end(), MoveComparator(b));
 	}
@@ -269,15 +267,13 @@ public:
 		}
 		for (const auto tile : tiles)
 		{
-			std::vector<cMove> subMoveList;
 			const Piece *piece = (*b.boardParsed())[tile];
 			if (piece == nullptr)
 			{
 				continue;
 			}
 
-			piece->canMove(*b.boardParsed(), subMoveList);
-			moveList.insert(moveList.end(), subMoveList.begin(), subMoveList.end());
+			piece->canMove(*b.boardParsed(), moveList);
 		}
 #endif
 #ifndef opt

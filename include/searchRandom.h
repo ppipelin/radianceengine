@@ -23,9 +23,7 @@ public:
 			{
 				warn("is wrong turn");
 			}
-			std::vector<cMove> subMoveList;
-			piece->canMove(*b.boardParsed(), subMoveList);
-			moveList.insert(moveList.end(), subMoveList.begin(), subMoveList.end());
+			piece->canMove(*b.boardParsed(), moveList);
 		}
 		if (moveList.empty())
 		{
