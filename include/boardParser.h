@@ -318,6 +318,8 @@ public:
 					// This if handles legacy behavior providing no pointer to lastCapturedPiece
 					if (lastCapturedPiece != nullptr)
 						*lastCapturedPiece = m_board->board()[enPassantTile];
+					else
+						lastCapturedPiece = &m_board->board()[enPassantTile];
 
 					// Remove
 					m_materialKey ^= Zobrist::psq[((*lastCapturedPiece)->isWhite() ? 0 : 6) + 6 - (*lastCapturedPiece)->value()][enPassantTile];

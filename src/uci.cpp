@@ -49,7 +49,8 @@ namespace {
 		// Parse the moves list, if any
 		while (is >> token && (c = UCI::to_move(pos, token)) != cMove())
 		{
-			pos.movePiece(c);
+			BoardParser::State s(pos);
+			pos.movePiece(c, &s.lastCapturedPiece);
 			auto it = repetitionTable.find(pos.m_materialKey);
 			if (it == repetitionTable.end())
 				repetitionTable[pos.m_materialKey] = 1;
