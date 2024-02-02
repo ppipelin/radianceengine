@@ -145,12 +145,6 @@ public:
 					pawnPositions.push_back(pieceIdx);
 					pawnColumns.push_back(Board::column(pieceIdx));
 				}
-				std::vector<cMove> moveset;
-				p->canMove(*b.boardParsed(), moveset);
-				if (typeid(*p) == typeid(King))
-					(i == 1 ? movesetWhiteKing : movesetBlackKing) = Int(moveset.size());
-				else
-					score += 10 * Value(moveset.size());
 			}
 
 			score += (i == 1 ? scorePieceWhite : scorePieceBlack);
@@ -170,10 +164,13 @@ public:
 		{
 			std::vector<UInt> table = (i == -1) ? b.boardParsed()->blackPos() : b.boardParsed()->whitePos();
 			Value score = 0;
+			Value &scoreCurrent = (i == 1 ? scorePieceWhiteTable : scorePieceBlackTable);
+			std::vector<cMove> moveset;
 
 			for (const auto &pieceIdx : table)
 			{
 				const Piece *p = b.boardParsed()->board()[pieceIdx];
+				moveset.clear();
 
 				// Find idx in piece-square table
 				Int idxTable = i == 1 ? ((BOARD_SIZE - 1) - Board::row(pieceIdx)) * BOARD_SIZE + Board::column(pieceIdx) : pieceIdx;
@@ -181,52 +178,54 @@ public:
 					continue;
 				if (typeid(*p) == typeid(King))
 				{
+					p->canMove(*b.boardParsed(), moveset);
 					if (endgame)
 					{
+						scoreCurrent += moveset.size();
 						if (!endgameHard)
-							(i == 1 ? scorePieceWhiteTable : scorePieceBlackTable) += kingEndgameTable[idxTable];
+							scoreCurrent += kingEndgameTable[idxTable];
 					}
 					else
-						(i == 1 ? scorePieceWhiteTable : scorePieceBlackTable) += kingTable[idxTable];
+					{
+						scoreCurrent += kingTable[idxTable] - moveset.size();
+					}
 				}
 				else if (typeid(*p) == typeid(Queen))
 				{
-					(i == 1 ? scorePieceWhiteTable : scorePieceBlackTable) += queenTable[idxTable];
+					scoreCurrent += queenTable[idxTable];
 				}
 				else if (typeid(*p) == typeid(Rook))
 				{
-					(i == 1 ? scorePieceWhiteTable : scorePieceBlackTable) += rookTable[idxTable];
+					if (endgame)
+					{
+						p->canMove(*b.boardParsed(), moveset);
+						scoreCurrent += 5 * moveset.size();
+					}
+					scoreCurrent += rookTable[idxTable];
 				}
 				else if (typeid(*p) == typeid(Bishop))
 				{
-					(i == 1 ? scorePieceWhiteTable : scorePieceBlackTable) += bishopTable[idxTable];
+					p->canMove(*b.boardParsed(), moveset);
+					scoreCurrent += bishopTable[idxTable] + 5 * moveset.size();
 				}
 				else if (typeid(*p) == typeid(Knight))
 				{
-					(i == 1 ? scorePieceWhiteTable : scorePieceBlackTable) += knightTable[idxTable];
+					scoreCurrent += knightTable[idxTable];
 				}
 				else if (typeid(*p) == typeid(Pawn))
 				{
-					(i == 1 ? scorePieceWhiteTable : scorePieceBlackTable) += pawnTable[idxTable];
+					scoreCurrent += pawnTable[idxTable];
 				}
 			}
 
-			score += (i == 1 ? scorePieceWhiteTable : scorePieceBlackTable);
+			score += scoreCurrent;
 
 			finalScore += i * score;
 		}
 
-		constexpr Value factor = 1;
 		if (endgame)
 		{
 			finalScore += (b.isWhiteTurn() ? 1 : -1) * distanceKings(b);
-			finalScore += 1 * factor * movesetWhiteKing;
-			finalScore += -1 * factor * movesetBlackKing;
-		}
-		else
-		{
-			finalScore += 1 * -factor * movesetWhiteKing;
-			finalScore += -1 * -factor * movesetBlackKing;
 		}
 
 		return (b.isWhiteTurn() ? 1 : -1) * finalScore;
