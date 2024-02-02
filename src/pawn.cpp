@@ -2,7 +2,7 @@
 
 void Pawn::canMove(const Board &b, std::vector<cMove> &v) const
 {
-	v.reserve(4);
+	v.reserve(v.size() + 4);
 	const UInt c = Board::column(m_tile);
 	if (m_isWhite)
 	{

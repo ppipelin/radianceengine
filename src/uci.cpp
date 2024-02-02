@@ -29,6 +29,11 @@ namespace {
 			fen = startFen;
 			is >> token; // Consume the "moves" token, if any
 		}
+		else if (token == "kiwi")
+		{
+			fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -";
+			is >> token; // Consume the "moves" token, if any
+		}
 		else if (token == "fen")
 		{
 			while (is >> token && token != "moves")

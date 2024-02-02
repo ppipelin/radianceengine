@@ -2,7 +2,7 @@
 
 void Rook::canMove(const Board &b, std::vector<cMove> &v) const
 {
-	v.reserve(14);
+	v.reserve(v.size() + 14);
 	constexpr std::array<Int, 4> directions{ 1, -1, 8, -8 };
 	for (const Int direction : directions)
 	{

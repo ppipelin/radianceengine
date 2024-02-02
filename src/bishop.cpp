@@ -2,7 +2,7 @@
 
 void Bishop::canMove(const Board &b, std::vector<cMove> &v) const
 {
-	v.reserve(13);
+	v.reserve(v.size() + 13);
 	constexpr std::array<Int, 4> directions{ -9, -7, 7, 9 };
 	for (const Int direction : directions)
 	{

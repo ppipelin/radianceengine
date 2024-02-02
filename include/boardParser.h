@@ -827,28 +827,29 @@ public:
 
 	bool inCheck(bool isWhite, std::array<cMove, MAX_PLY> vTotal = std::array<cMove, MAX_PLY>(), size_t arraySize = 0) const
 	{
-		UInt kingPos = whiteKing();
-		if (!isWhite)
-			kingPos = blackKing();
+		UInt kingPos = isWhite ? whiteKing() : blackKing();
 		// Compute all oponents moves
 		if (arraySize == 0)
 		{
+			std::vector<cMove> v;
 			for (const auto tile : (!isWhite ? m_board->whitePos() : m_board->blackPos()))
 			{
-				std::vector<cMove> v;
 				const Piece *piece = m_board->board()[tile];
 				if (piece == nullptr)
 				{
 					continue;
 				}
 				piece->canMove(*m_board, v);
-				std::copy(v.begin(), v.end(), vTotal.begin() + arraySize);
-				arraySize += v.size();
 			}
+			// TODO: parallelize
+			return std::find_if(v.begin(), v.end(), [kingPos](const auto &ele) {return ele.getTo() == kingPos;}) != v.end();
+		}
+		else
+		{
+			// TODO: parallelize
+			return std::find_if(vTotal.begin(), vTotal.begin() + arraySize, [kingPos](const auto &ele) {return ele.getTo() == kingPos;}) != vTotal.begin() + arraySize;
 		}
 
-		// TODO: parallelize
-		return std::find_if(vTotal.begin(), vTotal.begin() + arraySize, [kingPos](const auto &ele) {return ele.getTo() == kingPos;}) != vTotal.begin() + arraySize;
 	}
 
 	void displayCout()
