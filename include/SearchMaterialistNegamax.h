@@ -141,92 +141,66 @@ public:
 		RootMove rootMoveTemp = rootMoves[pvIdx];
 		for (const cMove move : moveList)
 		{
-			BoardParser::State s(b);
-			Value score = NULL_VALUE;
 			if (rootNode)
 			{
-				// LMR
-				if (false && depth >= 2 && pvIdx > 3 && !move.isCapture() && !move.isPromotion() && !b.inCheck(b.isWhiteTurn()))
-				{
-					UInt newDepth = UInt(std::max(1, Int(depth) - 4));
-#ifdef unMoveTest
-					BoardParser b2(b);
-#endif
-					b.movePiece(move, &s.lastCapturedPiece);
-					// Full search is mandatory for checks, keep score at zero
-					if (b.inCheck(b.isWhiteTurn()))
-						b.unMovePiece(move, s);
-					else
-					{
-#ifdef transposition
-						auto it = transpositionTable.find(b.m_materialKey);
-						const bool found = it != transpositionTable.end();
-						if (found && it->second.second > newDepth - 1)
-						{
-							score = it->second.first;
-						}
-						else
-#endif
-							score = -abSearch<PV>(b, e, -alpha - 1, -alpha, newDepth - 1);
-#ifdef transposition
-						if (!found)
-							transpositionTable[b.m_materialKey] = std::pair<Value, UInt>(score, newDepth - 1);
-						else if (it->second.second <= newDepth - 1)
-							it->second = std::pair<Value, UInt>(score, newDepth - 1);
-#endif
-						b.unMovePiece(move, s);
-#ifdef unMoveTest
-						if (b != b2)
-						{
-							b.displayCLI();
-							std::cout << b.m_materialKey << " " << b2.m_materialKey << std::endl;
-						}
-#endif
-						// Bypass full-depth search when reduced LMR search does not fail high
-						if (score <= alpha)
-							continue;
-					}
-
-					// Shallower depth failed high so we throw away the result
-					if (newDepth < depth)
-						score = NULL_VALUE;
-				}
 				++(rootMoves[pvIdx].pvDepth);
 				rootMoveTemp = rootMoves[pvIdx];
 			}
-
-			if (score == NULL_VALUE)
+			Value score = NULL_VALUE;
+#ifdef unMoveTest
+			BoardParser b2(b);
+#endif
+			BoardParser::State s(b);
+			b.movePiece(move, &s.lastCapturedPiece);
+#ifdef transposition
+			auto it = transpositionTable.find(b.m_materialKey);
+			const bool found = it != transpositionTable.end();
+			if (found && it->second.second > depth - 1)
 			{
-#ifdef unMoveTest
-				BoardParser b2(b);
-#endif
-				b.movePiece(move, &s.lastCapturedPiece);
-#ifdef transposition
-				auto it = transpositionTable.find(b.m_materialKey);
-				const bool found = it != transpositionTable.end();
-				if (found && it->second.second > depth - 1)
-				{
-					++transpositionUsed;
-					score = it->second.first;
-				}
-				else
-#endif
-					score = -abSearch<PV>(b, e, -beta, -alpha, depth - 1);
-#ifdef transposition
-				if (!found)
-					transpositionTable[b.m_materialKey] = std::pair<Value, UInt>(score, depth - 1);
-				else if (it->second.second <= depth - 1)
-					it->second = std::pair<Value, UInt>(score, depth - 1);
-#endif
-				b.unMovePiece(move, s);
-#ifdef unMoveTest
-				if (b != b2)
-				{
-					b.displayCLI();
-					std::cout << b.m_materialKey << " " << b2.m_materialKey << std::endl;
-				}
-#endif
+				++transpositionUsed;
+				score = it->second.first;
 			}
+			else
+			{
+#endif
+				// LMR
+				if (depth >= 2 && pvIdx > 3 && !move.isCapture() && !move.isPromotion() && !b.inCheck(b.isWhiteTurn()))
+				{
+					// Reduced LMR
+					UInt d(std::max(1, Int(depth) - 4));
+					score = -abSearch<NonPV>(b, e, -(alpha + 1), -alpha, d - 1);
+					// Failed so roll back to full-depth null window
+					if (score > alpha && depth > d)
+					{
+						score = -abSearch<NonPV>(b, e, -(alpha + 1), -alpha, depth - 1);
+					}
+				}
+				// Full-depth null window search when LMR is skipped
+				else if (!PvNode)
+				{
+					score = -abSearch<NonPV>(b, e, -(alpha + 1), -alpha, depth - 1);
+				}
+
+				if (PvNode && score > alpha)
+				{
+					score = -abSearch<PV>(b, e, -beta, -alpha, depth - 1);
+				}
+#ifdef transposition
+			}
+			if (!found)
+				transpositionTable[b.m_materialKey] = std::pair<Value, UInt>(score, depth - 1);
+			else if (it->second.second <= depth - 1)
+				it->second = std::pair<Value, UInt>(score, depth - 1);
+#endif
+
+			b.unMovePiece(move, s);
+#ifdef unMoveTest
+			if (b != b2)
+			{
+				b.displayCLI();
+				std::cout << b.m_materialKey << " " << b2.m_materialKey << std::endl;
+			}
+#endif
 
 			if (score >= beta)
 			{
