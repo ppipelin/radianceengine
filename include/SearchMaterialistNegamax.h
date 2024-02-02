@@ -146,7 +146,7 @@ public:
 			if (rootNode)
 			{
 				// LMR
-				if (depth >= 2 && pvIdx > 3 && !move.isCapture() && !move.isPromotion() && !b.inCheck(b.isWhiteTurn()))
+				if (false && depth >= 2 && pvIdx > 3 && !move.isCapture() && !move.isPromotion() && !b.inCheck(b.isWhiteTurn()))
 				{
 					UInt newDepth = UInt(std::max(1, Int(depth) - 4));
 #ifdef unMoveTest
@@ -345,12 +345,13 @@ public:
 
 			// Reset aspiration window starting size
 			Value prev = rootMoves[0].averageScore;
-			Value delta = prev / 2;
+			Value delta = std::abs(prev / 2);
 			Value alpha = std::max(prev - delta, -MAX_EVAL);
 			Value beta = std::min(prev + delta, MAX_EVAL);
 			Value failedHighCnt = 0;
 			// Aspiration window
 			// Disable by alpha = -MAX_EVAL; beta = MAX_EVAL;
+			alpha = -MAX_EVAL; beta = MAX_EVAL;
 			while (true)
 			{
 				nodesSearched.fill(0);
