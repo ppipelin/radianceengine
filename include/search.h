@@ -173,8 +173,8 @@ public:
 				if (exit) return true;
 
 				// Prune moves which castles in check
-				if (move.isCastle())
-					return b.inCheck(b.isWhiteTurn());
+				if (move.isCastle() && b.inCheck(b.isWhiteTurn()))
+					return true;
 
 				// Prune moves which castles through check
 				if (move.getFlags() == 0x2)
@@ -227,8 +227,8 @@ public:
 
 		bool operator() (const cMove &m1, const cMove &m2)
 		{
-			return (m1.isCapture() ? Int((*b.boardParsed())[m1.getTo()]->value()) - Int((*b.boardParsed())[m1.getFrom()]->value()) : 0) >
-				(m2.isCapture() ? Int((*b.boardParsed())[m2.getTo()]->value()) - Int((*b.boardParsed())[m2.getFrom()]->value()) : 0);
+			return (m1.isCapture() && m1.getFlags() != 0x5 ? Int((*b.boardParsed())[m1.getTo()]->value()) - Int((*b.boardParsed())[m1.getFrom()]->value()) : 0) >
+				(m2.isCapture() && m2.getFlags() != 0x5 ? Int((*b.boardParsed())[m2.getTo()]->value()) - Int((*b.boardParsed())[m2.getFrom()]->value()) : 0);
 		}
 
 		BoardParser b;

@@ -240,10 +240,18 @@ public:
 		UInt flags = move.getFlags();
 		Piece *fromPiece = m_board->board()[from];
 		Piece *toPiece = m_board->board()[to];
+
 		if (fromPiece == nullptr)
 		{
 			err("moving a nullptr");
 			return false;
+		}
+
+		// Remove last enPassant
+		if (m_board->enPassant() != -1)
+		{
+			m_materialKey ^= Zobrist::enPassant[Board::column(m_board->enPassant())];
+			m_board->enPassant(-1);
 		}
 
 		// Disable castle if king/rook is moved
@@ -293,18 +301,14 @@ public:
 		}
 		else if (typeid(*fromPiece) == typeid(Pawn))
 		{
-			// Remove last enPassant
-			if (m_board->enPassant() != -1)
-				m_materialKey ^= Zobrist::enPassant[Board::column(m_board->enPassant())];
 			// Updates enPassant if possible next turn
 			if (fabs(Int(from) - Int(to)) == 16)
 			{
-				m_board->enPassant(to);
+				m_board->enPassant(Board::column(to));
 				m_materialKey ^= Zobrist::enPassant[Board::column(to)];
 			}
 			else
 			{
-				m_board->enPassant(-1);
 				// En passant
 				if (!Board::sameColumn(from, to) && m_board->board()[to] == nullptr)
 				{
@@ -739,7 +743,7 @@ public:
 		if (words.size() > 4 && words[3] != "-")
 		{
 			UInt tile = Board::toTiles(words[3]);
-			m_board->enPassant(tile);
+			m_board->enPassant(Board::column(tile));
 			m_materialKey ^= Zobrist::enPassant[Board::column(tile)];
 		}
 		else
@@ -816,7 +820,7 @@ public:
 		s += " ";
 
 		Int enPassant = m_board->enPassant();
-		s += noEnPassant || enPassant == -1 ? "-" : Board::toString(enPassant);
+		s += noEnPassant || enPassant == -1 ? "-" : Board::toString((isWhiteTurn() ? 40 : 16) + enPassant);
 
 		return s;
 	}
