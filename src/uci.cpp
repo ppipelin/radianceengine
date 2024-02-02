@@ -38,11 +38,18 @@ namespace {
 			return;
 
 		pos.fillBoard(fen);
-
+		transpositionTable.clear();
+		repetitionTable.clear();
+		repetitionTable[pos.m_materialKey] = 1;
 		// Parse the moves list, if any
 		while (is >> token && (c = UCI::to_move(pos, token)) != cMove())
 		{
 			pos.movePiece(c);
+			auto it = repetitionTable.find(pos.m_materialKey);
+			if (it == repetitionTable.end())
+				repetitionTable[pos.m_materialKey] = 1;
+			else
+				++(it->second);
 		}
 	}
 
@@ -296,6 +303,9 @@ std::string UCI::pv(const Search &s, UInt depth)
 			<< " depth " << depth
 			<< " nodes " << nodes
 			<< " nps " << nodes * 1000 / s.elapsed()
+			<< " hash " << transpositionTable.size()
+			<< " hashfull " << std::round(transpositionTable.size() * 1000 / transpositionTable.max_size())
+			<< " hashused " << s.transpositionUsed
 			<< " time " << s.elapsed()
 			<< " multipv " << i + 1
 			<< " score cp " << s.rootMoves[i].score

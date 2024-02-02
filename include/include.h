@@ -8,6 +8,7 @@
 #include <string>
 #include <chrono>
 #include <cassert>
+#include <utility>
 
 using UInt = std::uint_fast16_t;
 using Key = uint64_t;
@@ -17,6 +18,7 @@ using Value = Int;
 constexpr UInt BOARD_SIZE = 8;
 constexpr UInt BOARD_SIZE2 = 8 * 8;
 constexpr Value MAX_EVAL = 100000;
+constexpr Value NULL_VALUE = 100001;
 constexpr UInt MAX_PLY = 246;
 
 static void debug(std::string str)

@@ -22,6 +22,9 @@ inline TimePoint now()
 		(std::chrono::steady_clock::now().time_since_epoch()).count();
 }
 
+std::unordered_map<Key, std::pair<Value, UInt>> transpositionTable;
+std::unordered_map<Key, UInt> repetitionTable;
+
 class Search
 {
 public:
@@ -80,6 +83,7 @@ public:
 	std::array<RootMove, MAX_PLY> rootMoves;
 	std::array<RootMove, MAX_PLY> rootMovesPrevious;
 	std::array<Int, MAX_PLY> nodesSearched = { 0 };
+	UInt transpositionUsed = 0;
 	UInt rootMovesSize = 0;
 
 	Search(const Search::LimitsType &limits) : Limits(limits) {}

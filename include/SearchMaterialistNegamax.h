@@ -22,6 +22,7 @@ public:
 	~SearchMaterialistNegamax() {}
 
 	// #define unMoveTest
+	// #define transposition
 
 	Value quiesce(BoardParser &b, const Evaluate &e, Value alpha, Value beta)
 	{
@@ -141,7 +142,7 @@ public:
 		for (const cMove move : moveList)
 		{
 			BoardParser::State s(b);
-			Value score = 0;
+			Value score = NULL_VALUE;
 			if (rootNode)
 			{
 				// LMR
@@ -157,7 +158,22 @@ public:
 						b.unMovePiece(move, s);
 					else
 					{
-						score = -abSearch<PV>(b, e, -alpha - 1, -alpha, newDepth - 1);
+#ifdef transposition
+						auto it = transpositionTable.find(b.m_materialKey);
+						const bool found = it != transpositionTable.end();
+						if (found && it->second.second > newDepth - 1)
+						{
+							score = it->second.first;
+						}
+						else
+#endif
+							score = -abSearch<PV>(b, e, -alpha - 1, -alpha, newDepth - 1);
+#ifdef transposition
+						if (!found)
+							transpositionTable[b.m_materialKey] = std::pair<Value, UInt>(score, newDepth - 1);
+						else if (it->second.second <= newDepth - 1)
+							it->second = std::pair<Value, UInt>(score, newDepth - 1);
+#endif
 						b.unMovePiece(move, s);
 #ifdef unMoveTest
 						if (b != b2)
@@ -173,19 +189,35 @@ public:
 
 					// Shallower depth failed high so we throw away the result
 					if (newDepth < depth)
-						score = 0;
+						score = NULL_VALUE;
 				}
 				++(rootMoves[pvIdx].pvDepth);
 				rootMoveTemp = rootMoves[pvIdx];
 			}
 
-			if (score == 0)
+			if (score == NULL_VALUE)
 			{
 #ifdef unMoveTest
 				BoardParser b2(b);
 #endif
 				b.movePiece(move, &s.lastCapturedPiece);
-				score = -abSearch<PV>(b, e, -beta, -alpha, depth - 1);
+#ifdef transposition
+				auto it = transpositionTable.find(b.m_materialKey);
+				const bool found = it != transpositionTable.end();
+				if (found && it->second.second > depth - 1)
+				{
+					++transpositionUsed;
+					score = it->second.first;
+				}
+				else
+#endif
+					score = -abSearch<PV>(b, e, -beta, -alpha, depth - 1);
+#ifdef transposition
+				if (!found)
+					transpositionTable[b.m_materialKey] = std::pair<Value, UInt>(score, depth - 1);
+				else if (it->second.second <= depth - 1)
+					it->second = std::pair<Value, UInt>(score, depth - 1);
+#endif
 				b.unMovePiece(move, s);
 #ifdef unMoveTest
 				if (b != b2)
@@ -278,6 +310,7 @@ public:
 
 		// Compute rootMoves
 		UInt currentDepth = 1;
+		transpositionTable.clear(); // not necessary but provide more consistente UCI::pv
 		std::vector<cMove> moveList;
 		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
 

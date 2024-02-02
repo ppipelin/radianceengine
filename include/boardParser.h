@@ -15,6 +15,7 @@
 
 #include <sstream>
 #include <algorithm>
+#include <unordered_map>
 
 namespace Zobrist {
 	// KQRBNPkqrbnp
@@ -40,6 +41,7 @@ private:
 
 public:
 	Key m_materialKey = 0;
+
 	BoardParser()
 	{
 		m_board = new Board();

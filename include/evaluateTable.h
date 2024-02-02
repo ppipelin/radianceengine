@@ -99,6 +99,10 @@ public:
 
 	Value evaluate(const BoardParser &b) const override
 	{
+		const std::unordered_map<Key, UInt>::const_iterator rep = repetitionTable.find(b.m_materialKey);
+		if (rep != repetitionTable.end() && rep->second > 1)
+			return 0;
+
 		Value finalScore = 0, scorePieceWhite = 0, scorePieceBlack = 0, scorePieceWhiteTable = 0, scorePieceBlackTable = 0;
 		Int movesetWhiteKing = 0, movesetBlackKing = 0;
 
