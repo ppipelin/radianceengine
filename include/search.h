@@ -28,17 +28,6 @@ std::unordered_map<Key, UInt> repetitionTable;
 class Search
 {
 public:
-
-	inline TimePoint elapsed() const
-	{
-		return (now() - Limits.startTime);
-	}
-
-	inline bool outOfTime(const TimePoint &t) const
-	{
-		return elapsed() > (t / 30);
-	}
-
 	struct LimitsType
 	{
 		LimitsType()
@@ -213,15 +202,9 @@ public:
 		}
 	}
 
-
 	struct MoveComparator
 	{
 		MoveComparator(BoardParser &b) : b(b) {};
-		// bool operator() (const cMove &m1, const cMove &m2)
-		// {
-		// 	if (m1.isCapture() ^ m2.isCapture() || !(m1.isCapture() || m2.isCapture())) return m1.isCapture();
-		// 	return (*b.boardParsed())[m1.getTo()]->value() > (*b.boardParsed())[m2.getTo()]->value();
-		// }
 
 		bool operator() (const cMove &m1, const cMove &m2) const
 		{
@@ -337,5 +320,26 @@ public:
 			nodes += nodesNumber;
 		}
 		return nodes;
+	}
+
+	template<typename T, typename Predicate>
+	void move_to_front(std::vector<T> &vec, Predicate pred)
+	{
+		auto it = std::find_if(vec.begin(), vec.end(), pred);
+
+		if (it != vec.end())
+		{
+			std::rotate(vec.begin(), it, it + 1);
+		}
+	}
+
+	inline TimePoint elapsed() const
+	{
+		return (now() - Limits.startTime);
+	}
+
+	inline bool outOfTime(const TimePoint &t) const
+	{
+		return elapsed() > (t / 30);
 	}
 };

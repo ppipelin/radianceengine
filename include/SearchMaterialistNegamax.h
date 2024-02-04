@@ -308,7 +308,7 @@ public:
 
 		// Iterative deepening algorithm
 		std::copy(rootMoves.begin(), rootMoves.begin() + rootMovesSize, rootMovesPrevious.begin());
-		while (true)
+		for (; currentDepth < MAX_PLY && !(Limits.depth && currentDepth > Limits.depth); ++currentDepth)
 		{
 			// Some variables have to be reset
 			for (UInt i = 0; i < rootMovesSize; ++i)
@@ -380,11 +380,6 @@ public:
 			std::copy(rootMoves.begin(), rootMoves.begin() + rootMovesSize, rootMovesPrevious.begin());
 			std::cout << "info failedHighCnt " << failedHighCnt << " alpha " << alpha << " beta " << beta << std::endl;
 			std::cout << UCI::pv(*this, currentDepth) << std::endl;
-
-			++currentDepth;
-
-			if (Limits.depth && currentDepth > Limits.depth)
-				break;
 		}
 		return rootMoves[0].pv[0];
 	}

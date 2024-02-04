@@ -104,7 +104,6 @@ public:
 			return 0;
 
 		Value finalScore = 0, scorePieceWhite = 0, scorePieceBlack = 0, scorePieceWhiteTable = 0, scorePieceBlackTable = 0;
-		Int movesetWhiteKing = 0, movesetBlackKing = 0;
 
 		for (Int i = -1; i < 2; i += 2)
 		{
@@ -181,13 +180,13 @@ public:
 					p->canMove(*b.boardParsed(), moveset);
 					if (endgame)
 					{
-						scoreCurrent += moveset.size();
+						scoreCurrent += Value(moveset.size());
 						if (!endgameHard)
 							scoreCurrent += kingEndgameTable[idxTable];
 					}
 					else
 					{
-						scoreCurrent += kingTable[idxTable] - moveset.size();
+						scoreCurrent += kingTable[idxTable] - Value(moveset.size());
 					}
 				}
 				else if (typeid(*p) == typeid(Queen))
@@ -199,14 +198,14 @@ public:
 					if (endgame)
 					{
 						p->canMove(*b.boardParsed(), moveset);
-						scoreCurrent += 5 * moveset.size();
+						scoreCurrent += 5 * Value(moveset.size());
 					}
 					scoreCurrent += rookTable[idxTable];
 				}
 				else if (typeid(*p) == typeid(Bishop))
 				{
 					p->canMove(*b.boardParsed(), moveset);
-					scoreCurrent += bishopTable[idxTable] + 5 * moveset.size();
+					scoreCurrent += bishopTable[idxTable] + 5 * Value(moveset.size());
 				}
 				else if (typeid(*p) == typeid(Knight))
 				{
