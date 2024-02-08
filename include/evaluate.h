@@ -11,6 +11,6 @@ public:
 
 	virtual Value evaluate(const BoardParser &) const
 	{
-		return -MAX_EVAL;
+		return -VALUE_INFINITE;
 	}
 };

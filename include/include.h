@@ -17,9 +17,22 @@ using Value = Int;
 
 constexpr UInt BOARD_SIZE = 8;
 constexpr UInt BOARD_SIZE2 = 8 * 8;
-constexpr Value MAX_EVAL = 100000;
-constexpr Value NULL_VALUE = 100001;
+
 constexpr UInt MAX_PLY = 246;
+
+// Chess-related constexpr should only be used for chess-related concepts, otherwise use regular math-related namings.
+constexpr Value VALUE_ZERO = 0;
+constexpr Value VALUE_DRAW = 0;
+
+constexpr Value VALUE_MATE = 32000;
+constexpr Value VALUE_INFINITE = VALUE_MATE + 1;
+constexpr Value VALUE_NONE = VALUE_MATE + 2;
+constexpr Value VALUE_MATE_IN_MAX_PLY = VALUE_MATE - MAX_PLY;
+constexpr Value VALUE_MATED_IN_MAX_PLY = -VALUE_MATE_IN_MAX_PLY;
+
+constexpr Value VALUE_TB = VALUE_MATE_IN_MAX_PLY - 1;
+constexpr Value VALUE_TB_WIN_IN_MAX_PLY = VALUE_TB - MAX_PLY;
+constexpr Value VALUE_TB_LOSS_IN_MAX_PLY = -VALUE_TB_WIN_IN_MAX_PLY;
 
 static void debug(std::string str)
 {

@@ -23,7 +23,7 @@ public:
 		if (moveList.empty())
 		{
 			if (b.inCheck(b.isWhiteTurn()))
-				return -MAX_EVAL;
+				return -VALUE_INFINITE;
 			return 0;
 		}
 
@@ -31,7 +31,7 @@ public:
 		++(rootMoves[pvIdx].pvDepth);
 
 		BoardParser b2;
-		Value bestScore = -MAX_EVAL;
+		Value bestScore = -VALUE_INFINITE;
 
 		RootMove rootMoveTemp = rootMoves[pvIdx];
 		for (const cMove move : moveList)
@@ -44,7 +44,7 @@ public:
 				bestScore = score;
 				rootMoves[pvIdx].pv[rootMoves[pvIdx].pvDepth] = move;
 				rootMoveTemp = rootMoves[pvIdx];
-				if (bestScore == MAX_EVAL)
+				if (bestScore == VALUE_MATE)
 					break;
 			}
 			else

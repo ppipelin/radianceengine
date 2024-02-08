@@ -68,10 +68,10 @@ public:
 				: m.previousScore < previousScore;
 		}
 
-		Value score = -MAX_EVAL;
-		Value previousScore = -MAX_EVAL;
-		Value averageScore = -MAX_EVAL;
-		Value uciScore = -MAX_EVAL;
+		Value score = -VALUE_INFINITE;
+		Value previousScore = -VALUE_INFINITE;
+		Value averageScore = -VALUE_INFINITE;
+		Value uciScore = -VALUE_INFINITE;
 		bool scoreLowerbound = false;
 		bool scoreUpperbound = false;
 		std::array<cMove, 100> pv;

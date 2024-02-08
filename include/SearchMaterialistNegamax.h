@@ -49,7 +49,7 @@ public:
 		if (moveListCaptures.empty())
 		{
 			if (b.inCheck(b.isWhiteTurn()))
-				return -MAX_EVAL + rootMoves[pvIdx].pvDepth;
+				return -VALUE_MATE + rootMoves[pvIdx].pvDepth;
 			return alpha;
 		}
 
@@ -130,7 +130,7 @@ public:
 			if (moveList.empty())
 			{
 				if (b.inCheck(b.isWhiteTurn()))
-					return -MAX_EVAL + rootMoves[pvIdx].pvDepth;
+					return -VALUE_MATE + rootMoves[pvIdx].pvDepth;
 				return 0;
 			}
 		}
@@ -146,7 +146,7 @@ public:
 				++(rootMoves[pvIdx].pvDepth);
 				rootMoveTemp = rootMoves[pvIdx];
 			}
-			Value score = NULL_VALUE;
+			Value score = VALUE_NONE;
 #ifdef unMoveTest
 			BoardParser b2(b);
 #endif
@@ -217,7 +217,7 @@ public:
 				if (rootNode)
 				{
 					rootMoves[pvIdx].score = score;
-					rootMoves[pvIdx].averageScore = rootMoves[pvIdx].previousScore != -MAX_EVAL ? (2 * rootMoves[pvIdx].score + rootMoves[pvIdx].previousScore) / 3 : rootMoves[pvIdx].score;
+					rootMoves[pvIdx].averageScore = rootMoves[pvIdx].previousScore != -VALUE_INFINITE ? (2 * rootMoves[pvIdx].score + rootMoves[pvIdx].previousScore) / 3 : rootMoves[pvIdx].score;
 				}
 				rootMoveTemp = rootMoves[pvIdx];
 			}
@@ -230,7 +230,7 @@ public:
 				--(rootMoves[pvIdx].pvDepth);
 				TimePoint t(b.isWhiteTurn() ? Limits.time[WHITE] : Limits.time[BLACK]);
 				if (t && outOfTime(t) && depth > 1)
-					return -MAX_EVAL;
+					return -VALUE_NONE;
 				++pvIdx;
 			}
 		}
@@ -314,18 +314,18 @@ public:
 			for (UInt i = 0; i < rootMovesSize; ++i)
 			{
 				rootMoves[i].previousScore = std::move(rootMoves[i].score);
-				rootMoves[i].score = -MAX_EVAL;
+				rootMoves[i].score = -VALUE_INFINITE;
 			}
 
 			// Reset aspiration window starting size
 			Value prev = rootMoves[0].averageScore;
 			Value delta = std::abs(prev / 2);
-			Value alpha = std::max(prev - delta, -MAX_EVAL);
-			Value beta = std::min(prev + delta, MAX_EVAL);
+			Value alpha = std::max(prev - delta, -VALUE_INFINITE);
+			Value beta = std::min(prev + delta, VALUE_INFINITE);
 			Value failedHighCnt = 0;
 			// Aspiration window
-			// Disable by alpha = -MAX_EVAL; beta = MAX_EVAL;
-			alpha = -MAX_EVAL; beta = MAX_EVAL;
+			// Disable by alpha = -VALUE_INFINITE; beta = VALUE_INFINITE;
+			alpha = -VALUE_INFINITE; beta = VALUE_INFINITE;
 			while (true)
 			{
 				nodesSearched.fill(0);
@@ -352,13 +352,13 @@ public:
 				if (score <= alpha)
 				{
 					beta = (alpha + beta) / 2;
-					alpha = std::max(score - delta, -MAX_EVAL);
+					alpha = std::max(score - delta, -VALUE_INFINITE);
 					failedHighCnt = 0;
 					std::copy(rootMovesPrevious.begin(), rootMovesPrevious.begin() + rootMovesSize, rootMoves.begin());
 				}
 				else if (score >= beta)
 				{
-					beta = std::min(score + delta, MAX_EVAL);
+					beta = std::min(score + delta, VALUE_INFINITE);
 					++failedHighCnt;
 				}
 				else
