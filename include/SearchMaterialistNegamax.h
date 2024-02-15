@@ -92,8 +92,8 @@ public:
 			{
 				rootMoves[pvIdx] = rootMoveTemp;
 			}
-			TimePoint t(b.isWhiteTurn() ? Limits.time[WHITE] : Limits.time[BLACK]);
-			if (t && outOfTime(t))
+
+			if (outOfTime())
 				break;
 		}
 		--(rootMoves[pvIdx].pvDepth);
@@ -228,8 +228,7 @@ public:
 			if (rootNode)
 			{
 				--(rootMoves[pvIdx].pvDepth);
-				TimePoint t(b.isWhiteTurn() ? Limits.time[WHITE] : Limits.time[BLACK]);
-				if (t && outOfTime(t) && depth > 1)
+				if (outOfTime() && depth > 1)
 					return -VALUE_NONE;
 				++pvIdx;
 			}
@@ -281,6 +280,8 @@ public:
 					return UCI::to_move(b, movesParsed[i]);
 			}
 		}
+
+		remaining = TimePoint(b.isWhiteTurn() ? Limits.time[WHITE] : Limits.time[BLACK]);
 
 		// Compute rootMoves
 		UInt currentDepth = 1;
@@ -343,8 +344,7 @@ public:
 				}
 #endif
 
-				TimePoint t(b.isWhiteTurn() ? Limits.time[WHITE] : Limits.time[BLACK]);
-				if (t && outOfTime(t) && currentDepth > 1)
+				if (outOfTime() && currentDepth > 1)
 					break;
 
 				// In case of failing low/high increase aspiration window and
@@ -369,8 +369,7 @@ public:
 				delta += delta / 3;
 			}
 			// Incomplete search rollback
-			TimePoint t(b.isWhiteTurn() ? Limits.time[WHITE] : Limits.time[BLACK]);
-			if (t && outOfTime(t) && currentDepth > 1)
+			if (outOfTime() && currentDepth > 1)
 			{
 				std::copy(rootMovesPrevious.begin(), rootMovesPrevious.begin() + rootMovesSize, rootMoves.begin());
 				break;

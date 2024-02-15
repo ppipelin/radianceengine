@@ -24,6 +24,7 @@ inline TimePoint now()
 
 std::unordered_map<Key, std::pair<Value, UInt>> transpositionTable;
 std::unordered_map<Key, UInt> repetitionTable;
+TimePoint remaining;
 
 class Search
 {
@@ -338,8 +339,9 @@ public:
 		return (now() - Limits.startTime);
 	}
 
-	inline bool outOfTime(const TimePoint &t) const
+	inline bool outOfTime() const
 	{
-		return elapsed() > (t / 30);
+		if (remaining == 0) return false;
+		return elapsed() > (remaining / 30);
 	}
 };

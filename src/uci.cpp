@@ -308,7 +308,7 @@ std::string UCI::pv(const Search &s, UInt depth)
 		ss << "info"
 			<< " depth " << depth
 			<< " nodes " << nodes
-			<< " nps " << nodes * 1000 / s.elapsed()
+			<< " nps " << nodes * 1000 / std::max(s.elapsed(), TimePoint(1))
 			<< " hash " << transpositionTable.size()
 			<< " hashfull " << std::round(transpositionTable.size() * 1000 / transpositionTable.max_size())
 			<< " hashused " << s.transpositionUsed
