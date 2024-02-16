@@ -135,6 +135,18 @@ public:
 			if (outOfTime())
 				break;
 		}
+
+		// All legal moves have been searched. A special case: if we're in check
+		// and no legal moves were found, it is checkmate.
+		if (ss->inCheck && bestScore == -VALUE_INFINITE)
+		{
+			// Plies to mate from the root
+			return mated_in(ss->ply);
+		}
+
+		if (std::abs(bestScore) < VALUE_TB_WIN_IN_MAX_PLY && bestScore >= beta)
+			bestScore = (3 * bestScore + beta) / 4;
+
 		return bestScore;
 	}
 
