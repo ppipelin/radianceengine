@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <unordered_map>
 
 class EvaluateTable : virtual public EvaluateShannon
 {

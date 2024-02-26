@@ -15,7 +15,6 @@
 
 #include <sstream>
 #include <algorithm>
-#include <unordered_map>
 
 namespace {
 	namespace Zobrist {

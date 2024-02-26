@@ -5,6 +5,7 @@
 #include "boardParser.h"
 
 #include <algorithm>
+#include <unordered_map>
 
 class EvaluateShannon : virtual public Evaluate
 {

@@ -6,6 +6,7 @@
 #include "evaluate.h"
 
 #include <array>
+#include <unordered_map>
 
 enum Color
 {
