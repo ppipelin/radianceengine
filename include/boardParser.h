@@ -17,13 +17,15 @@
 #include <algorithm>
 #include <unordered_map>
 
-namespace Zobrist {
-	// KQRBNPkqrbnp
-	Key psq[12][BOARD_SIZE2];
-	// KQkq
-	Key enPassant[BOARD_SIZE];
-	Key castling[4];
-	Key side;
+namespace {
+	namespace Zobrist {
+		// KQRBNPkqrbnp
+		Key psq[12][BOARD_SIZE2];
+		// KQkq
+		Key enPassant[BOARD_SIZE];
+		Key castling[4];
+		Key side;
+	}
 }
 
 /**

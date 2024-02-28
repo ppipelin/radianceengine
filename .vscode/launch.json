@@ -9,7 +9,7 @@
 			"preLaunchTask": "${defaultBuildTask}",
 			"request": "launch",
 			"name": "Go",
-			"program": "${workspaceFolder}/build/Debug/chessengine.exe",
+			"program": "${workspaceFolder}/build/Debug/radiance.exe",
 			"args": [
 				"position startpos moves e2e4",
 				"go",
@@ -19,7 +19,7 @@
 			"type": "cppvsdbg",
 			"request": "launch",
 			"name": "Perft",
-			"program": "${workspaceFolder}/build/Debug/chessengine.exe",
+			"program": "${workspaceFolder}/build/Debug/radiance.exe",
 			"args": [
 				"go perft 1",
 			]
