@@ -104,12 +104,12 @@ public:
 		if (rep != repetitionTable.end() && rep->second > 1)
 			return 0;
 
-		Value finalScore = 0, scorePieceWhite = 0, scorePieceBlack = 0, scorePieceWhiteTable = 0, scorePieceBlackTable = 0;
+		Value finalScore = 0, scorePieceWhite = 0, scorePieceBlack = 0;
 
 		for (Int i = -1; i < 2; i += 2)
 		{
 			std::vector<UInt> table = (i == -1) ? b.boardParsed()->blackPos() : b.boardParsed()->whitePos();
-			Value score = 0;
+			Value *scoreCurrent = &(i == 1 ? scorePieceWhite : scorePieceBlack);
 			std::vector<UInt> pawnPositions;
 			std::vector<UInt> pawnColumns;
 
@@ -121,50 +121,45 @@ public:
 					continue;
 				if (typeid(*p) == typeid(King))
 				{
-					(i == 1 ? scorePieceWhite : scorePieceBlack) += 20000;
+					*scoreCurrent += 20000;
 				}
 				else if (typeid(*p) == typeid(Queen))
 				{
-					(i == 1 ? scorePieceWhite : scorePieceBlack) += 950;
+					*scoreCurrent += 950;
 				}
 				else if (typeid(*p) == typeid(Rook))
 				{
-					(i == 1 ? scorePieceWhite : scorePieceBlack) += 563;
+					*scoreCurrent += 563;
 				}
 				else if (typeid(*p) == typeid(Bishop))
 				{
-					(i == 1 ? scorePieceWhite : scorePieceBlack) += 333;
+					*scoreCurrent += 333;
 				}
 				else if (typeid(*p) == typeid(Knight))
 				{
-					(i == 1 ? scorePieceWhite : scorePieceBlack) += 305;
+					*scoreCurrent += 305;
 				}
 				else if (typeid(*p) == typeid(Pawn))
 				{
-					(i == 1 ? scorePieceWhite : scorePieceBlack) += 100;
+					*scoreCurrent += 100;
 					pawnPositions.push_back(pieceIdx);
 					pawnColumns.push_back(Board::column(pieceIdx));
 				}
 			}
 
-			score += (i == 1 ? scorePieceWhite : scorePieceBlack);
-
-			score += pawnMalus(b, pawnPositions, pawnColumns);
-
-			finalScore += i * score;
+			finalScore += i * (*scoreCurrent + pawnMalus(b, pawnPositions, pawnColumns));
 		}
 
 		// Once ennemy has less pieces our king attacks the other one
 		// King, seven pawns a rook and a bishop
 		const bool endgame = (b.isWhiteTurn() ? scorePieceBlack : scorePieceWhite) <= 20000 + 7 * 100 + 563 + 333;
 		// King, six pawns a bishop and a knight
-		const bool endgameHard = (b.isWhiteTurn() ? scorePieceBlack : scorePieceWhite) <= 20000 + 4 * 100 + 333 + 305;
+		// const bool endgameHard = (b.isWhiteTurn() ? scorePieceBlack : scorePieceWhite) <= 20000 + 4 * 100 + 333 + 305;
 
 		for (Int i = -1; i < 2; i += 2)
 		{
 			std::vector<UInt> table = (i == -1) ? b.boardParsed()->blackPos() : b.boardParsed()->whitePos();
 			Value score = 0;
-			Value &scoreCurrent = (i == 1 ? scorePieceWhiteTable : scorePieceBlackTable);
 			std::vector<cMove> moveset;
 
 			for (const auto &pieceIdx : table)
@@ -181,44 +176,41 @@ public:
 					p->canMove(*b.boardParsed(), moveset);
 					if (endgame)
 					{
-						scoreCurrent += Value(moveset.size());
-						if (!endgameHard)
-							scoreCurrent += kingEndgameTable[idxTable];
+						score += Value(moveset.size());
+						score += kingEndgameTable[idxTable];
 					}
 					else
 					{
-						scoreCurrent += kingTable[idxTable] - Value(moveset.size());
+						score += kingTable[idxTable] - Value(moveset.size());
 					}
 				}
 				else if (typeid(*p) == typeid(Queen))
 				{
-					scoreCurrent += queenTable[idxTable];
+					score += queenTable[idxTable];
 				}
 				else if (typeid(*p) == typeid(Rook))
 				{
 					if (endgame)
 					{
 						p->canMove(*b.boardParsed(), moveset);
-						scoreCurrent += 5 * Value(moveset.size());
+						score += 5 * Value(moveset.size());
 					}
-					scoreCurrent += rookTable[idxTable];
+					score += rookTable[idxTable];
 				}
 				else if (typeid(*p) == typeid(Bishop))
 				{
 					p->canMove(*b.boardParsed(), moveset);
-					scoreCurrent += bishopTable[idxTable] + 5 * Value(moveset.size());
+					score += bishopTable[idxTable] + 5 * Value(moveset.size());
 				}
 				else if (typeid(*p) == typeid(Knight))
 				{
-					scoreCurrent += knightTable[idxTable];
+					score += knightTable[idxTable];
 				}
 				else if (typeid(*p) == typeid(Pawn))
 				{
-					scoreCurrent += pawnTable[idxTable];
+					score += pawnTable[idxTable];
 				}
 			}
-
-			score += scoreCurrent;
 
 			finalScore += i * score;
 		}
