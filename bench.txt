@@ -1,0 +1,6 @@
+$cutechess_cli = ".\resources\cutechess-cli.exe"
+$radiance_engine = ".\build\Release\radiance.exe"
+$stockfish_engine = ".\resources\stockfish-windows-x86-64-avx2.exe"
+$book_path = ".\resources\book_all.bin"
+
+./resources/cutechess-cli.exe -engine name=radiance cmd=$radiance_engine proto=uci book=$book_path -engine name=SF_0 cmd=$stockfish_engine "option.Skill Level=0" proto=uci book=$book_path -engine name=SF_1 cmd=$stockfish_engine "option.Skill Level=1" proto=uci book=$book_path -engine name=SF_2 cmd=$stockfish_engine "option.Skill Level=2" proto=uci book=$book_path -engine name=SF_3 cmd=$stockfish_engine "option.Skill Level=3" proto=uci book=$book_path -engine name=SF_4 cmd=$stockfish_engine "option.Skill Level=4" proto=uci book=$book_path -recover -games 2 -repeat -concurrency 100 -each tc=30+0.3 -rounds 100
