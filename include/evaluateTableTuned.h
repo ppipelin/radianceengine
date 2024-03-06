@@ -94,7 +94,8 @@ public:
 		if (rep != repetitionTable.end() && rep->second > 1)
 			return 0;
 
-		Value finalScore = 0, scorePieceWhite = 0, scorePieceBlack = 0;
+		Value finalScore = 0, scorePieceWhite = 0, scorePieceBlack = 0, mgScore = 0, egScore = 0;
+		std::vector<cMove> moveset;
 
 		for (Int i = -1; i < 2; i += 2)
 		{
@@ -105,35 +106,65 @@ public:
 
 			for (const auto &pieceIdx : table)
 			{
+				moveset.clear();
 				const Piece *p = b.boardParsed()->board()[pieceIdx];
+				// Find idx in piece-square table
+				Int idxTable = i == 1 ? ((BOARD_SIZE - 1) - Board::row(pieceIdx)) * BOARD_SIZE + Board::column(pieceIdx) : pieceIdx;
 
 				if (p == nullptr)
 					continue;
 				if (typeid(*p) == typeid(King))
 				{
 					*scoreCurrent += 20000;
+
+					p->canMove(*b.boardParsed(), moveset);
+					egScore += i * Value(moveset.size());
+					egScore += i * kingEndgameTable[idxTable];
+					mgScore += i * (kingTable[idxTable] - Value(moveset.size()));
 				}
 				else if (typeid(*p) == typeid(Queen))
 				{
 					*scoreCurrent += 950;
+					const Value v = queenTable[idxTable];
+					mgScore += i * v;
+					egScore += i * v;
 				}
 				else if (typeid(*p) == typeid(Rook))
 				{
 					*scoreCurrent += 563;
+
+					p->canMove(*b.boardParsed(), moveset);
+					egScore += i * (5 * Value(moveset.size()));
+					const Value v = rookTable[idxTable];
+					mgScore += i * v;
+					egScore += i * v;
 				}
 				else if (typeid(*p) == typeid(Bishop))
 				{
 					*scoreCurrent += 333;
+
+					p->canMove(*b.boardParsed(), moveset);
+					const Value v = bishopTable[idxTable] + 5 * Value(moveset.size());
+					mgScore += i * v;
+					egScore += i * v;
 				}
 				else if (typeid(*p) == typeid(Knight))
 				{
 					*scoreCurrent += 305;
+
+					const Value v = knightTable[idxTable];
+					mgScore += i * v;
+					egScore += i * v;
 				}
 				else if (typeid(*p) == typeid(Pawn))
 				{
 					*scoreCurrent += 100;
 					pawnPositions.push_back(pieceIdx);
 					pawnColumns.push_back(Board::column(pieceIdx));
+
+					const Value v = pawnTable[idxTable];
+					mgScore += i * v;
+					egScore += i * v;
 				}
 			}
 
@@ -146,68 +177,14 @@ public:
 		// King, six pawns a bishop and a knight
 		// const bool endgameHard = (b.isWhiteTurn() ? scorePieceBlack : scorePieceWhite) <= 20000 + 4 * 100 + 333 + 305;
 
-		for (Int i = -1; i < 2; i += 2)
-		{
-			std::vector<UInt> table = (i == -1) ? b.boardParsed()->blackPos() : b.boardParsed()->whitePos();
-			Value score = 0;
-			std::vector<cMove> moveset;
-
-			for (const auto &pieceIdx : table)
-			{
-				const Piece *p = b.boardParsed()->board()[pieceIdx];
-				moveset.clear();
-
-				// Find idx in piece-square table
-				Int idxTable = i == 1 ? ((BOARD_SIZE - 1) - Board::row(pieceIdx)) * BOARD_SIZE + Board::column(pieceIdx) : pieceIdx;
-				if (p == nullptr)
-					continue;
-				if (typeid(*p) == typeid(King))
-				{
-					p->canMove(*b.boardParsed(), moveset);
-					if (endgame)
-					{
-						score += Value(moveset.size());
-						score += kingEndgameTable[idxTable];
-					}
-					else
-					{
-						score += kingTable[idxTable] - Value(moveset.size());
-					}
-				}
-				else if (typeid(*p) == typeid(Queen))
-				{
-					score += queenTable[idxTable];
-				}
-				else if (typeid(*p) == typeid(Rook))
-				{
-					if (endgame)
-					{
-						p->canMove(*b.boardParsed(), moveset);
-						score += 5 * Value(moveset.size());
-					}
-					score += rookTable[idxTable];
-				}
-				else if (typeid(*p) == typeid(Bishop))
-				{
-					p->canMove(*b.boardParsed(), moveset);
-					score += bishopTable[idxTable] + 5 * Value(moveset.size());
-				}
-				else if (typeid(*p) == typeid(Knight))
-				{
-					score += knightTable[idxTable];
-				}
-				else if (typeid(*p) == typeid(Pawn))
-				{
-					score += pawnTable[idxTable];
-				}
-			}
-
-			finalScore += i * score;
-		}
-
 		if (endgame)
 		{
 			finalScore += (b.isWhiteTurn() ? 1 : -1) * distanceKings(b);
+			finalScore += egScore;
+		}
+		else
+		{
+			finalScore += mgScore;
 		}
 
 		return (b.isWhiteTurn() ? 1 : -1) * finalScore;
