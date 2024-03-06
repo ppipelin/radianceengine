@@ -10,6 +10,7 @@
 #include "evaluateShannon.h"
 #include "evaluateShannonHeuristics.h"
 #include "evaluateTable.h"
+#include "evaluateTableTuned.h"
 
 #include <queue>
 #include <chrono>
@@ -137,7 +138,8 @@ namespace {
 			SearchMaterialistNegamax search = SearchMaterialistNegamax(limits);
 			// EvaluateShannon evaluate = EvaluateShannon();
 			// EvaluateShannonHeuristics evaluate = EvaluateShannonHeuristics();
-			EvaluateTable evaluate = EvaluateTable();
+			// EvaluateTable evaluate = EvaluateTable();
+			EvaluateTableTuned evaluate = EvaluateTableTuned();
 
 			cMove move = search.nextMove(pos, evaluate);
 
