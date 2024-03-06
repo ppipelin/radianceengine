@@ -48,6 +48,7 @@ public:
 		{
 			castleInfo = b.m_s->castleInfo;
 			rule50 = b.m_s->rule50;
+			repetition = b.m_s->repetition;
 			enPassant = b.m_s->enPassant;
 			materialKey = b.m_s->materialKey;
 			lastCapturedPiece = nullptr;
@@ -62,11 +63,12 @@ public:
 				return true;
 			std::cout << "";
 			return true;
-			return castleInfo == rs.castleInfo && rule50 == rs.rule50 && enPassant == rs.enPassant && materialKey == rs.materialKey;
+			return castleInfo == rs.castleInfo && rule50 == rs.rule50 && repetition == rs.repetition && enPassant == rs.enPassant && materialKey == rs.materialKey;
 		}
 
 		UInt castleInfo = 0b1111;
 		UInt rule50 = 0;
+		Int repetition = 0;
 		Int enPassant = -1;
 		Key materialKey = 0;
 		Piece *lastCapturedPiece = nullptr;
@@ -486,6 +488,20 @@ public:
 			m_s->materialKey ^= Zobrist::side;
 		}
 
+		m_s->repetition = 0;
+		if (m_s->rule50 >= 4)
+		{
+			BoardParser::State *s2 = m_s->previous->previous;
+			for (UInt i = 4; i <= m_s->rule50; i += 2)
+			{
+				s2 = s2->previous->previous;
+				if (s2->materialKey == m_s->materialKey)
+				{
+					m_s->repetition = s2->repetition ? -i : i;
+					break;
+				}
+			}
+		}
 		return true;
 	}
 
@@ -590,9 +606,10 @@ public:
 	}
 
 	/**
-		* @brief Fills the	board with the position fen
+		* @brief Fills the	board with the position fen and set state acordingly
 		*
 		* @param fen representation to fill the board
+		* @param s pointer for representative BoardParser::State
 		* @return true if board was successfully filled.
 		* @return false else
 		*/
@@ -865,6 +882,24 @@ public:
 	{
 		UInt kingPos = isWhite ? whiteKing() : blackKing();
 		return std::find_if(vTotal.begin(), vTotal.begin() + arraySize, [kingPos](const auto &ele) {return ele.getTo() == kingPos;}) != vTotal.begin() + arraySize;
+	}
+
+	bool isDraw() const
+	{
+		if (m_s->rule50 > 99)
+			return true;
+		if (m_s->rule50 < 10)
+			return false;
+		BoardParser::State *s = m_s->previous->previous;
+		for (UInt d = 4; d <= m_s->rule50; d += 2)
+		{
+			s = s->previous->previous;
+
+			Key diff = m_s->materialKey ^ s->materialKey;
+			if (diff == 0)
+				return true;
+		}
+		return false;
 	}
 
 	void displayCout()

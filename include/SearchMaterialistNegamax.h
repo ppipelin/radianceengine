@@ -153,47 +153,51 @@ public:
 			BoardParser b2(b, &s2);
 #endif
 			b.movePiece(move, s);
-#ifdef transposition
-			auto it = transpositionTable.find(b.m_s->materialKey);
-			const bool found = it != transpositionTable.end();
-			if (found && it->second.second > depth - 1)
-			{
-				++transpositionUsed;
-				score = it->second.first;
-			}
+			if (!rootNode && b.m_s->repetition && b.m_s->repetition < 0)
+				score = VALUE_DRAW;
 			else
 			{
-#endif
-				// LMR
-				if (depth >= 2 && pvIdx > 3 && !move.isCapture() && !move.isPromotion() && !b.inCheck(b.isWhiteTurn()))
+#ifdef transposition
+				auto it = transpositionTable.find(b.m_s->materialKey);
+				const bool found = it != transpositionTable.end();
+				if (found && it->second.second > depth - 1)
 				{
-					// Reduced LMR
-					UInt d(std::max(1, Int(depth) - 4));
-					score = -abSearch<NonPV>(b, e, -(alpha + 1), -alpha, d - 1);
-					// Failed so roll back to full-depth null window
-					if (score > alpha && depth > d)
+					++transpositionUsed;
+					score = it->second.first;
+				}
+				else
+				{
+#endif
+					// LMR
+					if (depth >= 2 && pvIdx > 3 && !move.isCapture() && !move.isPromotion() && !b.inCheck(b.isWhiteTurn()))
+					{
+						// Reduced LMR
+						UInt d(std::max(1, Int(depth) - 4));
+						score = -abSearch<NonPV>(b, e, -(alpha + 1), -alpha, d - 1);
+						// Failed so roll back to full-depth null window
+						if (score > alpha && depth > d)
+						{
+							score = -abSearch<NonPV>(b, e, -(alpha + 1), -alpha, depth - 1);
+						}
+					}
+					// Full-depth null window search when LMR is skipped
+					else if (!PvNode)
 					{
 						score = -abSearch<NonPV>(b, e, -(alpha + 1), -alpha, depth - 1);
 					}
-				}
-				// Full-depth null window search when LMR is skipped
-				else if (!PvNode)
-				{
-					score = -abSearch<NonPV>(b, e, -(alpha + 1), -alpha, depth - 1);
-				}
 
-				if (PvNode && score > alpha)
-				{
-					score = -abSearch<PV>(b, e, -beta, -alpha, depth - 1);
-				}
+					if (PvNode && score > alpha)
+					{
+						score = -abSearch<PV>(b, e, -beta, -alpha, depth - 1);
+					}
 #ifdef transposition
-			}
-			if (!found)
-				transpositionTable[b.m_s->materialKey] = std::pair<Value, UInt>(score, depth - 1);
-			else if (it->second.second <= depth - 1)
-				it->second = std::pair<Value, UInt>(score, depth - 1);
+				}
+				if (!found)
+					transpositionTable[b.m_s->materialKey] = std::pair<Value, UInt>(score, depth - 1);
+				else if (it->second.second <= depth - 1)
+					it->second = std::pair<Value, UInt>(score, depth - 1);
 #endif
-
+			}
 			b.unMovePiece(move);
 #ifdef unMoveTest
 			if (b != b2)
