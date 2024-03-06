@@ -58,19 +58,19 @@ public:
 		RootMove rootMoveTemp = rootMoves[pvIdx];
 		for (const cMove move : moveListCaptures)
 		{
-			BoardParser::State s(b);
-
+			BoardParser::State s;
 #ifdef unMoveTest
-			BoardParser b2(b);
+			BoardParser::State s2 = *b.m_s;
+			BoardParser b2(b, &s2);
 #endif
-			b.movePiece(move, &s.lastCapturedPiece);
+			b.movePiece(move, s);
 			Value score = -quiesce(b, e, -beta, -alpha);
-			b.unMovePiece(move, s);
+			b.unMovePiece(move);
 #ifdef unMoveTest
 			if (b != b2)
 			{
 				b.displayCLI();
-				std::cout << b.m_materialKey << " " << b2.m_materialKey << std::endl;
+				std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
 			}
 #endif
 
@@ -147,13 +147,14 @@ public:
 				rootMoveTemp = rootMoves[pvIdx];
 			}
 			Value score = VALUE_NONE;
+			BoardParser::State s;
 #ifdef unMoveTest
-			BoardParser b2(b);
+			BoardParser::State s2 = *b.m_s;
+			BoardParser b2(b, &s2);
 #endif
-			BoardParser::State s(b);
-			b.movePiece(move, &s.lastCapturedPiece);
+			b.movePiece(move, s);
 #ifdef transposition
-			auto it = transpositionTable.find(b.m_materialKey);
+			auto it = transpositionTable.find(b.m_s->materialKey);
 			const bool found = it != transpositionTable.end();
 			if (found && it->second.second > depth - 1)
 			{
@@ -188,17 +189,17 @@ public:
 #ifdef transposition
 			}
 			if (!found)
-				transpositionTable[b.m_materialKey] = std::pair<Value, UInt>(score, depth - 1);
+				transpositionTable[b.m_s->materialKey] = std::pair<Value, UInt>(score, depth - 1);
 			else if (it->second.second <= depth - 1)
 				it->second = std::pair<Value, UInt>(score, depth - 1);
 #endif
 
-			b.unMovePiece(move, s);
+			b.unMovePiece(move);
 #ifdef unMoveTest
 			if (b != b2)
 			{
 				b.displayCLI();
-				std::cout << b.m_materialKey << " " << b2.m_materialKey << std::endl;
+				std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
 			}
 #endif
 
@@ -333,14 +334,15 @@ public:
 				pvIdx = 0;
 
 #ifdef unMoveTest
-				BoardParser b2(b);
+				BoardParser::State s2 = *b.m_s;
+				BoardParser b2(b, &s2);
 #endif
 				Value score = abSearch<Root>(b, e, alpha, beta, currentDepth);
 #ifdef unMoveTest
 				if (b != b2)
 				{
 					b.displayCLI();
-					std::cout << b.m_materialKey << " " << b2.m_materialKey << std::endl;
+					std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
 				}
 #endif
 

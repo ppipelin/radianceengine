@@ -39,11 +39,12 @@ public:
 		cMove move;
 		do
 		{
+			BoardParser::State s;
 			b2 = BoardParser(b);
 
 			UInt idx = UInt(double(std::rand()) / double(RAND_MAX) * double(moveList.size()));
 			move = moveList[idx];
-			b2.movePiece(move);
+			b2.movePiece(move, s);
 			moveList.erase(moveList.begin() + idx);
 		} while (b2.inCheck(!b2.isWhiteTurn()) && !moveList.empty());
 		return move;

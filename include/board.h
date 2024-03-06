@@ -1,6 +1,7 @@
 #pragma once
 
 #include "include.h"
+
 #include <algorithm>
 
 class Piece;
@@ -23,9 +24,9 @@ private:
 	Int m_enPassant = -1;
 
 public:
-	bool m_castleAvailableQueenWhite = true, m_castleAvailableKingWhite = true, m_castleAvailableQueenBlack = true, m_castleAvailableKingBlack = true;
+	UInt *m_castleInfo = nullptr;
 
-	Board()
+	Board(UInt *castleInfo)
 	{
 		// std::array are auto set to nullptr but des not seem to be the case
 		// m_board = std::array<Piece *, BOARD_SIZE2>();
@@ -36,6 +37,7 @@ public:
 		m_whitePos.reserve(BOARD_SIZE * 2);
 		m_blackPos.reserve(BOARD_SIZE * 2);
 		m_enPassant = -1;
+		m_castleInfo = castleInfo;
 	}
 
 	~Board()
@@ -67,8 +69,7 @@ public:
 		if (wp != wp2 || bp != bp2)
 			return false;
 
-		if (m_castleAvailableQueenWhite != b.m_castleAvailableQueenWhite || m_castleAvailableKingWhite != b.m_castleAvailableKingWhite ||
-			m_castleAvailableQueenBlack != b.m_castleAvailableQueenBlack || m_castleAvailableKingBlack != b.m_castleAvailableKingBlack)
+		if (*m_castleInfo != *b.m_castleInfo)
 			return false;
 
 		if (enPassant() != b.enPassant())

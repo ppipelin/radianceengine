@@ -128,7 +128,7 @@ public:
 
 			std::erase_if(moveList, [b, moveListAttack, moveListAttackSize](cMove move) mutable {
 				BoardParser::State s(b);
-				b.movePiece(move, &s.lastCapturedPiece);
+				b.movePiece(move, s);
 				// Prune moves which keep the king in check
 				const bool keepInCheck = b.inCheck(!b.isWhiteTurn());
 				b.unMovePiece(move, s);
@@ -154,12 +154,27 @@ public:
 				});
 #endif
 #ifndef optLegalOnly
-			std::erase_if(moveList, [b](const cMove move) mutable {
-				BoardParser::State s(b);
-				b.movePiece(move, &s.lastCapturedPiece);
+			BoardParser::State s;
+
+			std::erase_if(moveList, [&b, &s](const cMove move) {
+#ifdef unMoveTest
+				BoardParser::State s2 = *b.m_s;
+				BoardParser b2(b, &s2);
+#endif
+				b.movePiece(move, s);
 				// Prune moves which keep the king in check
 				bool exit = b.inCheck(!b.isWhiteTurn());
-				b.unMovePiece(move, s);
+				b.unMovePiece(move);
+				s = *b.m_s;
+#ifdef unMoveTest
+				if (b != b2)
+				{
+					b.displayCLI();
+					std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
+				}
+				else
+					assert(b.m_s->materialKey == b2.m_s->materialKey);
+#endif
 				if (exit) return true;
 
 				// Prune moves which castles in check
@@ -170,32 +185,64 @@ public:
 				if (move.getFlags() == 0x2)
 				{
 					cMove lastMove = cMove(move.getFrom(), move.getFrom() + 1);
-					b.movePiece(lastMove, &s.lastCapturedPiece);
+					b.movePiece(lastMove, s);
 					exit = b.inCheck(!b.isWhiteTurn());
-					b.unMovePiece(lastMove, s);
+					b.unMovePiece(lastMove);
+					s = *b.m_s;
+#ifdef unMoveTest
+					if (b != b2)
+					{
+						b.displayCLI();
+						std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
+					}
+#endif
 					if (exit)
 						return true;
 
 					lastMove = cMove(move.getFrom(), move.getFrom() + 2);
-					b.movePiece(lastMove, &s.lastCapturedPiece);
+					b.movePiece(lastMove, s);
 					exit = b.inCheck(!b.isWhiteTurn());
-					b.unMovePiece(lastMove, s);
+					b.unMovePiece(lastMove);
+					s = *b.m_s;
+#ifdef unMoveTest
+					if (b != b2)
+					{
+						b.displayCLI();
+						std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
+					}
+#endif
 					if (exit)
 						return true;
 				}
 				else if (move.getFlags() == 0x3)
 				{
 					cMove lastMove = cMove(move.getFrom(), move.getFrom() - 1);
-					b.movePiece(lastMove, &s.lastCapturedPiece);
+					b.movePiece(lastMove, s);
 					exit = b.inCheck(!b.isWhiteTurn());
-					b.unMovePiece(lastMove, s);
+					b.unMovePiece(lastMove);
+					s = *b.m_s;
+#ifdef unMoveTest
+					if (b != b2)
+					{
+						b.displayCLI();
+						std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
+					}
+#endif
 					if (exit)
 						return true;
 
 					lastMove = cMove(move.getFrom(), move.getFrom() - 2);
-					b.movePiece(lastMove, &s.lastCapturedPiece);
+					b.movePiece(lastMove, s);
 					exit = b.inCheck(!b.isWhiteTurn());
-					b.unMovePiece(lastMove, s);
+					b.unMovePiece(lastMove);
+					s = *b.m_s;
+#ifdef unMoveTest
+					if (b != b2)
+					{
+						b.displayCLI();
+						std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
+					}
+#endif
 					if (exit)
 						return true;
 				}
@@ -279,7 +326,8 @@ public:
 				// Castling over a controlled tile is illegal
 				cMove moveCastle = cMove(move.getFrom(), move.getTo());
 				UInt to = move.getFlags() == 2 ? move.getFrom() + 1 : move.getFrom() - 1;
-				BoardParser b3 = BoardParser(b);
+				BoardParser::State s;
+				BoardParser b3 = BoardParser(b, &s);
 				moveCastle.setTo(to);
 				b3.movePiece(moveCastle);
 				if (b3.inCheck(!b3.isWhiteTurn()))
@@ -299,11 +347,11 @@ public:
 				}
 			}
 #endif
-			BoardParser::State s(b);
+			BoardParser::State s;
 
-			if (!b.movePiece(move, &s.lastCapturedPiece))
+			if (!b.movePiece(move, s))
 			{
-				b.unMovePiece(move, s);
+				b.unMovePiece(move);
 				continue;
 			}
 #ifdef opt
@@ -315,7 +363,7 @@ public:
 			}
 #endif
 			UInt nodesNumber = perft(b, depth - 1);
-			b.unMovePiece(move, s);
+			b.unMovePiece(move);
 			if (verbose)
 			{
 				std::cout << Board::toString(move.getFrom()) << Board::toString(move.getTo()) << " : " << nodesNumber << std::endl;

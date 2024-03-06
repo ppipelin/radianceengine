@@ -16,9 +16,15 @@
 #include <numeric>
 
 namespace {
-	const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+	const std::string startFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+	const std::string kiwiFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+	// A list to keep track of the position states along the setup moves (from the
+	// start position to the position just before the search starts).
+	// Needed by 'draw by repetition' detection. Use a std::deque because pointers to
+	// elements are not invalidated upon list resizing.
+	using StateListPtr = std::unique_ptr<std::deque<BoardParser::State> >;
 
-	void position(BoardParser &pos, std::istringstream &is)
+	void position(BoardParser &pos, std::istringstream &is, StateListPtr &states)
 	{
 		cMove c;
 		std::string token, fen;
@@ -31,7 +37,7 @@ namespace {
 		}
 		else if (token == "kiwi")
 		{
-			fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -";
+			fen = kiwiFen;
 			is >> token; // Consume the "moves" token, if any
 		}
 		else if (token == "fen")
@@ -42,18 +48,22 @@ namespace {
 		else
 			return;
 
-		pos.fillBoard(fen);
+		// Drop the old state and create a new one
+		// fillBoard() adds constructed State to pos
+		states = StateListPtr(new std::deque<BoardParser::State>(1));
+		pos.fillBoard(fen, &states->back());
+
 		transpositionTable.clear();
 		repetitionTable.clear();
-		repetitionTable[pos.m_materialKey] = 1;
+		repetitionTable[pos.m_s->materialKey] = 1;
 		// Parse the moves list, if any
 		while (is >> token && (c = UCI::to_move(pos, token)) != cMove())
 		{
-			BoardParser::State s(pos);
-			pos.movePiece(c, &s.lastCapturedPiece);
-			auto it = repetitionTable.find(pos.m_materialKey);
+			states->emplace_back();
+			pos.movePiece(c, states->back());
+			auto it = repetitionTable.find(pos.m_s->materialKey);
 			if (it == repetitionTable.end())
-				repetitionTable[pos.m_materialKey] = 1;
+				repetitionTable[pos.m_s->materialKey] = 1;
 			else
 				++(it->second);
 		}
@@ -144,9 +154,10 @@ namespace {
 void UCI::loop(int argc, char *argv[])
 {
 	BoardParser pos;
+	StateListPtr states(new std::deque<BoardParser::State>(1));
 	std::string token, cmd;
 
-	pos.fillBoard(startFen);
+	pos.fillBoard(startFen, &states->back());
 
 	std::queue<std::string> q;
 	for (Int i = 1; i < argc; ++i)
@@ -191,7 +202,7 @@ void UCI::loop(int argc, char *argv[])
 			{
 				pos.displayCLI();
 				std::cout << "fen: " << pos.fen() << std::endl;
-				std::cout << "zobrist: " << pos.m_materialKey << std::endl;
+				std::cout << "zobrist: " << pos.m_s->materialKey << std::endl;
 			}
 
 			else if (token == "ponderhit")
@@ -203,9 +214,12 @@ void UCI::loop(int argc, char *argv[])
 			else if (token == "go")
 				go(pos, is);
 			else if (token == "position")
-				position(pos, is);
+				position(pos, is, states);
 			else if (token == "ucinewgame")
-				pos.fillBoard(startFen);
+			{
+				states = StateListPtr(new std::deque<BoardParser::State>(1));
+				pos.fillBoard(startFen, &states->back());
+			}
 			else if (token == "isready")
 				std::cout << "readyok" << std::endl;
 			else if (token == "eval")

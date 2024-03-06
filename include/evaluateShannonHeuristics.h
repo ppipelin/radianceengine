@@ -37,7 +37,7 @@ public:
 		// KQRBNP = number of kings, queens, rooks, bishops, knights and pawns
 		// D,S,I = doubled, blocked and isolated pawns
 		// M = Mobility (the number of legal moves)
-		const std::unordered_map<Key, UInt>::const_iterator rep = repetitionTable.find(b.m_materialKey);
+		const std::unordered_map<Key, UInt>::const_iterator rep = repetitionTable.find(b.m_s->materialKey);
 		if (rep != repetitionTable.end() && rep->second > 1)
 			return 0;
 

@@ -30,6 +30,7 @@ public:
 		// Increase depth after early stop
 		++(rootMoves[pvIdx].pvDepth);
 
+		BoardParser::State s;
 		BoardParser b2;
 		Value bestScore = -VALUE_INFINITE;
 
@@ -37,7 +38,8 @@ public:
 		for (const cMove move : moveList)
 		{
 			b2 = BoardParser(b);
-			b2.movePiece(move);
+
+			b2.movePiece(move, s);
 			Value score = -search(b2, e, depth - 1);
 			if (score > bestScore)
 			{
@@ -81,7 +83,8 @@ public:
 		{
 			cMove move = rootMoves[pvIdx].pv[0];
 			b2 = BoardParser(b);
-			b2.movePiece(move);
+			BoardParser::State s(b2);
+			b2.movePiece(move, s);
 			Value score;
 			if (Limits.depth == 0)
 				score = e.evaluate(b2);

@@ -42,12 +42,44 @@ private:
 	const std::string m_starting = std::string("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
 public:
-	Key m_materialKey = 0;
+
+	struct State
+	{
+		State(const BoardParser &b, State *previousState = nullptr)
+		{
+			castleInfo = b.m_s->castleInfo;
+			rule50 = b.m_s->rule50;
+			enPassant = b.m_s->enPassant;
+			materialKey = b.m_s->materialKey;
+			lastCapturedPiece = nullptr;
+			previous = previousState;
+		}
+		State() = default;
+		State &operator=(const State &b) = default;
+
+		bool operator==(const State &rs) const
+		{
+			if (this == &rs)
+				return true;
+			std::cout << "";
+			return true;
+			return castleInfo == rs.castleInfo && rule50 == rs.rule50 && enPassant == rs.enPassant && materialKey == rs.materialKey;
+		}
+
+		UInt castleInfo = 0b1111;
+		UInt rule50 = 0;
+		Int enPassant = -1;
+		Key materialKey = 0;
+		Piece *lastCapturedPiece = nullptr;
+		State *previous = nullptr;
+	};
+
+	// m_s is not initialized, just replaced during movePiece
+	BoardParser::State *m_s = nullptr;
 
 	BoardParser()
 	{
-		m_board = new Board();
-		fillBoard(m_starting);
+		m_board = new Board(&m_s->castleInfo);
 		m_isWhiteTurn = true;
 
 		PRNG rng(1070372);
@@ -78,13 +110,15 @@ public:
 		delete m_board;
 	}
 
-	BoardParser(const BoardParser &b)
+	BoardParser(const BoardParser &b, BoardParser::State *s = nullptr)
 	{
 		// Guard self assignment
 		if (this == &b)
 			return;
 
-		m_board = new Board();
+		// Since states are local variable we pass its new address
+		m_s = s;
+		m_board = new Board(&m_s->castleInfo);
 		m_isWhiteTurn = b.isWhiteTurn();
 		for (UInt i = 0; i < BOARD_SIZE2; ++i)
 		{
@@ -110,16 +144,12 @@ public:
 		m_board->blackPos() = b.boardParsed()->blackPos();
 		whiteKing(b.whiteKing());
 		blackKing(b.blackKing());
-		m_materialKey = b.m_materialKey;
 
-		m_board->m_castleAvailableQueenWhite = b.boardParsed()->m_castleAvailableQueenWhite;
-		m_board->m_castleAvailableKingWhite = b.boardParsed()->m_castleAvailableKingWhite;
-		m_board->m_castleAvailableQueenBlack = b.boardParsed()->m_castleAvailableQueenBlack;
-		m_board->m_castleAvailableKingBlack = b.boardParsed()->m_castleAvailableKingBlack;
-
+		m_s->castleInfo = b.m_s->castleInfo;
 		m_board->enPassant(b.boardParsed()->enPassant());
 	}
 
+	// operator= has to be an assignement
 	BoardParser &operator=(const BoardParser &b)
 	{
 		// Guard self assignment
@@ -135,6 +165,7 @@ public:
 				i = nullptr;
 			}
 		}
+		m_s = b.m_s;
 		m_isWhiteTurn = b.isWhiteTurn();
 		for (UInt i = 0; i < BOARD_SIZE2; ++i)
 		{
@@ -160,12 +191,8 @@ public:
 		m_board->blackPos() = b.boardParsed()->blackPos();
 		whiteKing(b.whiteKing());
 		blackKing(b.blackKing());
-		m_materialKey = b.m_materialKey;
 
-		m_board->m_castleAvailableQueenWhite = b.boardParsed()->m_castleAvailableQueenWhite;
-		m_board->m_castleAvailableKingWhite = b.boardParsed()->m_castleAvailableKingWhite;
-		m_board->m_castleAvailableQueenBlack = b.boardParsed()->m_castleAvailableQueenBlack;
-		m_board->m_castleAvailableKingBlack = b.boardParsed()->m_castleAvailableKingBlack;
+		m_s->castleInfo = b.m_s->castleInfo;
 		return *this;
 	}
 
@@ -189,29 +216,14 @@ public:
 				return false;
 		}
 
-		if (whiteKing() != b.whiteKing() || blackKing() != b.blackKing())
+		if (*m_s != *b.m_s)
 			return false;
 
-		if (m_materialKey != b.m_materialKey)
+		if (whiteKing() != b.whiteKing() || blackKing() != b.blackKing())
 			return false;
 
 		return *boardParsed() == *b.boardParsed();
 	}
-
-	struct State
-	{
-		State(const BoardParser &b)
-		{
-			castleInfo = (b.boardParsed()->m_castleAvailableQueenWhite << 3) | (b.boardParsed()->m_castleAvailableKingWhite << 2) | (b.boardParsed()->m_castleAvailableQueenBlack << 1) | UInt(b.boardParsed()->m_castleAvailableKingBlack);
-			enPassant = b.boardParsed()->enPassant();
-			lastCapturedPiece = nullptr;
-		}
-		State() = default;
-
-		UInt castleInfo = 0b1111;
-		Int enPassant = -1;
-		Piece *lastCapturedPiece = nullptr;
-	};
 
 	// Mutators
 	Board *boardParsed() { return m_board; }
@@ -235,8 +247,20 @@ public:
 		* @return true : move successful
 		* @return false : move illegal
 		*/
-	bool movePiece(cMove const &move, Piece **lastCapturedPiece = nullptr)
+	bool movePiece(cMove const &move, BoardParser::State &s)
 	{
+		// Reset data and set as previous
+		s.castleInfo = m_s->castleInfo;
+		// Increment ply counters. In particular, rule50 will be reset to zero later on in case of a capture or a pawn move.
+		s.rule50 = m_s->rule50 + 1;
+		s.enPassant = -1;
+		s.materialKey = m_s->materialKey;
+		s.lastCapturedPiece = nullptr;
+		s.previous = m_s;
+		m_s = &s;
+
+		m_board->m_castleInfo = &m_s->castleInfo;
+
 		UInt to = move.getTo();
 		UInt from = move.getFrom();
 		UInt flags = move.getFlags();
@@ -250,9 +274,9 @@ public:
 		}
 
 		// Remove last enPassant
-		if (m_board->enPassant() != -1)
+		if (s.previous->enPassant != -1)
 		{
-			m_materialKey ^= Zobrist::enPassant[Board::column(m_board->enPassant())];
+			m_s->materialKey ^= Zobrist::enPassant[Board::column(m_board->enPassant())];
 			m_board->enPassant(-1);
 		}
 
@@ -262,42 +286,39 @@ public:
 			if (fromPiece->isWhite())
 			{
 				whiteKing(to);
-				if (boardParsed()->m_castleAvailableKingWhite)
-					m_materialKey ^= Zobrist::castling[0];
-				if (boardParsed()->m_castleAvailableQueenWhite)
-					m_materialKey ^= Zobrist::castling[1];
-				boardParsed()->m_castleAvailableKingWhite = false;
-				boardParsed()->m_castleAvailableQueenWhite = false;
+				if (s.previous->castleInfo & 0b0100)
+					m_s->materialKey ^= Zobrist::castling[0];
+				if (s.previous->castleInfo & 0b1000)
+					m_s->materialKey ^= Zobrist::castling[1];
+				s.castleInfo &= ~0b1100;
 			}
 			else
 			{
 				blackKing(to);
-				if (boardParsed()->m_castleAvailableKingBlack)
-					m_materialKey ^= Zobrist::castling[2];
-				if (boardParsed()->m_castleAvailableQueenBlack)
-					m_materialKey ^= Zobrist::castling[3];
-				boardParsed()->m_castleAvailableKingBlack = false;
-				boardParsed()->m_castleAvailableQueenBlack = false;
+				if (s.previous->castleInfo & 0b0001)
+					m_s->materialKey ^= Zobrist::castling[2];
+				if (s.previous->castleInfo & 0b010)
+					m_s->materialKey ^= Zobrist::castling[3];
+				s.castleInfo &= ~0b0011;
 			}
 		}
 		else if (typeid(*fromPiece) == typeid(Rook))
 		{
+			const bool white = fromPiece->isWhite();
 			if (Board::column(from) == 7)
 			{
-				bool *castle = &(fromPiece->isWhite() ? boardParsed()->m_castleAvailableKingWhite : boardParsed()->m_castleAvailableKingBlack);
-				if (*castle)
+				if (m_s->castleInfo & (white ? 0b0100 : 0b0001))
 				{
-					m_materialKey ^= Zobrist::castling[(fromPiece->isWhite() ? 0 : 2)];
-					*castle = false;
+					m_s->materialKey ^= Zobrist::castling[(white ? 0 : 2)];
+					m_s->castleInfo &= white ? ~0b0100 : ~0b0001;
 				}
 			}
 			else	if (Board::column(from) == 0)
 			{
-				bool *castle = &(fromPiece->isWhite() ? boardParsed()->m_castleAvailableQueenWhite : boardParsed()->m_castleAvailableQueenBlack);
-				if (*castle)
+				if (m_s->castleInfo & (white ? 0b1000 : 0b0010))
 				{
-					m_materialKey ^= Zobrist::castling[(fromPiece->isWhite() ? 1 : 3)];
-					*castle = false;
+					m_s->materialKey ^= Zobrist::castling[(white ? 1 : 3)];
+					m_s->castleInfo &= white ? ~0b1000 : ~0b0010;
 				}
 			}
 		}
@@ -306,8 +327,9 @@ public:
 			// Updates enPassant if possible next turn
 			if (fabs(Int(from) - Int(to)) == 16)
 			{
-				m_board->enPassant(Board::column(to));
-				m_materialKey ^= Zobrist::enPassant[Board::column(to)];
+				s.enPassant = Board::column(to);
+				m_board->enPassant(s.enPassant);
+				m_s->materialKey ^= Zobrist::enPassant[s.enPassant];
 			}
 			else
 			{
@@ -317,14 +339,10 @@ public:
 					// Should never be nullptr
 					UInt enPassantTile = to + (fromPiece->isWhite() ? -Int(BOARD_SIZE) : BOARD_SIZE);
 
-					// This if handles legacy behavior providing no pointer to lastCapturedPiece
-					if (lastCapturedPiece != nullptr)
-						*lastCapturedPiece = m_board->board()[enPassantTile];
-					else
-						lastCapturedPiece = &m_board->board()[enPassantTile];
+					s.lastCapturedPiece = m_board->board()[enPassantTile];
 
 					// Remove
-					m_materialKey ^= Zobrist::psq[((*lastCapturedPiece)->isWhite() ? 0 : 6) + 6 - (*lastCapturedPiece)->value()][enPassantTile];
+					m_s->materialKey ^= Zobrist::psq[(s.lastCapturedPiece->isWhite() ? 0 : 6) + 6 - s.lastCapturedPiece->value()][enPassantTile];
 
 					m_board->board()[enPassantTile] = nullptr;
 					// Remove in color table
@@ -344,7 +362,7 @@ public:
 					// Before delete we store the data we need
 					const bool isWhite = fromPiece->isWhite();
 					// Remove
-					m_materialKey ^= Zobrist::psq[(fromPiece->isWhite() ? 0 : 6) + 6 - fromPiece->value()][from];
+					m_s->materialKey ^= Zobrist::psq[(fromPiece->isWhite() ? 0 : 6) + 6 - fromPiece->value()][from];
 					delete m_board->board()[from];
 					m_board->board()[from] = nullptr;
 					if (((move.m_move >> 12) & 0x3) == 0)
@@ -356,9 +374,11 @@ public:
 					else if (((move.m_move >> 12) & 0x3) == 3)
 						fromPiece = new Queen(from, isWhite, false);
 					// Add
-					m_materialKey ^= Zobrist::psq[(fromPiece->isWhite() ? 0 : 6) + 6 - fromPiece->value()][from];
+					m_s->materialKey ^= Zobrist::psq[(fromPiece->isWhite() ? 0 : 6) + 6 - fromPiece->value()][from];
 				}
 			}
+			// Reset rule 50 counter
+			m_s->rule50 = 0;
 		}
 
 		if (toPiece != nullptr)
@@ -367,47 +387,45 @@ public:
 			bool *castle = nullptr;
 			if (to == 0)
 			{
-				castle = &m_board->m_castleAvailableQueenWhite;
-				if (*castle)
+				UInt constexpr value = 0b1000;
+				if (m_s->castleInfo & value)
 				{
-					m_materialKey ^= Zobrist::castling[1];
-					*castle = false;
+					m_s->castleInfo &= ~value;
+					m_s->materialKey ^= Zobrist::castling[1];
 				}
 			}
 			else if (to == 7)
 			{
-				castle = &m_board->m_castleAvailableKingWhite;
-				if (*castle)
+				UInt constexpr value = 0b0100;
+				if (m_s->castleInfo & value)
 				{
-					m_materialKey ^= Zobrist::castling[0];
-					*castle = false;
+					m_s->castleInfo &= ~value;
+					m_s->materialKey ^= Zobrist::castling[0];
 				}
 			}
 			else if (to == 56)
 			{
-				castle = &m_board->m_castleAvailableQueenBlack;
-				if (*castle)
+				UInt constexpr value = 0b0010;
+				if (m_s->castleInfo & value)
 				{
-					m_materialKey ^= Zobrist::castling[3];
-					*castle = false;
+					m_s->castleInfo &= ~value;
+					m_s->materialKey ^= Zobrist::castling[3];
 				}
 			}
 			else if (to == 63)
 			{
-				castle = &m_board->m_castleAvailableKingBlack;
-				if (*castle)
+				UInt constexpr value = 0b0001;
+				if (m_s->castleInfo & value)
 				{
-					m_materialKey ^= Zobrist::castling[2];
-					*castle = false;
+					m_s->castleInfo &= ~value;
+					m_s->materialKey ^= Zobrist::castling[2];
 				}
 			}
 
-			// This if handles legacy behavior providing no pointer to lastCapturedPiece
-			if (lastCapturedPiece != nullptr)
-				*lastCapturedPiece = m_board->board()[to];
+			s.lastCapturedPiece = toPiece;
 
 			// Remove
-			m_materialKey ^= Zobrist::psq[(toPiece->isWhite() ? 0 : 6) + 6 - toPiece->value()][to];
+			m_s->materialKey ^= Zobrist::psq[(toPiece->isWhite() ? 0 : 6) + 6 - toPiece->value()][to];
 			m_board->board()[to] = nullptr;
 			// Editing color table for captures
 			if (fromPiece->isWhite())
@@ -418,14 +436,17 @@ public:
 			{
 				m_board->whitePos().erase(std::find(m_board->whitePos().begin(), m_board->whitePos().end(), to));
 			}
+
+			// Reset rule 50 counter
+			m_s->rule50 = 0;
 		}
 
 		// Remove
-		m_materialKey ^= Zobrist::psq[(fromPiece->isWhite() ? 0 : 6) + 6 - fromPiece->value()][from];
+		m_s->materialKey ^= Zobrist::psq[(fromPiece->isWhite() ? 0 : 6) + 6 - fromPiece->value()][from];
 		m_board->board()[from] = nullptr;
 
 		// Add
-		m_materialKey ^= Zobrist::psq[(fromPiece->isWhite() ? 0 : 6) + 6 - fromPiece->value()][to];
+		m_s->materialKey ^= Zobrist::psq[(fromPiece->isWhite() ? 0 : 6) + 6 - fromPiece->value()][to];
 		m_board->board()[to] = fromPiece;
 		fromPiece->tile() = to;
 
@@ -442,22 +463,28 @@ public:
 			m_board->blackPos().push_back(to);
 		}
 		m_isWhiteTurn = !m_isWhiteTurn;
-		m_materialKey ^= Zobrist::side;
+		m_s->materialKey ^= Zobrist::side;
 
 		// If castling we move the rook as well
 		if (flags == 2)
 		{
-			movePiece(cMove(from + 3, from + 3 - 2), /*lastCapturedPiece =*/ nullptr);
+			BoardParser::State tmp;
+			movePiece(cMove(from + 3, from + 3 - 2), tmp);
 			// We have moved, we need to set the turn back
+			m_s = &s;
+			m_board->m_castleInfo = &m_s->castleInfo;
 			m_isWhiteTurn = !m_isWhiteTurn;
-			m_materialKey ^= Zobrist::side;
+			m_s->materialKey ^= Zobrist::side;
 		}
 		else if (flags == 3)
 		{
-			movePiece(cMove(from - 4, from - 4 + 3), /*lastCapturedPiece =*/ nullptr);
+			BoardParser::State tmp;
+			movePiece(cMove(from - 4, from - 4 + 3), tmp);
 			// We have moved, we need to set the turn back
+			m_s = &s;
+			m_board->m_castleInfo = &m_s->castleInfo;
 			m_isWhiteTurn = !m_isWhiteTurn;
-			m_materialKey ^= Zobrist::side;
+			m_s->materialKey ^= Zobrist::side;
 		}
 
 		return true;
@@ -470,64 +497,45 @@ public:
 		* @return true : move successful
 		* @return false : move illegal
 		*/
-	bool unMovePiece(const cMove &move, const State &s)
+	bool unMovePiece(const cMove &move, bool silent = false)
 	{
 		UInt to = move.getTo();
 		UInt from = move.getFrom();
 		UInt flags = move.getFlags();
-		// Piece *fromPiece = m_board->board()[from];
 		Piece *toPiece = m_board->board()[to];
 
 		// Add
-		m_materialKey ^= Zobrist::psq[(toPiece->isWhite() ? 0 : 6) + 6 - toPiece->value()][from];
 		m_board->board()[from] = toPiece;
 		toPiece->tile() = from;
 		// Remove
-		m_materialKey ^= Zobrist::psq[(toPiece->isWhite() ? 0 : 6) + 6 - toPiece->value()][to];
 		m_board->board()[to] = nullptr;
 
-		if (!boardParsed()->m_castleAvailableKingWhite && s.castleInfo & 0b0100)
-			m_materialKey ^= Zobrist::castling[0];
-		if (!boardParsed()->m_castleAvailableQueenWhite && s.castleInfo & 0b1000)
-			m_materialKey ^= Zobrist::castling[1];
-		if (!boardParsed()->m_castleAvailableKingBlack && s.castleInfo & 0b0001)
-			m_materialKey ^= Zobrist::castling[2];
-		if (!boardParsed()->m_castleAvailableQueenBlack && s.castleInfo & 0b0010)
-			m_materialKey ^= Zobrist::castling[3];
-		boardParsed()->m_castleAvailableKingWhite = s.castleInfo & 0b0100;
-		boardParsed()->m_castleAvailableQueenWhite = s.castleInfo & 0b1000;
-		boardParsed()->m_castleAvailableKingBlack = s.castleInfo & 0b0001;
-		boardParsed()->m_castleAvailableQueenBlack = s.castleInfo & 0b0010;
-		if (typeid(*toPiece) == typeid(King))
+		if (!silent)
 		{
-			if (toPiece->isWhite())
-				whiteKing(from);
-			else
-				blackKing(from);
+			boardParsed()->m_castleInfo = &m_s->previous->castleInfo;
+			if (typeid(*toPiece) == typeid(King))
+			{
+				if (toPiece->isWhite())
+					whiteKing(from);
+				else
+					blackKing(from);
+			}
+
+			// Was a promotion
+			if (move.isPromotion())
+			{
+				// temporary have to delete and new but should be fixed for speedup
+				// Before delete we store the data we need
+				const bool isWhite = toPiece->isWhite();
+				// Remove promoted piece back into pawn (already moved back)
+				delete m_board->board()[from];
+				m_board->board()[from] = new Pawn(from, isWhite, false);
+				toPiece = m_board->board()[from];
+			}
+
+			// Remove added enPassant and recover previous if there was one
+			boardParsed()->enPassant(m_s->previous->enPassant);
 		}
-
-		// Was a promotion
-		if (move.isPromotion())
-		{
-			// temporary have to delete and new but should be fixed for speedup
-			// Before delete we store the data we need
-			const bool isWhite = toPiece->isWhite();
-			// Remove promoted piece back into pawn (already moved back)
-			m_materialKey ^= Zobrist::psq[(toPiece->isWhite() ? 0 : 6) + 6 - toPiece->value()][from];
-			delete m_board->board()[from];
-			m_board->board()[from] = new Pawn(from, isWhite, false);
-			toPiece = m_board->board()[from];
-			// Add
-			m_materialKey ^= Zobrist::psq[(toPiece->isWhite() ? 0 : 6) + 6 - toPiece->value()][from];
-		}
-
-		// Remove added enPassant
-		if (m_board->enPassant() != -1)
-			m_materialKey ^= Zobrist::enPassant[Board::column(m_board->enPassant())];
-		if (s.enPassant != -1)
-			m_materialKey ^= Zobrist::enPassant[Board::column(s.enPassant)];
-		boardParsed()->enPassant(s.enPassant);
-
 		// Editing color table
 		// TODO : use std::replace_if ? or std::replace to avoid loop over all vector
 		if (toPiece->isWhite())
@@ -541,18 +549,17 @@ public:
 			m_board->blackPos().push_back(from);
 		}
 
-		// Updates enPassant if possible next turn
-		if (s.lastCapturedPiece != nullptr)
+		if (!silent && m_s->lastCapturedPiece != nullptr)
 		{
 			UInt localTo = to;
-			if (s.lastCapturedPiece->tile() != to)
-				localTo = s.lastCapturedPiece->isWhite() ? to + 8 : to - 8;
+			// Case where capture was en passant
+			if (m_s->lastCapturedPiece->tile() != to)
+				localTo = m_s->lastCapturedPiece->isWhite() ? to + 8 : to - 8;
 
-			m_materialKey ^= Zobrist::psq[(s.lastCapturedPiece->isWhite() ? 0 : 6) + 6 - s.lastCapturedPiece->value()][localTo];
-			m_board->board()[localTo] = s.lastCapturedPiece;
+			m_board->board()[localTo] = m_s->lastCapturedPiece;
 
 			// Editing color table for captures
-			if (s.lastCapturedPiece->isWhite())
+			if (m_s->lastCapturedPiece->isWhite())
 			{
 				m_board->whitePos().push_back(localTo);
 			}
@@ -562,23 +569,22 @@ public:
 			}
 		}
 
-		m_isWhiteTurn = !m_isWhiteTurn;
-		m_materialKey ^= Zobrist::side;
-
 		// If castling we move the rook as well
 		if (flags == 2)
 		{
-			unMovePiece(cMove(from + 3, from + 3 - 2), s);
-			// We have moved, we need to set the turn back
-			m_isWhiteTurn = !m_isWhiteTurn;
-			m_materialKey ^= Zobrist::side;
+			unMovePiece(cMove(from + 3, from + 3 - 2), /* silent = */ true);
 		}
 		else if (flags == 3)
 		{
-			unMovePiece(cMove(from - 4, from - 4 + 3), s);
-			// We have moved, we need to set the turn back
+			unMovePiece(cMove(from - 4, from - 4 + 3), /* silent = */ true);
+		}
+
+		// State pointer back to the previous state
+		if (!silent)
+		{
 			m_isWhiteTurn = !m_isWhiteTurn;
-			m_materialKey ^= Zobrist::side;
+			m_s = m_s->previous;
+			m_board->m_castleInfo = &m_s->castleInfo;
 		}
 
 		return true;
@@ -591,7 +597,7 @@ public:
 		* @return true if board was successfully filled.
 		* @return false else
 		*/
-	bool fillBoard(const std::string &fen)
+	bool fillBoard(const std::string &fen, BoardParser::State *s)
 	{
 		std::stringstream sstream(fen);
 		std::string word;
@@ -601,7 +607,7 @@ public:
 			words.push_back(word);
 		}
 
-		m_materialKey = 0;
+		s->materialKey = 0;
 		m_board->whitePos().clear();
 		m_board->blackPos().clear();
 		m_board->whitePos().reserve(BOARD_SIZE * 2);
@@ -638,64 +644,64 @@ public:
 			case 'p':
 				m_board->board()[counter] = new Pawn(counter, false, true);
 				m_board->blackPos().push_back(counter);
-				m_materialKey ^= Zobrist::psq[5 + 6][counter];
+				s->materialKey ^= Zobrist::psq[5 + 6][counter];
 				break;
 			case 'P':
 				m_board->board()[counter] = new Pawn(counter, true, true);
 				m_board->whitePos().push_back(counter);
-				m_materialKey ^= Zobrist::psq[5][counter];
+				s->materialKey ^= Zobrist::psq[5][counter];
 				break;
 			case 'k':
 				m_board->board()[counter] = new King(counter, false, true);
 				m_board->blackPos().push_back(counter);
-				m_materialKey ^= Zobrist::psq[0 + 6][counter];
+				s->materialKey ^= Zobrist::psq[0 + 6][counter];
 				blackKing(counter);
 				break;
 			case 'K':
 				m_board->board()[counter] = new King(counter, true, true);
 				m_board->whitePos().push_back(counter);
-				m_materialKey ^= Zobrist::psq[0][counter];
+				s->materialKey ^= Zobrist::psq[0][counter];
 				whiteKing(counter);
 				break;
 			case 'q':
 				m_board->board()[counter] = new Queen(counter, false, true);
 				m_board->blackPos().push_back(counter);
-				m_materialKey ^= Zobrist::psq[1 + 6][counter];
+				s->materialKey ^= Zobrist::psq[1 + 6][counter];
 				break;
 			case 'Q':
 				m_board->board()[counter] = new Queen(counter, true, true);
 				m_board->whitePos().push_back(counter);
-				m_materialKey ^= Zobrist::psq[1][counter];
+				s->materialKey ^= Zobrist::psq[1][counter];
 				break;
 			case 'r':
 				m_board->board()[counter] = new Rook(counter, false, true);
 				m_board->blackPos().push_back(counter);
-				m_materialKey ^= Zobrist::psq[2 + 6][counter];
+				s->materialKey ^= Zobrist::psq[2 + 6][counter];
 				break;
 			case 'R':
 				m_board->board()[counter] = new Rook(counter, true, true);
 				m_board->whitePos().push_back(counter);
-				m_materialKey ^= Zobrist::psq[2][counter];
+				s->materialKey ^= Zobrist::psq[2][counter];
 				break;
 			case 'b':
 				m_board->board()[counter] = new Bishop(counter, false, true);
 				m_board->blackPos().push_back(counter);
-				m_materialKey ^= Zobrist::psq[3 + 6][counter];
+				s->materialKey ^= Zobrist::psq[3 + 6][counter];
 				break;
 			case 'B':
 				m_board->board()[counter] = new Bishop(counter, true, true);
 				m_board->whitePos().push_back(counter);
-				m_materialKey ^= Zobrist::psq[3][counter];
+				s->materialKey ^= Zobrist::psq[3][counter];
 				break;
 			case 'n':
 				m_board->board()[counter] = new Knight(counter, false, true);
 				m_board->blackPos().push_back(counter);
-				m_materialKey ^= Zobrist::psq[4 + 6][counter];
+				s->materialKey ^= Zobrist::psq[4 + 6][counter];
 				break;
 			case 'N':
 				m_board->board()[counter] = new Knight(counter, true, true);
 				m_board->whitePos().push_back(counter);
-				m_materialKey ^= Zobrist::psq[4 + 6][counter];
+				s->materialKey ^= Zobrist::psq[4 + 6][counter];
 				break;
 			case '/':
 				counter -= BOARD_SIZE * 2 + 1;
@@ -707,7 +713,7 @@ public:
 		if (words.size() > 1 && words[1] == "w")
 		{
 			m_isWhiteTurn = true;
-			m_materialKey ^= Zobrist::side;
+			s->materialKey ^= Zobrist::side;
 		}
 		else
 		{
@@ -716,44 +722,50 @@ public:
 
 		if (words.size() > 3)
 		{
-			m_board->m_castleAvailableQueenWhite = false;
-			m_board->m_castleAvailableKingWhite = false;
-			m_board->m_castleAvailableQueenBlack = false;
-			m_board->m_castleAvailableKingBlack = false;
+			s->castleInfo = 0;
 			if (words[2] != "-")
 			{
 				if (std::find(words[2].begin(), words[2].end(), 'Q') != words[2].end())
 				{
-					m_board->m_castleAvailableQueenWhite = true;
-					m_materialKey ^= Zobrist::castling[1];
+					s->castleInfo |= 0b1000;
+					s->materialKey ^= Zobrist::castling[1];
 				}
 				if (std::find(words[2].begin(), words[2].end(), 'q') != words[2].end())
 				{
-					m_board->m_castleAvailableQueenBlack = true;
-					m_materialKey ^= Zobrist::castling[3];
+					s->castleInfo |= 0b0010;
+					s->materialKey ^= Zobrist::castling[3];
 				}
 				if (std::find(words[2].begin(), words[2].end(), 'K') != words[2].end())
 				{
-					m_board->m_castleAvailableKingWhite = true;
-					m_materialKey ^= Zobrist::castling[0];
+					s->castleInfo |= 0b0100;
+					s->materialKey ^= Zobrist::castling[0];
 				}
 				if (std::find(words[2].begin(), words[2].end(), 'k') != words[2].end())
 				{
-					m_board->m_castleAvailableKingBlack = true;
-					m_materialKey ^= Zobrist::castling[2];
+					s->castleInfo |= 0b0001;
+					s->materialKey ^= Zobrist::castling[2];
 				}
 			}
 		}
 		if (words.size() > 4 && words[3] != "-")
 		{
 			UInt tile = Board::toTiles(words[3]);
-			m_board->enPassant(Board::column(tile));
-			m_materialKey ^= Zobrist::enPassant[Board::column(tile)];
+			s->enPassant = Board::column(tile);
+			s->materialKey ^= Zobrist::enPassant[s->enPassant];
 		}
 		else
 		{
-			m_board->enPassant(-1);
+			s->enPassant = -1;
 		}
+		m_board->enPassant(s->enPassant);
+
+		if (words.size() > 5 && words[4] != "-")
+		{
+			s->rule50 = stoi(words[4]);
+		}
+		m_s = s;
+		m_board->m_castleInfo = &m_s->castleInfo;
+
 		return true;
 	}
 
@@ -808,13 +820,13 @@ public:
 		s += isWhiteTurn() ? " w " : " b ";
 
 		std::string caslteStr = "";
-		if (m_board->m_castleAvailableKingWhite)
+		if (m_s->castleInfo & 0b0100)
 			caslteStr += "K";
-		if (m_board->m_castleAvailableQueenWhite)
+		if (m_s->castleInfo & 0b1000)
 			caslteStr += "Q";
-		if (m_board->m_castleAvailableKingBlack)
+		if (m_s->castleInfo & 0b0001)
 			caslteStr += "k";
-		if (m_board->m_castleAvailableQueenBlack)
+		if (m_s->castleInfo & 0b0010)
 			caslteStr += "q";
 
 		if (caslteStr.empty())
@@ -823,37 +835,37 @@ public:
 
 		s += " ";
 
-		Int enPassant = m_board->enPassant();
+		Int enPassant = m_board->enPassant(); // change, m_enPassant should be a pointer like m_castleInfo
 		s += noEnPassant || enPassant == -1 ? "-" : Board::toString((isWhiteTurn() ? 40 : 16) + enPassant);
+
+		s += " ";
+
+		s += std::to_string(m_s->rule50);
 
 		return s;
 	}
 
-	bool inCheck(bool isWhite, std::array<cMove, MAX_PLY> vTotal = std::array<cMove, MAX_PLY>(), size_t arraySize = 0) const
+	bool inCheck(bool isWhite) const
 	{
 		UInt kingPos = isWhite ? whiteKing() : blackKing();
 		// Compute all oponents moves
-		if (arraySize == 0)
+		std::vector<cMove> v;
+		for (const auto tile : (!isWhite ? m_board->whitePos() : m_board->blackPos()))
 		{
-			std::vector<cMove> v;
-			for (const auto tile : (!isWhite ? m_board->whitePos() : m_board->blackPos()))
+			const Piece *piece = m_board->board()[tile];
+			if (piece == nullptr)
 			{
-				const Piece *piece = m_board->board()[tile];
-				if (piece == nullptr)
-				{
-					continue;
-				}
-				piece->canMove(*m_board, v);
+				continue;
 			}
-			// TODO: parallelize
-			return std::find_if(v.begin(), v.end(), [kingPos](const auto &ele) {return ele.getTo() == kingPos;}) != v.end();
+			piece->canMove(*m_board, v);
 		}
-		else
-		{
-			// TODO: parallelize
-			return std::find_if(vTotal.begin(), vTotal.begin() + arraySize, [kingPos](const auto &ele) {return ele.getTo() == kingPos;}) != vTotal.begin() + arraySize;
-		}
+		return std::find_if(v.begin(), v.end(), [kingPos](const auto &ele) {return ele.getTo() == kingPos;}) != v.end();
+	}
 
+	bool inCheck(bool isWhite, std::array<cMove, MAX_PLY> vTotal, size_t arraySize) const
+	{
+		UInt kingPos = isWhite ? whiteKing() : blackKing();
+		return std::find_if(vTotal.begin(), vTotal.begin() + arraySize, [kingPos](const auto &ele) {return ele.getTo() == kingPos;}) != vTotal.begin() + arraySize;
 	}
 
 	void displayCout()
