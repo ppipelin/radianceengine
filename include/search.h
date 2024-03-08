@@ -96,6 +96,8 @@ public:
 	{
 		std::vector<UInt> allyPositions = b.isWhiteTurn() ? b.boardParsed()->whitePos() : b.boardParsed()->blackPos();
 		std::vector<UInt> enemyPositions = !b.isWhiteTurn() ? b.boardParsed()->whitePos() : b.boardParsed()->blackPos();
+		std::sort(allyPositions.begin(), allyPositions.end());
+		std::sort(enemyPositions.begin(), enemyPositions.end());
 		moveList.reserve(MAX_PLY);
 		for (UInt tileIdx = 0; tileIdx < allyPositions.size(); ++tileIdx)
 		{
