@@ -55,18 +55,11 @@ namespace {
 		pos.fillBoard(fen, &states->back());
 
 		transpositionTable.clear();
-		repetitionTable.clear();
-		repetitionTable[pos.m_s->materialKey] = 1;
 		// Parse the moves list, if any
 		while (is >> token && (c = UCI::to_move(pos, token)) != cMove())
 		{
 			states->emplace_back();
 			pos.movePiece(c, states->back());
-			auto it = repetitionTable.find(pos.m_s->materialKey);
-			if (it == repetitionTable.end())
-				repetitionTable[pos.m_s->materialKey] = 1;
-			else
-				++(it->second);
 		}
 	}
 

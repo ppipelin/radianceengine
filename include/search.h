@@ -25,7 +25,6 @@ inline TimePoint now()
 
 namespace {
 	std::unordered_map<Key, std::pair<Value, UInt>> transpositionTable;
-	std::unordered_map<Key, UInt> repetitionTable;
 	TimePoint remaining;
 }
 
