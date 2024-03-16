@@ -242,8 +242,6 @@ public:
 
 			// Possible reduction/extension here
 
-			ss->currentMove = move;
-
 #ifdef unMoveTest
 			BoardParser::State s2 = *b.m_s;
 			BoardParser b2(b, &s2);
