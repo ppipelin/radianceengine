@@ -41,7 +41,7 @@ public:
 		}
 
 		std::vector<cMove> searchmoves;
-		UInt movestogo, depth, mate, perft, infinite, nodes;
+		UInt movestogo, depth, selDepth, mate, perft, infinite, nodes;
 		TimePoint time[COLOR_NB], inc[COLOR_NB], startTime;
 	};
 
@@ -66,17 +66,33 @@ public:
 		Value uciScore = -VALUE_INFINITE;
 		bool scoreLowerbound = false;
 		bool scoreUpperbound = false;
-		std::array<cMove, 100> pv;
-		UInt pvDepth = 0;
+		UInt selDepth = 0;
+		std::vector<cMove> pv;
+		// UInt pvDepth = 0;
+	};
+
+	struct Stack
+	{
+		cMove *pv;
+		UInt ply;
+		cMove currentMove;
+		cMove excludedMove;
+		cMove killers[2];
+		Value staticEval;
+		UInt moveCount;
+		bool inCheck;
+		bool ttPv;
+		bool ttHit;
+		int doubleExtensions;
+		int cutoffCnt;
 	};
 
 	LimitsType Limits;
-	UInt pvIdx = 0;
-	std::array<RootMove, MAX_PLY> rootMoves;
-	std::array<RootMove, MAX_PLY> rootMovesPrevious;
-	std::array<Int, MAX_PLY> nodesSearched = { 0 };
+	UInt pvIdx = 0, bestMoveChanges = 0, selDepth = 0;
+	std::vector<RootMove> rootMoves;
+	std::array<Int, MAX_MOVES> nodesSearched = { 0 };
 	UInt transpositionUsed = 0;
-	UInt rootMovesSize = 0;
+	// UInt rootMovesSize = 0;
 
 	Search(const Search::LimitsType &limits) : Limits(limits) {}
 	Search(const Search &) {}
@@ -116,7 +132,7 @@ public:
 			// #define optLegalOnly
 #ifdef optLegalOnly
 			// Look for attacked squares
-			std::array<cMove, MAX_PLY> moveListAttack = {};
+			std::array<cMove, MAX_MOVES> moveListAttack = {};
 			size_t moveListAttackSize = 0;
 			for (UInt tileIdx = 0; tileIdx < enemyPositions.size(); ++tileIdx)
 			{
@@ -396,4 +412,15 @@ public:
 		if (remaining == 0) return false;
 		return elapsed() > (remaining / 30);
 	}
+	// Adds current move and appends child pv[]
+	void update_pv(cMove *pv, cMove move, const cMove *childPv)
+	{
+		for (*pv++ = move; childPv && *childPv != cMove();)
+			*pv++ = *childPv++;
+		*pv = cMove();
+	}
+
+	constexpr Value mate_in(int ply) { return VALUE_MATE - ply; }
+
+	constexpr Value mated_in(int ply) { return -VALUE_MATE + ply; }
 };

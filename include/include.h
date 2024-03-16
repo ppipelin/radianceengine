@@ -18,6 +18,7 @@ using Value = Int;
 constexpr UInt BOARD_SIZE = 8;
 constexpr UInt BOARD_SIZE2 = 8 * 8;
 
+constexpr UInt MAX_MOVES = 218;
 constexpr UInt MAX_PLY = 246;
 
 // Chess-related constexpr should only be used for chess-related concepts, otherwise use regular math-related namings.

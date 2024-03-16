@@ -43,5 +43,4 @@ public:
 enum Move : UInt
 {
 	MOVE_NONE,
-	MOVE_NULL = 65
 };

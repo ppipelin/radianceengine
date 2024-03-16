@@ -4,7 +4,7 @@
 #include "boardParser.h"
 #include "search.h"
 #include "searchRandom.h"
-#include "searchMaterialist.h"
+// #include "searchMaterialist.h"
 #include "searchMaterialistNegamax.h"
 #include "evaluate.h"
 #include "evaluateShannon.h"
@@ -241,9 +241,6 @@ std::string UCI::move(cMove m)
 	if (m == MOVE_NONE)
 		return "(none)";
 
-	if (m == MOVE_NULL)
-		return "0000";
-
 	const UInt from = m.getFrom();
 	const UInt to = m.getTo();
 
@@ -316,19 +313,19 @@ std::string UCI::pv(const Search &s, UInt depth)
 		UInt nodes = std::accumulate(s.nodesSearched.begin(), s.nodesSearched.end(), 0);
 		ss << "info"
 			<< " depth " << depth
+			<< " seldepth " << s.rootMoves[i].selDepth
 			<< " nodes " << nodes
 			<< " nps " << nodes * 1000 / std::max(s.elapsed(), TimePoint(1))
 			<< " hash " << transpositionTable.size()
 			<< " hashfull " << std::round(transpositionTable.size() * 1000 / transpositionTable.max_size())
-			<< " hashused " << s.transpositionUsed
+			<< " tbhits " << s.transpositionUsed
 			<< " time " << s.elapsed()
 			<< " multipv " << i + 1
 			<< " score cp " << s.rootMoves[i].score
 			<< " pv";
 
-		auto a = std::count_if(s.rootMoves[i].pv.begin(), s.rootMoves[i].pv.end(), [](const cMove c) { return c != 0; });
-		for (UInt j = 0; j < a; ++j)
-			ss << " " << UCI::move(s.rootMoves[i].pv[j]);
+		for (const cMove &m : s.rootMoves[i].pv)
+			ss << " " << UCI::move(m);
 	}
 	return ss.str();
 }
