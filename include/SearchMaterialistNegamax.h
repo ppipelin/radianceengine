@@ -17,8 +17,8 @@ class SearchMaterialistNegamax : virtual public Search
 		Root
 	};
 public:
-	SearchMaterialistNegamax(const Search::LimitsType &limits) : Search(limits) {}
-	SearchMaterialistNegamax(const SearchMaterialistNegamax &s) : Search(s.Limits) {}
+	SearchMaterialistNegamax(const Search::LimitsType &limits, bool *g_stop) : Search(limits, g_stop) {}
+	SearchMaterialistNegamax(const SearchMaterialistNegamax &s) : Search(s.Limits, s.g_stop) {}
 	~SearchMaterialistNegamax() {}
 
 	// #define unMoveTest
@@ -39,6 +39,9 @@ public:
 		// Early quit for quiesce
 		// if (rootMoves[pvIdx].pvDepth >= 12)
 		// 	return alpha;
+
+		if (outOfTime())
+			return alpha;
 
 		std::vector<cMove> moveListCaptures;
 		Search::generateMoveList(b, moveListCaptures, /*legalOnly=*/ true, true);
@@ -108,6 +111,9 @@ public:
 
 		constexpr bool PvNode = nodeType != NonPV;
 		constexpr bool rootNode = nodeType == Root;
+
+		if (depth > 1 && outOfTime())
+			return -VALUE_NONE;
 
 		std::vector<cMove> moveList;
 		if (depth <= 0)
@@ -230,11 +236,13 @@ public:
 			{
 				rootMoves[pvIdx] = rootMoveTemp;
 			}
+
+			if (depth > 1 && outOfTime())
+				return -VALUE_NONE;
+
 			if (rootNode)
 			{
 				--(rootMoves[pvIdx].pvDepth);
-				if (outOfTime() && depth > 1)
-					return -VALUE_NONE;
 				++pvIdx;
 			}
 		}
@@ -246,6 +254,7 @@ public:
 
 	cMove nextMove(BoardParser &b, const Evaluate &e) override
 	{
+		std::lock_guard<std::mutex> lock(std::mutex);
 		// Checking book
 		std::string fen = b.fen(/*noEnPassant =*/ true);
 		std::vector<std::string> movesParsed;
@@ -282,7 +291,10 @@ public:
 			{
 				acc += frequenciesParsed[i];
 				if (selector < acc)
+				{
+					// *g_stop = true;
 					return UCI::to_move(b, movesParsed[i]);
+				}
 			}
 		}
 
@@ -299,10 +311,12 @@ public:
 		if (moveList.empty())
 		{
 			err("Cannot move.");
+			// *g_stop = true;
 			return cMove();
 		}
 		else if (moveList.size() == 1)
 		{
+			// *g_stop = true;
 			return moveList[0];
 		}
 
@@ -350,7 +364,7 @@ public:
 				}
 #endif
 
-				if (outOfTime() && currentDepth > 1)
+				if (currentDepth > 1 && outOfTime())
 					break;
 
 				// In case of failing low/high increase aspiration window and
@@ -375,7 +389,7 @@ public:
 				delta += delta / 3;
 			}
 			// Incomplete search rollback
-			if (outOfTime() && currentDepth > 1)
+			if (currentDepth > 1 && outOfTime())
 			{
 				std::copy(rootMovesPrevious.begin(), rootMovesPrevious.begin() + rootMovesSize, rootMoves.begin());
 				break;
@@ -386,6 +400,7 @@ public:
 			std::cout << "info failedHighCnt " << failedHighCnt << " alpha " << alpha << " beta " << beta << std::endl;
 			std::cout << UCI::pv(*this, currentDepth) << std::endl;
 		}
+		// *g_stop = true;
 		return rootMoves[0].pv[0];
 	}
 };

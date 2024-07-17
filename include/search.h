@@ -7,6 +7,7 @@
 
 #include <array>
 #include <unordered_map>
+#include <mutex>
 
 enum Color
 {
@@ -30,6 +31,8 @@ namespace {
 
 class Search
 {
+public:
+	bool *g_stop;
 public:
 	struct LimitsType
 	{
@@ -78,7 +81,7 @@ public:
 	UInt transpositionUsed = 0;
 	UInt rootMovesSize = 0;
 
-	Search(const Search::LimitsType &limits) : Limits(limits) {}
+	Search(const Search::LimitsType &limits, bool *g_stop) : Limits(limits), g_stop(g_stop) {}
 	Search(const Search &) {}
 	~Search() {}
 
@@ -393,7 +396,9 @@ public:
 
 	inline bool outOfTime() const
 	{
-		if (remaining == 0) return false;
+		if (*g_stop)
+			return true;
+		if (Limits.infinite || remaining == 0) return false;
 		return elapsed() > (remaining / 30);
 	}
 };

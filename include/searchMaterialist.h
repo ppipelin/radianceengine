@@ -7,8 +7,8 @@
 class SearchMaterialist : virtual public Search
 {
 public:
-	SearchMaterialist(const Search::LimitsType &limits) : Search(limits) {}
-	SearchMaterialist(const SearchMaterialist &s) : Search(s.Limits) {}
+	SearchMaterialist(const Search::LimitsType &limits, bool *g_stop) : Search(limits, g_stop) {}
+	SearchMaterialist(const SearchMaterialist &s) : Search(s.Limits, s.g_stop) {}
 	~SearchMaterialist() {}
 
 	Value search(BoardParser &b, const Evaluate &e, UInt depth)
