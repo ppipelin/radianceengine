@@ -15,6 +15,10 @@
 #include <queue>
 #include <chrono>
 #include <numeric>
+#include <thread>
+#include <future>
+
+bool g_stop = false;
 
 namespace {
 	const std::string startFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -92,10 +96,11 @@ namespace {
 	{
 		Search::LimitsType limits;
 		std::string token;
+		g_stop = false;
 
 		limits.startTime = now(); // The search starts as early as possible
 
-		while (is >> token)
+		while (!is.str().empty() && is >> token)
 		{
 			if (token == "searchmoves") // Needs to be the last command on the line
 				while (is >> token)
@@ -108,10 +113,10 @@ namespace {
 			// else if (token == "movestogo") is >> limits.movestogo;
 			else if (token == "depth")     is >> limits.depth;
 			// else if (token == "nodes")     is >> limits.nodes;
-			// else if (token == "movetime")  is >> limits.movetime;
+			else if (token == "movetime")  is >> limits.movetime;
 			// else if (token == "mate")      is >> limits.mate;
 			else if (token == "perft")     is >> limits.perft;
-			// else if (token == "infinite")  limits.infinite = 1;
+			else if (token == "infinite")  limits.infinite = 1;
 			// else if (token == "ponder")    ponderMode = true;
 		}
 
@@ -128,11 +133,14 @@ namespace {
 		{
 			// SearchRandom search = SearchRandom(limits);
 			// SearchMaterialist search = SearchMaterialist(limits);
-			SearchMaterialistNegamax search = SearchMaterialistNegamax(limits);
+			SearchMaterialistNegamax search = SearchMaterialistNegamax(limits, &g_stop);
 			// EvaluateShannon evaluate = EvaluateShannon();
 			// EvaluateShannonHeuristics evaluate = EvaluateShannonHeuristics();
 			// EvaluateTable evaluate = EvaluateTable();
 			EvaluateTableTuned evaluate = EvaluateTableTuned();
+
+			// std::future<cMove> moveAsync = std::async(&(SearchMaterialistNegamax::nextMove), std::ref(search), std::ref(pos), std::ref(evaluate));
+			// cMove move = moveAsync.get();
 
 			cMove move = search.nextMove(pos, evaluate);
 
@@ -151,6 +159,9 @@ void UCI::loop(int argc, char *argv[])
 	BoardParser pos;
 	StateListPtr states(new std::deque<BoardParser::State>(1));
 	std::string token, cmd;
+
+	std::thread mainThread;
+	std::istringstream stream;
 
 	pos.fillBoard(startFen, &states->back());
 
@@ -187,7 +198,7 @@ void UCI::loop(int argc, char *argv[])
 			is >> std::skipws >> token;
 
 			if (token == "quit" || token == "stop")
-				std::cout << "UCI - quitting..." << std::endl;
+				g_stop = true;
 
 			// The GUI sends 'ponderhit' to tell that the user has played the expected move.
 			// So, 'ponderhit' is sent if pondering was done on the same move that the user
@@ -207,7 +218,13 @@ void UCI::loop(int argc, char *argv[])
 			else if (token == "setoption")
 				setoption(is);
 			else if (token == "go")
-				go(pos, is);
+			{
+				// ::go(pos, is);
+				if (mainThread.joinable())
+					mainThread.join();
+				stream = std::istringstream(is.str());
+				mainThread = std::thread(::go, std::ref(pos), std::ref(stream));
+			}
 			else if (token == "position")
 				position(pos, is, states);
 			else if (token == "ucinewgame")
@@ -227,6 +244,8 @@ void UCI::loop(int argc, char *argv[])
 				std::cout << "UCI - Unknown command: '" << cmd << "'." << std::endl;
 		} while (!q.empty());
 	} while (token != "quit" && argc == 1); // The command-line arguments are one-shot
+	if (mainThread.joinable())
+		mainThread.join();
 }
 
 /// UCI::square() converts a const UInt to a string in algebraic notation (g1, a7, etc.)

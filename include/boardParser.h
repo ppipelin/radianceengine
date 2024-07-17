@@ -777,7 +777,7 @@ public:
 
 		if (words.size() > 5 && words[4] != "-")
 		{
-			s->rule50 = stoi(words[4]);
+			s->rule50 = std::stoi(words[4]);
 		}
 		m_s = s;
 		m_board->m_castleInfo = &m_s->castleInfo;

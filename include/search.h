@@ -7,6 +7,7 @@
 
 #include <array>
 #include <unordered_map>
+#include <mutex>
 
 enum Color
 {
@@ -25,11 +26,14 @@ inline TimePoint now()
 
 namespace {
 	std::unordered_map<Key, std::pair<Value, UInt>> transpositionTable;
-	TimePoint remaining;
+	TimePoint remaining = 0;
 }
 
 class Search
 {
+protected:
+	bool *g_stop;
+	std::mutex mtx;
 public:
 	struct LimitsType
 	{
@@ -42,7 +46,7 @@ public:
 
 		std::vector<cMove> searchmoves;
 		UInt movestogo, depth, mate, perft, infinite, nodes;
-		TimePoint time[COLOR_NB], inc[COLOR_NB], startTime;
+		TimePoint time[COLOR_NB], inc[COLOR_NB], startTime, movetime = 0;
 	};
 
 	// RootMove struct is used for moves at the root of the tree. For each root move
@@ -78,7 +82,7 @@ public:
 	UInt transpositionUsed = 0;
 	UInt rootMovesSize = 0;
 
-	Search(const Search::LimitsType &limits) : Limits(limits) {}
+	Search(const Search::LimitsType &limits, bool *g_stop) : Limits(limits), g_stop(g_stop) {}
 	Search(const Search &) {}
 	~Search() {}
 
@@ -393,7 +397,9 @@ public:
 
 	inline bool outOfTime() const
 	{
-		if (remaining == 0) return false;
-		return elapsed() > (remaining / 30);
+		if (*g_stop)
+			return true;
+		if (Limits.infinite || remaining == 0) return false;
+		return elapsed() > remaining;
 	}
 };
