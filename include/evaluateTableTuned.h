@@ -90,7 +90,7 @@ public:
 
 	Value evaluate(const BoardParser &b) const override
 	{
-		Value finalScore = 0, scorePieceWhite = 0, scorePieceBlack = 0, mgScore = 0, egScore = 0;
+		Value finalScore = 0, scorePieceWhite = 0, scorePieceBlack = 0, mgScore = 0, egScore = 0, scoreKingWhite = 0, scoreKingBlack = 0;
 		std::vector<cMove> moveset;
 
 		for (Int i = -1; i < 2; i += 2)
@@ -115,7 +115,8 @@ public:
 
 					p->canMove(*b.boardParsed(), moveset);
 					egScore += i * Value(moveset.size());
-					egScore += i * kingEndgameTable[idxTable];
+					(i == 1 ? scoreKingWhite : scoreKingBlack) = kingEndgameTable[idxTable];
+					egScore += i * (i == 1 ? scoreKingWhite : scoreKingBlack);
 					mgScore += i * (kingTable[idxTable] - Value(moveset.size()));
 				}
 				else if (typeid(*p) == typeid(Queen))
@@ -175,7 +176,14 @@ public:
 
 		if (endgame)
 		{
+			// Improve current side score based on king proximity
 			finalScore += (b.isWhiteTurn() ? 1 : -1) * distanceKings(b);
+			// Malus if king is weak when losing (doubles)
+			if (scorePieceWhite > scorePieceBlack)
+				finalScore += -scoreKingBlack;
+			else if (scorePieceWhite < scorePieceBlack)
+				finalScore += scoreKingWhite;
+			// finalScore -= (scorePieceWhite > scorePieceBlack ? -scoreKingBlack : scoreKingWhite) * 100;
 			finalScore += egScore;
 		}
 		else
