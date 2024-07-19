@@ -4,3 +4,5 @@ sioclient/
 node_modules
 package-lock.json
 lib
+ALL_BUILD.*
+CMakeCache.*

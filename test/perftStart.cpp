@@ -2,7 +2,7 @@
 
 #include <queue>
 
-int perftStart(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	BoardParser b;
 	BoardParser::State s;
