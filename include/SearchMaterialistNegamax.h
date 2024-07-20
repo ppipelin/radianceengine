@@ -157,8 +157,10 @@ public:
 			BoardParser b2(b, &s2);
 #endif
 			b.movePiece(move, s);
+#pragma warning( disable: 4127 )
 			if (!rootNode && b.m_s->repetition && b.m_s->repetition < 0)
 				score = VALUE_DRAW;
+#pragma warning( default: 4127 )
 			else
 			{
 #ifdef transposition
@@ -190,10 +192,12 @@ public:
 						score = -abSearch<NonPV>(b, e, -(alpha + 1), -alpha, depth - 1);
 					}
 
+#pragma warning( disable: 4127 )
 					if (PvNode && score > alpha)
 					{
 						score = -abSearch<PV>(b, e, -beta, -alpha, depth - 1);
 					}
+#pragma warning( default: 4127 )
 #ifdef transposition
 				}
 				if (!found)

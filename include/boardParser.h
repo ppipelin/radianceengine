@@ -385,7 +385,6 @@ public:
 		if (toPiece != nullptr)
 		{
 			// This should be the quickest to disable castle when rook is taken
-			bool *castle = nullptr;
 			if (to == 0)
 			{
 				UInt constexpr value = 0b1000;
@@ -497,7 +496,7 @@ public:
 				s2 = s2->previous->previous;
 				if (s2->materialKey == m_s->materialKey)
 				{
-					m_s->repetition = s2->repetition ? -i : i;
+					m_s->repetition = s2->repetition ? -Int(i) : i;
 					break;
 				}
 			}

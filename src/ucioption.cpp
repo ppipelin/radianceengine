@@ -14,10 +14,9 @@ namespace UCI {
 	}
 
 	/// UCI::init() initializes the UCI options to their hard-coded default values
-	void init(OptionsMap &o)
+	void init(OptionsMap &)
 	{
-		constexpr int MaxHashMB = 33554432;
-
+		// constexpr int MaxHashMB = 33554432;
 		// o["Debug Log File"] << Option("", on_logger);
 		// o["Threads"] << Option(1, 1, 1024, on_threads);
 		// o["Hash"] << Option(16, 1, MaxHashMB, on_hash_size);
