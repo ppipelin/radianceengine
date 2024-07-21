@@ -11,88 +11,130 @@ public:
 	SearchMaterialist(const SearchMaterialist &s) : Search(s.Limits, s.g_stop) {}
 	~SearchMaterialist() {}
 
-	Value search(BoardParser &b, const Evaluate &e, UInt depth)
+	template <NodeType nodeType>
+	Value search(Stack *ss, BoardParser &b, const Evaluate &e, UInt depth)
 	{
-		++nodesSearched[pvIdx];
+		constexpr bool rootNode = nodeType == Root;
+
 		if (depth <= 0)
 			return e.evaluate(b);
 
+		// 0. Initialize data
+		BoardParser::State s;
+		cMove pv[MAX_PLY + 1];
+		Value score = -VALUE_NONE, bestScore = -VALUE_NONE;
+		++nodesSearched[pvIdx];
+
 		std::vector<cMove> moveList;
-		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
+		if (rootNode)
+		{
+			for (UInt i = 0; i < rootMoves.size(); ++i)
+				moveList.push_back(rootMoves[i].pv[0]);
+		}
+		else
+		{
+			Search::generateMoveList(b, moveList, /*legalOnly=*/ true, /*onlyCapture=*/ false);
+		}
+
+		for (const cMove &move : moveList)
+		{
+			score = -VALUE_NONE;
+
+			(ss + 1)->pv = nullptr;
+
+			ss->currentMove = move;
+
+			// 16. Make the move
+			b.movePiece(move, s);
+
+			(ss + 1)->pv = pv;
+			(ss + 1)->pv[0] = cMove();
+
+			score = -search<PV>(ss + 1, b, e, depth - 1);
+
+			// 19. Undo move
+			b.unMovePiece(move);
+
+			if (depth > 1 && outOfTime())
+				return -VALUE_NONE;
+
+			// 20. Check for a new best move
+			if (rootNode)
+			{
+				RootMove &rm = *std::find(rootMoves.begin(), rootMoves.end(), move);
+				rm.averageScore = rm.averageScore != -VALUE_INFINITE ? (score + rm.averageScore) / 2 : score;
+
+				rm.score = rm.uciScore = score;
+
+				rm.pv.resize(1);
+				for (cMove *m = (ss + 1)->pv; *m != cMove(); ++m)
+					rm.pv.push_back(*m);
+			}
+			// 21. Update ss->pv
+			if (score > bestScore)
+			{
+				bestScore = score;
+				if (!rootNode)  // Update pv even in fail-high case
+					update_pv(ss->pv, move, (ss + 1)->pv);
+			}
+		}
 
 		if (moveList.empty())
 		{
 			if (b.inCheck(b.isWhiteTurn()))
-				return -VALUE_INFINITE;
-			return 0;
+				return -VALUE_MATE + ss->ply;
+			return VALUE_DRAW;
 		}
 
-		// Increase depth after early stop
-		++(rootMoves[pvIdx].pvDepth);
-
-		BoardParser::State s;
-		BoardParser b2;
-		Value bestScore = -VALUE_INFINITE;
-
-		RootMove rootMoveTemp = rootMoves[pvIdx];
-		for (const cMove move : moveList)
-		{
-			b2 = BoardParser(b);
-
-			b2.movePiece(move, s);
-			Value score = -search(b2, e, depth - 1);
-			if (score > bestScore)
-			{
-				bestScore = score;
-				rootMoves[pvIdx].pv[rootMoves[pvIdx].pvDepth] = move;
-				rootMoveTemp = rootMoves[pvIdx];
-				if (bestScore == VALUE_MATE)
-					break;
-			}
-			else
-			{
-				// rollback
-				rootMoves[pvIdx] = rootMoveTemp;
-			}
-		}
-		--(rootMoves[pvIdx].pvDepth);
 		return bestScore;
 	}
 
 	cMove nextMove(BoardParser &b, const Evaluate &e) override
 	{
 		const std::lock_guard<std::mutex> lock(mtx);
-		nodesSearched.fill(0);
+		// Checking book
+		cMove book = probeBook(b);
+		if (book != cMove())
+			return book;
+
+		if (Limits.movetime)
+			remaining = Limits.movetime;
+		else
+			remaining = TimePoint(b.isWhiteTurn() ? Limits.time[WHITE] : Limits.time[BLACK]) / 30;
+
+		Stack stack[MAX_DEPTH + 10] = {};
+		cMove pv[MAX_DEPTH + 1];
+		Stack *ss = stack + 7;
+
+		for (UInt i = 0; i <= MAX_DEPTH + 2; ++i)
+			(ss + i)->ply = i;
+		ss->pv = pv;
+
+		// Compute rootMoves (start_thingking in SF)
+		rootMoves.clear();
 		std::vector<cMove> moveList;
-		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, false);
+		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, /*onlyCapture=*/ false);
 
 		if (moveList.empty())
 		{
+			err("Cannot move.");
 			return cMove();
 		}
-
-		rootMovesSize = UInt(moveList.size());
-		for (UInt i = 0; i < rootMovesSize; ++i)
+		else if (moveList.size() == 1)
 		{
-			rootMoves[i] = RootMove(moveList[i]);
+			return moveList[0];
 		}
 
-		BoardParser b2;
-		cMove bestMove;
+		// limits.searchmoves here
 
-		for (pvIdx = 0; pvIdx < rootMovesSize; ++pvIdx)
-		{
-			cMove move = rootMoves[pvIdx].pv[0];
-			b2 = BoardParser(b);
-			BoardParser::State s(b2);
-			b2.movePiece(move, s);
-			Value score;
-			if (Limits.depth == 0)
-				score = e.evaluate(b2);
-			else
-				score = -search(b2, e, Limits.depth - 1);
-			rootMoves[pvIdx].score = score;
-		}
+		if (rootMoves.empty())
+			for (const auto &move : moveList)
+				rootMoves.emplace_back(move);
+
+		nodesSearched.fill(0);
+
+		search<Root>(ss, b, e, Limits.depth);
+
 		std::stable_sort(rootMoves.begin(), rootMoves.end());
 		std::cout << UCI::pv(*this, Limits.depth) << std::endl;
 		return rootMoves[0].pv[0];
