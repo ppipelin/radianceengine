@@ -8,6 +8,8 @@
 #include <array>
 #include <unordered_map>
 #include <mutex>
+#include <fstream>
+#include <numeric>
 
 enum Color
 {
@@ -93,6 +95,51 @@ public:
 
 	virtual cMove nextMove(BoardParser &, const Evaluate &)
 	{
+		return cMove();
+	}
+
+	cMove probeBook(const BoardParser &b)
+	{
+		std::string fen = b.fen(/*noEnPassant =*/ false, /*noHalfMove =*/ true);
+		std::vector<std::string> movesParsed;
+		std::vector<UInt> frequenciesParsed;
+
+		std::ifstream infile("book.txt");
+		std::string line, varName, defaultValue;
+		std::string delimiter = " ";
+
+		while (std::getline(infile, line) && movesParsed.empty())
+		{
+			varName = line.substr(0, line.find(delimiter));
+			defaultValue = line.substr(line.find(delimiter) + 1);
+			if (varName == "pos" && fen == defaultValue)
+			{
+				while (std::getline(infile, line))
+				{
+					varName = line.substr(0, line.find(delimiter));
+					defaultValue = line.substr(line.find(delimiter) + 1);
+					if (line.substr(0, line.find(delimiter)) == "pos")
+						break;
+					movesParsed.push_back(varName);
+					frequenciesParsed.push_back(UInt(std::stoi(defaultValue)));
+				}
+			}
+		}
+
+		if (!movesParsed.empty())
+		{
+			UInt accMax = std::accumulate(frequenciesParsed.begin(), frequenciesParsed.end(), 0);
+			UInt selector = UInt(double(std::rand()) / double(RAND_MAX) * double(accMax));
+			UInt acc = 0;
+			for (UInt i = 0; i < frequenciesParsed.size(); ++i)
+			{
+				acc += frequenciesParsed[i];
+				if (selector < acc)
+				{
+					return UCI::to_move(b, movesParsed[i]);
+				}
+			}
+		}
 		return cMove();
 	}
 
