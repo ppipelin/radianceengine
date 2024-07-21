@@ -136,7 +136,7 @@ public:
 				acc += frequenciesParsed[i];
 				if (selector < acc)
 				{
-					return UCI::to_move(b, movesParsed[i]);
+					return b.toMove(movesParsed[i]);
 				}
 			}
 		}

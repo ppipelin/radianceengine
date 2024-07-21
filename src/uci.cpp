@@ -60,7 +60,7 @@ namespace {
 
 		transpositionTable.clear();
 		// Parse the moves list, if any
-		while (is >> token && (c = UCI::to_move(pos, token)) != cMove())
+		while (is >> token && (c = pos.toMove(token)) != cMove())
 		{
 			states->emplace_back();
 			pos.movePiece(c, states->back());
@@ -104,7 +104,7 @@ namespace {
 		{
 			if (token == "searchmoves") // Needs to be the last command on the line
 				while (is >> token)
-					// limits.searchmoves.push_back(UCI::to_move(pos, token));
+					// limits.searchmoves.push_back(pos.toMove(token));
 					;
 			else if (token == "wtime")     is >> limits.time[WHITE];
 			else if (token == "btime")     is >> limits.time[BLACK];
@@ -272,52 +272,6 @@ std::string UCI::move(cMove m)
 		move += "nbrq"[m.getFlags() & 0x3]; // keep last two bits
 
 	return move;
-}
-
-/// UCI::to_move() converts a string representing a move in coordinate notation
-/// (g1f3, a7a8q) to the corresponding legal Move, if any.
-cMove UCI::to_move(const BoardParser &pos, std::string &str)
-{
-	UInt flags = 0;
-	UInt from = Board::toTiles(str.substr(0, 2));
-	UInt to = Board::toTiles(str.substr(2, 2));
-	// Capture flag
-	if ((*pos.boardParsed())[to] != nullptr)
-		flags |= 0x4;
-	if (str.length() == 5)
-	{
-		// The promotion piece character must be lowercased
-		str[4] = char(tolower(str[4]));
-		flags |= 0x8;
-		switch (str[4])
-		{
-		case 'b':
-			flags |= 0x1;
-			break;
-		case 'r':
-			flags |= 0x2;
-			break;
-		case 'q':
-			flags |= 0x3;
-			break;
-		}
-	}
-
-	const Piece *p = (*pos.boardParsed())[from];
-	// Detect castle and flag
-	if (p != nullptr && typeid(*p) == typeid(King))
-	{
-		if (to - from == 2)
-		{
-			flags = 0x2;
-		}
-		else if (from - to == 2)
-		{
-			flags = 0x3;
-		}
-	}
-
-	return cMove(from, to, flags);
 }
 
 // UCI::pv() formats PV information according to the UCI protocol. UCI requires

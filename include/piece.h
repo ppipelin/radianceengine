@@ -46,7 +46,18 @@ public:
 		m_neverMoved = p.m_neverMoved;
 	}
 
-	virtual UInt value() const { return 0; }
+	enum valuePiece : UInt
+	{
+		VALUE_NONE,
+		VALUE_PAWN,
+		VALUE_KNIGHT,
+		VALUE_BISHOP,
+		VALUE_ROOK,
+		VALUE_QUEEN,
+		VALUE_KING
+	};
+
+	virtual UInt value() const { return VALUE_NONE; }
 
 	// Mutators
 	UInt &tile() { return m_tile; }

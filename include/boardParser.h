@@ -785,7 +785,53 @@ public:
 		return true;
 	}
 
-	std::string fen(const bool noEnPassant = false) const
+	// Board::toMove() converts a string representing a move in coordinate notation
+	// (g1f3, a7a8q) to the corresponding legal Move, if any.
+	cMove toMove(std::string &str) const
+	{
+		UInt flags = 0;
+		UInt from = Board::toTiles(str.substr(0, 2));
+		UInt to = Board::toTiles(str.substr(2, 2));
+		// Capture flag
+		if ((*boardParsed())[to] != nullptr)
+			flags |= 0x4;
+		if (str.length() == 5)
+		{
+			// The promotion piece character must be lowercased
+			str[4] = char(tolower(str[4]));
+			flags |= 0x8;
+			switch (str[4])
+			{
+			case 'b':
+				flags |= 0x1;
+				break;
+			case 'r':
+				flags |= 0x2;
+				break;
+			case 'q':
+				flags |= 0x3;
+				break;
+			}
+		}
+
+		const Piece *p = (*boardParsed())[from];
+		// Detect castle and flag
+		if (p != nullptr && p->value() == Piece::VALUE_KING)
+		{
+			if (to - from == 2)
+			{
+				flags = 0x2;
+			}
+			else if (from - to == 2)
+			{
+				flags = 0x3;
+			}
+		}
+
+		return cMove(from, to, flags);
+	}
+
+	std::string fen(const bool noEnPassant = false, const bool noHalfMove = false) const
 	{
 		std::string s = "";
 		UInt accumulate = 0;
@@ -849,14 +895,68 @@ public:
 			caslteStr = "-";
 		s += caslteStr;
 
-		s += " ";
+		if (!noEnPassant)
+		{
+			s += " ";
 
-		Int enPassant = m_board->enPassant(); // change, m_enPassant should be a pointer like m_castleInfo
-		s += noEnPassant || enPassant == -1 ? "-" : Board::toString((isWhiteTurn() ? 40 : 16) + enPassant);
+			Int enPassant = m_board->enPassant(); // change, m_enPassant should be a pointer like m_castleInfo
+			// Assert if enPassant is really feasable
+			if (enPassant != -1)
+			{
+				// White takes black
+				if (isWhiteTurn())
+				{
+					if (enPassant == 0 || enPassant == BOARD_SIZE - 1)
+					{
+						int offset = (enPassant == 0) ? 1 : (BOARD_SIZE - 2);
+						const Piece *p = boardParsed()->board()[32 + offset];
+						if (p == nullptr || !p->isWhite() || p->value() != Piece::VALUE_PAWN)
+						{
+							enPassant = -1;
+						}
+					}
+					else
+					{
+						const Piece *p1 = boardParsed()->board()[32 + enPassant - 1];
+						const Piece *p2 = boardParsed()->board()[32 + enPassant + 1];
+						if ((p1 == nullptr || !p1->isWhite() || p1->value() != Piece::VALUE_PAWN) && (p2 == nullptr || !p2->isWhite() || p2->value() != Piece::VALUE_PAWN))
+						{
+							enPassant = -1;
+						}
+					}
+				}
+				// Black takes white
+				else
+				{
+					if (enPassant == 0 || enPassant == BOARD_SIZE - 1)
+					{
+						int offset = (enPassant == 0) ? 1 : (BOARD_SIZE - 2);
+						const Piece *p = boardParsed()->board()[24 + offset];
+						if (p == nullptr || p->isWhite() || p->value() != Piece::VALUE_PAWN)
+						{
+							enPassant = -1;
+						}
+					}
+					else
+					{
+						const Piece *p1 = boardParsed()->board()[24 + enPassant - 1];
+						const Piece *p2 = boardParsed()->board()[24 + enPassant + 1];
+						if ((p1 == nullptr || p1->isWhite() || p1->value() != Piece::VALUE_PAWN) && (p2 == nullptr || p2->isWhite() || p2->value() != Piece::VALUE_PAWN))
+						{
+							enPassant = -1;
+						}
+					}
+				}
+			}
+			s += enPassant == -1 ? "-" : Board::toString((isWhiteTurn() ? 40 : 16) + enPassant);
 
-		s += " ";
+			if (!noHalfMove)
+			{
+				s += " ";
 
-		s += std::to_string(m_s->rule50);
+				s += std::to_string(m_s->rule50);
+			}
+		}
 
 		return s;
 	}
