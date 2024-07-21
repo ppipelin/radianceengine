@@ -19,6 +19,7 @@ constexpr UInt BOARD_SIZE = 8;
 constexpr UInt BOARD_SIZE2 = 8 * 8;
 
 constexpr UInt MAX_PLY = 246;
+constexpr UInt MAX_DEPTH = 200;
 
 // Chess-related constexpr should only be used for chess-related concepts, otherwise use regular math-related namings.
 constexpr Value VALUE_ZERO = 0;
@@ -27,12 +28,12 @@ constexpr Value VALUE_DRAW = 0;
 constexpr Value VALUE_MATE = 32000;
 constexpr Value VALUE_INFINITE = VALUE_MATE + 1;
 constexpr Value VALUE_NONE = VALUE_MATE + 2;
-constexpr Value VALUE_MATE_IN_MAX_PLY = VALUE_MATE - MAX_PLY;
-constexpr Value VALUE_MATED_IN_MAX_PLY = -VALUE_MATE_IN_MAX_PLY;
+constexpr Value VALUE_MATE_IN_MAX_DEPTH = VALUE_MATE - MAX_DEPTH;
+constexpr Value VALUE_MATED_IN_MAX_DEPTH = -VALUE_MATE_IN_MAX_DEPTH;
 
-constexpr Value VALUE_TB = VALUE_MATE_IN_MAX_PLY - 1;
-constexpr Value VALUE_TB_WIN_IN_MAX_PLY = VALUE_TB - MAX_PLY;
-constexpr Value VALUE_TB_LOSS_IN_MAX_PLY = -VALUE_TB_WIN_IN_MAX_PLY;
+constexpr Value VALUE_TB = VALUE_MATE_IN_MAX_DEPTH - 1;
+constexpr Value VALUE_TB_WIN_IN_MAX_DEPTH = VALUE_TB - MAX_DEPTH;
+constexpr Value VALUE_TB_LOSS_IN_MAX_DEPTH = -VALUE_TB_WIN_IN_MAX_DEPTH;
 
 static void debug(std::string str)
 {

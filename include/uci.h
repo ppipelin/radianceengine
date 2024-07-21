@@ -55,7 +55,6 @@ namespace UCI {
 	std::string move(cMove m);
 	cMove to_move(const BoardParser &pos, std::string &str);
 	std::string pv(const Search &s, UInt depth);
-
 } // namespace UCI
 
 extern UCI::OptionsMap Options;

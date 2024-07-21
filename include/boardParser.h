@@ -68,7 +68,7 @@ public:
 
 		UInt castleInfo = 0b1111;
 		UInt rule50 = 0;
-		Int repetition = 0;
+		Int repetition = 0; // Zero if no repetition, x positive if happened once x half moves ago, negative indicates repetition
 		Int enPassant = -1;
 		Key materialKey = 0;
 		Piece *lastCapturedPiece = nullptr;

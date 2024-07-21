@@ -34,6 +34,12 @@ namespace {
 class Search
 {
 protected:
+	enum NodeType
+	{
+		NonPV,
+		PV,
+		Root
+	};
 	bool *g_stop;
 	std::mutex mtx;
 public:
@@ -72,17 +78,38 @@ public:
 		Value uciScore = -VALUE_INFINITE;
 		bool scoreLowerbound = false;
 		bool scoreUpperbound = false;
-		std::array<cMove, 100> pv;
+		std::vector<cMove> pv;
 		UInt pvDepth = 0;
 	};
 
+	struct Stack
+	{
+		cMove *pv;
+		UInt ply;
+		cMove currentMove;
+		cMove excludedMove;
+		cMove killers[2];
+		Value staticEval;
+		UInt moveCount;
+		bool inCheck;
+		bool ttPv;
+		bool ttHit;
+		int doubleExtensions;
+		int cutoffCnt;
+	};
+
+	void update_pv(cMove *pv, cMove move, const cMove *childPv)
+	{
+		for (*pv++ = move; childPv && *childPv != cMove();)
+			*pv++ = *childPv++;
+		*pv = cMove();
+	}
+
 	LimitsType Limits;
 	UInt pvIdx = 0;
-	std::array<RootMove, MAX_PLY> rootMoves;
-	std::array<RootMove, MAX_PLY> rootMovesPrevious;
+	std::vector<RootMove> rootMoves;
 	std::array<Int, MAX_PLY> nodesSearched = { 0 };
 	UInt transpositionUsed = 0;
-	UInt rootMovesSize = 0;
 
 	Search(const Search::LimitsType &limits, bool *g_stop) : Limits(limits), g_stop(g_stop) {}
 	Search(const Search &) {}

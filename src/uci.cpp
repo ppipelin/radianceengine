@@ -131,8 +131,8 @@ namespace {
 		}
 		else
 		{
-			// SearchRandom search = SearchRandom(limits);
-			// SearchMaterialist search = SearchMaterialist(limits);
+			// SearchRandom search = SearchRandom(limits, &g_stop);
+			// SearchMaterialist search = SearchMaterialist(limits, &g_stop);
 			SearchMaterialistNegamax search = SearchMaterialistNegamax(limits, &g_stop);
 			// EvaluateShannon evaluate = EvaluateShannon();
 			// EvaluateShannonHeuristics evaluate = EvaluateShannonHeuristics();
