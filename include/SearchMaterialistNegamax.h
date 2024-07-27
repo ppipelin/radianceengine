@@ -103,6 +103,7 @@ public:
 		ss->moveCount = 0;
 		score = bestScore;
 		UInt moveCount = 0;
+		// (ss + 1)->killers[0] = cMove();
 
 		// 13. Loop through all pseudo - legal moves until no moves remain or a beta cutoff occurs.
 		std::vector<cMove> moveList;
@@ -114,7 +115,7 @@ public:
 		else
 		{
 			Search::generateMoveList(b, moveList, /*legalOnly=*/ true, /*onlyCapture=*/ false);
-			Search::orderMoves(b, moveList);
+			Search::orderMoves(b, moveList, ss);
 		}
 
 		for (const cMove &move : moveList)
@@ -160,7 +161,7 @@ public:
 				{
 #ifdef lmr
 					// LMR before full
-					if (depth >= 2 && moveCount > 3 && !move.isCapture() && !move.isPromotion()) // !b.inCheck(b.isWhiteTurn())
+					if (depth >= 2 && moveCount > 3 && !move.isCapture() && !move.isPromotion() && ((ss - 1)->currentMove != (ss - 1)->killers[0])) // !b.inCheck(b.isWhiteTurn())
 					{
 						// Reduced LMR
 						UInt d = std::max(1, Int(depth) - 4);
@@ -242,7 +243,15 @@ public:
 
 					// Fail high
 					if (score >= beta)
+					{
+						if (move != ss->killers[0])
+						{
+							ss->killers[1] = ss->killers[0];
+							ss->killers[0] == move;
+						}
+						// std::cout << "killer: " << UCI::move(move) << std::endl;
 						break;
+					}
 					else
 						alpha = score;  // Update alpha! Always alpha < beta
 				}

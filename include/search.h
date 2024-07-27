@@ -334,20 +334,28 @@ public:
 
 	struct MoveComparator
 	{
-		MoveComparator(BoardParser &b) : b(b) {};
+		MoveComparator(BoardParser &b, Stack *ss) : b(b), ss(ss) {};
 
 		bool operator() (const cMove &m1, const cMove &m2) const
 		{
+			if (ss != nullptr)
+			{
+				if (ss->killers[0] == m1)
+					return true;
+				else if (ss->killers[0] == m2)
+					return false;
+			}
 			return (m1.isCapture() && m1.getFlags() != 0x5 ? Int((*b.boardParsed())[m1.getTo()]->value()) - Int((*b.boardParsed())[m1.getFrom()]->value()) : 0) >
 				(m2.isCapture() && m2.getFlags() != 0x5 ? Int((*b.boardParsed())[m2.getTo()]->value()) - Int((*b.boardParsed())[m2.getFrom()]->value()) : 0);
 		}
 
 		BoardParser &b;
+		Stack *ss;
 	};
 
-	static void orderMoves(BoardParser &b, std::vector<cMove> &moveList)
+	static void orderMoves(BoardParser &b, std::vector<cMove> &moveList, Stack *ss = nullptr)
 	{
-		std::sort(moveList.begin(), moveList.end(), MoveComparator(b));
+		std::sort(moveList.begin(), moveList.end(), MoveComparator(b, ss));
 	}
 
 	/**
