@@ -206,12 +206,12 @@ public:
 				moveListAttackSize += subMoveList.size();
 			}
 
-			std::erase_if(moveList, [b, moveListAttack, moveListAttackSize](cMove move) mutable {
-				BoardParser::State s(b);
+			BoardParser::State s;
+			std::erase_if(moveList, [&b, &s, moveListAttack, moveListAttackSize](cMove move) {
 				b.movePiece(move, s);
 				// Prune moves which keep the king in check
 				const bool keepInCheck = b.inCheck(!b.isWhiteTurn());
-				b.unMovePiece(move, s);
+				b.unMovePiece(move);
 				if (keepInCheck) return true;
 
 				// Prune moves which castles in check
