@@ -27,7 +27,7 @@ inline TimePoint now()
 }
 
 namespace {
-	std::unordered_map<Key, std::pair<Value, UInt>> transpositionTable;
+	std::unordered_map<Key, std::tuple<Value, UInt, cMove>> transpositionTable;
 	TimePoint remaining = 0;
 }
 
@@ -334,20 +334,47 @@ public:
 
 	struct MoveComparator
 	{
-		MoveComparator(BoardParser &b) : b(b) {};
+		MoveComparator(const BoardParser &b, const cMove &move1, const cMove &move2) : b(b), move1(move1), move2(move2) {};
 
 		bool operator() (const cMove &m1, const cMove &m2) const
 		{
+			if (move1 != cMove())
+			{
+				if (move1 == m1)
+					return true;
+				else if (move1 == m2)
+					return false;
+			}
+			if (move2 != cMove())
+			{
+				if (move2 == m1)
+					return true;
+				else if (move2 == m2)
+					return false;
+			}
 			return (m1.isCapture() && m1.getFlags() != 0x5 ? Int((*b.boardParsed())[m1.getTo()]->value()) - Int((*b.boardParsed())[m1.getFrom()]->value()) : 0) >
 				(m2.isCapture() && m2.getFlags() != 0x5 ? Int((*b.boardParsed())[m2.getTo()]->value()) - Int((*b.boardParsed())[m2.getFrom()]->value()) : 0);
 		}
 
-		BoardParser &b;
+		const BoardParser &b;
+		const cMove &move1;
+		const cMove &move2;
 	};
 
-	static void orderMoves(BoardParser &b, std::vector<cMove> &moveList)
+	static void orderMoves(const BoardParser &b, std::vector<cMove> &moveList, cMove pvMove = cMove())
 	{
-		std::sort(moveList.begin(), moveList.end(), MoveComparator(b));
+		// Search pvMove is in movelist. Speed up comparision if not.
+		if (pvMove != cMove() && std::find(moveList.begin(), moveList.end(), pvMove) == moveList.end())
+			pvMove = cMove();
+
+		auto it = transpositionTable.find(b.m_s->materialKey);
+		const bool found = it != transpositionTable.end();
+		cMove ttMove = found ? std::get<2>(it->second) : cMove();
+		// Search ttMove is in movelist. Speed up comparision if not.
+		if (ttMove != cMove() && std::find(moveList.begin(), moveList.end(), ttMove) == moveList.end())
+			ttMove = cMove();
+
+		std::sort(moveList.begin(), moveList.end(), MoveComparator(b, pvMove, ttMove));
 	}
 
 	/**

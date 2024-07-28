@@ -114,7 +114,7 @@ public:
 		else
 		{
 			Search::generateMoveList(b, moveList, /*legalOnly=*/ true, /*onlyCapture=*/ false);
-			Search::orderMoves(b, moveList);
+			Search::orderMoves(b, moveList, (rootMoves[0].pv.size() > ss->ply) ? rootMoves[0].pv[ss->ply] : cMove());
 		}
 
 		for (const cMove &move : moveList)
@@ -126,6 +126,7 @@ public:
 
 			ss->currentMove = move;
 
+			Key key = b.m_s->materialKey;
 			// 16. Make the move
 			b.movePiece(move, s);
 
@@ -139,11 +140,11 @@ public:
 			else
 			{
 #ifdef transposition
-				auto it = transpositionTable.find(b.m_s->materialKey);
+				auto it = transpositionTable.find(key);
 				const bool found = it != transpositionTable.end();
-				if (found && it->second.second > depth - 1)
+				if (found && std::get<1>(it->second) > depth - 1)
 				{
-					score = it->second.first;
+					score = std::get<0>(it->second);
 					if (score > VALUE_MATE_IN_MAX_DEPTH)
 						score -= ss->ply;
 					else if (score < VALUE_MATED_IN_MAX_DEPTH)
@@ -187,9 +188,9 @@ public:
 					if (score != VALUE_DRAW)
 					{
 						if (!found)
-							transpositionTable[b.m_s->materialKey] = std::pair<Value, UInt>(score, depth - 1);
-						else if (it->second.second <= depth - 1)
-							it->second = std::pair<Value, UInt>(score, depth - 1);
+							transpositionTable[key] = std::tuple<Value, UInt, cMove>(score, depth - 1, move);
+						else if (std::get<1>(it->second) <= depth - 1)
+							it->second = std::tuple<Value, UInt, cMove>(score, depth - 1, move);
 					}
 #endif
 				}
@@ -242,7 +243,15 @@ public:
 
 					// Fail high
 					if (score >= beta)
+					{
+						auto it = transpositionTable.find(key);
+						const bool found = it != transpositionTable.end();
+						if (!found)
+							transpositionTable[key] = std::tuple<Value, UInt, cMove>(score, depth - 1, move);
+						else if (std::get<1>(it->second) <= depth - 1)
+							it->second = std::tuple<Value, UInt, cMove>(score, depth - 1, move);
 						break;
+					}
 					else
 						alpha = score;  // Update alpha! Always alpha < beta
 				}
