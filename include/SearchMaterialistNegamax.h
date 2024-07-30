@@ -95,7 +95,7 @@ public:
 
 		// 0. Initialize data
 		BoardParser::State s;
-		cMove pv[MAX_PLY + 1];
+		cMove pv[MAX_DEPTH + 1];
 		Value score = -VALUE_NONE, bestScore = -VALUE_NONE;
 		++nodesSearched[pvIdx];
 
@@ -315,7 +315,7 @@ public:
 
 			// Reset aspiration window starting size
 			Value prev = rootMoves[0].averageScore;
-			Value delta = std::abs(prev / 2);
+			Value delta = std::abs(prev / 2) + 10;
 			Value alpha = std::max(prev - delta, -VALUE_INFINITE);
 			Value beta = std::min(prev + delta, VALUE_INFINITE);
 			Value failedHighCnt = 0;
