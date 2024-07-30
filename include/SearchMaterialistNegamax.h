@@ -352,10 +352,16 @@ public:
 				delta += delta / 3;
 			}
 
-			if (currentDepth > 1 && outOfTime())
-				break;
-
+			// Even if outofTime we keep a better move if there is one
 			std::stable_sort(rootMoves.begin(), rootMoves.end());
+
+			if (currentDepth > 1 && outOfTime())
+			{
+				// std::cout << "info partial" << std::endl;
+				// std::cout << UCI::pv(*this, currentDepth) << std::endl;
+				break;
+			}
+
 			std::cout << "info failedHighCnt " << failedHighCnt << " alpha " << alpha << " beta " << beta << std::endl;
 			std::cout << UCI::pv(*this, currentDepth) << std::endl;
 		}
