@@ -170,7 +170,7 @@ public:
 		return cMove();
 	}
 
-	static void generateMoveList(BoardParser &b, std::vector<cMove> &moveList, bool legalOnly = false, bool onlyCapture = false)
+	static void generateMoveList(BoardParser &b, std::vector<cMove> &moveList, bool legalOnly = false, bool onlyCapture = false, bool onlyCheck = false)
 	{
 		std::vector<UInt> allyPositions = b.isWhiteTurn() ? b.boardParsed()->whitePos() : b.boardParsed()->blackPos();
 		std::vector<UInt> enemyPositions = !b.isWhiteTurn() ? b.boardParsed()->whitePos() : b.boardParsed()->blackPos();
@@ -184,9 +184,23 @@ public:
 			piece->canMove(*b.boardParsed(), moveList);
 		}
 
-		if (onlyCapture)
+		if (onlyCapture && !onlyCheck)
 		{
 			std::erase_if(moveList, [](cMove move) {return !move.isCapture();});
+		}
+
+		if (onlyCapture && onlyCheck)
+		{
+			const UInt oppKingPos = b.isWhiteTurn() ? b.whiteKing() : b.blackKing();
+			std::erase_if(moveList, [&b, oppKingPos](cMove move) mutable {
+				std::vector<cMove> moveListTmp;
+				BoardParser::State s(b);
+				b.movePiece(move, s);
+				const Piece *piece = b.boardParsed()->board()[move.getTo()];
+				piece->canMove(*b.boardParsed(), moveListTmp);
+				b.unMovePiece(move);
+				return !move.isCapture() || (std::find(moveListTmp.begin(), moveListTmp.end(), oppKingPos) != moveListTmp.end());
+				});
 		}
 
 		if (legalOnly)

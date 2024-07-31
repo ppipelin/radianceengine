@@ -42,7 +42,7 @@ public:
 		}
 
 		std::vector<cMove> moveListCaptures;
-		Search::generateMoveList(b, moveListCaptures, /*legalOnly=*/ true, /*onlyCapture=*/ true);
+		Search::generateMoveList(b, moveListCaptures, /*legalOnly=*/ true, /*onlyCapture=*/ true, /*onlyCheck=*/ true);
 
 		Search::orderMoves(b, moveListCaptures);
 
@@ -161,7 +161,7 @@ public:
 				{
 #ifdef lmr
 					// LMR before full
-					if (depth >= 2 && moveCount > 3 && !move.isCapture() && !move.isPromotion()) // !b.inCheck(b.isWhiteTurn())
+					if (depth >= 2 && moveCount > 3 && !move.isCapture() && !move.isPromotion() && !b.inCheck(b.isWhiteTurn()))
 					{
 						// Reduced LMR
 						UInt d = std::max(1, Int(depth) - 4);
