@@ -14,7 +14,7 @@ public:
 	~SearchMaterialistNegamax() {}
 
 	template <NodeType nodeType>
-	Value quiesce(Stack *ss, BoardParser &b, const Evaluate &e, Value alpha, Value beta)
+	Value quiesce(Stack *ss, BoardParser &b, const Evaluate &e, Value alpha, Value beta, std::vector<cMove> moveListCaptures = {})
 	{
 		++nodesSearched[pvIdx];
 
@@ -41,8 +41,12 @@ public:
 			ss->pv[0] = cMove();
 		}
 
-		std::vector<cMove> moveListCaptures;
-		Search::generateMoveList(b, moveListCaptures, /*legalOnly=*/ true, /*onlyCapture=*/ true, /*onlyCheck=*/ true);
+		if (moveListCaptures.empty())
+			Search::generateMoveList(b, moveListCaptures, /*legalOnly=*/ true, /*onlyCapture=*/ true, /*onlyCheck=*/ true);
+		else
+		{
+			std::erase_if(moveListCaptures, [](cMove &move) {return !move.isCapture();});
+		}
 
 		Search::orderMoves(b, moveListCaptures);
 
@@ -82,7 +86,7 @@ public:
 	}
 
 	template <NodeType nodeType>
-	Value abSearch(Stack *ss, BoardParser &b, const Evaluate &e, Value alpha, Value beta, UInt depth)
+	Value abSearch(Stack *ss, BoardParser &b, const Evaluate &e, Value alpha, Value beta, UInt depth, std::vector<cMove> moveList = {})
 	{
 		constexpr bool pvNode = nodeType != NonPV;
 		constexpr bool rootNode = nodeType == Root;
@@ -90,7 +94,7 @@ public:
 		if (depth <= 0)
 		{
 			// return e.evaluate(b);
-			return quiesce<pvNode ? PV : NonPV>(ss, b, e, alpha, beta);
+			return quiesce<pvNode ? PV : NonPV>(ss, b, e, alpha, beta, moveList);
 		}
 
 		// 0. Initialize data
@@ -105,17 +109,10 @@ public:
 		UInt moveCount = 0;
 
 		// 13. Loop through all pseudo - legal moves until no moves remain or a beta cutoff occurs.
-		std::vector<cMove> moveList;
-		if (rootNode)
-		{
-			for (UInt i = 0; i < rootMoves.size(); ++i)
-				moveList.push_back(rootMoves[i].pv[0]);
-		}
-		else
-		{
+		if (moveList.empty())
 			Search::generateMoveList(b, moveList, /*legalOnly=*/ true, /*onlyCapture=*/ false);
+		if (!rootNode)
 			Search::orderMoves(b, moveList, (rootMoves[0].pv.size() > ss->ply) ? rootMoves[0].pv[ss->ply] : cMove());
-		}
 
 		for (const cMove &move : moveList)
 		{
@@ -159,29 +156,31 @@ public:
 #endif
 				if (score == -VALUE_NONE)
 				{
+					std::vector<cMove> nextMoveList;
+					Search::generateMoveList(b, nextMoveList, /*legalOnly=*/ true, /*onlyCapture=*/ false);
 #ifdef lmr
 					// LMR before full
-					if (depth >= 2 && moveCount > 3 && !move.isCapture() && !move.isPromotion() && !b.inCheck(b.isWhiteTurn()))
+					if (depth >= 2 && moveCount > 3 && !move.isCapture() && !move.isPromotion() && !b.inCheck(b.isWhiteTurn(), nextMoveList)) // perhaps legalOnly has to be turned off, even if rook is pinned, it can check
 					{
 						// Reduced LMR
 						UInt d = std::max(1, Int(depth) - 4);
-						score = -abSearch<NonPV>(ss + 1, b, e, -(alpha + 1), -alpha, d - 1);
+						score = -abSearch<NonPV>(ss + 1, b, e, -(alpha + 1), -alpha, d - 1, nextMoveList);
 						// Failed so roll back to full-depth null window
 						if (score > alpha && depth > d)
 						{
-							score = -abSearch<NonPV>(ss + 1, b, e, -(alpha + 1), -alpha, depth - 1);
+							score = -abSearch<NonPV>(ss + 1, b, e, -(alpha + 1), -alpha, depth - 1, nextMoveList);
 						}
 					}
 					// In case non PV search are called without LMR, null window search at current depth
 #pragma warning( disable: 4127 )
 					else if (!pvNode || moveCount > 1)
 					{
-						score = -abSearch<NonPV>(ss + 1, b, e, -(alpha + 1), -alpha, depth - 1);
+						score = -abSearch<NonPV>(ss + 1, b, e, -(alpha + 1), -alpha, depth - 1, nextMoveList);
 					}
 					// 18. Full - depth search
 					if (pvNode && (moveCount == 1 || score > alpha))
 #endif
-						score = -abSearch<PV>(ss + 1, b, e, -beta, -alpha, depth - 1);
+						score = -abSearch<PV>(ss + 1, b, e, -beta, -alpha, depth - 1, nextMoveList);
 #pragma warning( default: 4127 )
 #ifdef transposition
 					// Let's assert we don't store draw (repetition)
@@ -335,7 +334,7 @@ public:
 			while (true)
 			{
 				nodesSearched.fill(0);
-				Value score = abSearch<Root>(ss, b, e, alpha, beta, currentDepth);
+				Value score = abSearch<Root>(ss, b, e, alpha, beta, currentDepth, moveList);
 
 				if (currentDepth > 1 && outOfTime())
 					break;
