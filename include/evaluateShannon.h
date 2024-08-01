@@ -26,7 +26,7 @@ public:
 		std::sort(pawnColumsUnique.begin(), pawnColumsUnique.end());
 		const auto last = std::unique(pawnColumsUnique.begin(), pawnColumsUnique.end());
 		pawnColumsUnique.erase(last, pawnColumsUnique.end());
-		score -= 50 * Value(pawnColumns.size() - pawnColumsUnique.size());
+		score -= 40 * Value(pawnColumns.size() - pawnColumsUnique.size());
 
 		for (const auto &i : pawnPositions)
 		{
@@ -37,7 +37,7 @@ public:
 			{
 				// Increased when blocked by opponent
 				if (piece->isWhite() ? !(*b.boardParsed())[i + BOARD_SIZE]->isWhite() : (*b.boardParsed())[i - BOARD_SIZE]->isWhite())
-					score -= 50;
+					score -= 40;
 				else
 					score -= 25;
 

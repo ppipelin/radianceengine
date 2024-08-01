@@ -231,6 +231,8 @@ public:
 
 	const Board *boardParsed() const { return m_board; }
 
+	void turn(const bool isWhiteTurn) { m_isWhiteTurn = isWhiteTurn; }
+
 	const bool isWhiteTurn() const { return m_isWhiteTurn; }
 
 	void whiteKing(const UInt whiteKing) { m_whiteKing = whiteKing; }
