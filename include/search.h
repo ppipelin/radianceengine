@@ -170,6 +170,147 @@ public:
 		return cMove();
 	}
 
+	static void legalMoves(BoardParser &b, std::vector<cMove> &moveList)
+	{
+		// #define optLegalOnly
+#ifdef optLegalOnly
+		// Look for attacked squares
+		std::array<cMove, MAX_PLY> moveListAttack = {};
+		size_t moveListAttackSize = 0;
+		for (UInt tileIdx = 0; tileIdx < enemyPositions.size(); ++tileIdx)
+		{
+			UInt tile = enemyPositions[tileIdx];
+			const Piece *piece = b.boardParsed()->board()[tile];
+			std::vector<cMove> subMoveList;
+			piece->canMove(*b.boardParsed(), subMoveList);
+			std::copy(subMoveList.begin(), subMoveList.end(), moveListAttack.begin() + moveListAttackSize);
+			moveListAttackSize += subMoveList.size();
+		}
+
+		BoardParser::State s;
+		std::erase_if(moveList, [&b, &s, moveListAttack, moveListAttackSize](const cMove &move) {
+			b.movePiece(move, s);
+			// Prune moves which keep the king in check
+			const bool keepInCheck = b.inCheck(!b.isWhiteTurn());
+			b.unMovePiece(move);
+			if (keepInCheck) return true;
+
+			// Prune moves which castles in check
+			if (move.isCastle())
+				return b.inCheck(b.isWhiteTurn(), moveListAttack, moveListAttackSize);
+
+			// Prune moves which castles through check
+			if (move.getFlags() == 0x2)
+			{
+				return (std::find(moveListAttack.begin(), moveListAttack.begin() + moveListAttackSize, move.getFrom() + 1) != moveListAttack.begin() + moveListAttackSize) ||
+					(std::find(moveListAttack.begin(), moveListAttack.begin() + moveListAttackSize, move.getFrom() + 2) != moveListAttack.begin() + moveListAttackSize);
+			}
+			else if (move.getFlags() == 0x3)
+			{
+				return (std::find(moveListAttack.begin(), moveListAttack.begin() + moveListAttackSize, move.getFrom() - 1) != moveListAttack.begin() + moveListAttackSize) ||
+					(std::find(moveListAttack.begin(), moveListAttack.begin() + moveListAttackSize, move.getFrom() - 2) != moveListAttack.begin() + moveListAttackSize) ||
+					(std::find(moveListAttack.begin(), moveListAttack.begin() + moveListAttackSize, move.getFrom() - 3) != moveListAttack.begin() + moveListAttackSize);
+			}
+			return false;
+			});
+#endif
+#ifndef optLegalOnly
+		BoardParser::State s;
+
+		std::erase_if(moveList, [&b, &s](const cMove &move) {
+#ifdef unMoveTest
+			BoardParser::State s2 = *b.m_s;
+			BoardParser b2(b, &s2);
+#endif
+			b.movePiece(move, s);
+			// Prune moves which keep the king in check
+			bool exit = b.inCheck(!b.isWhiteTurn());
+			b.unMovePiece(move);
+			s = *b.m_s;
+#ifdef unMoveTest
+			if (b != b2)
+			{
+				b.displayCLI();
+				std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
+			}
+			else
+				assert(b.m_s->materialKey == b2.m_s->materialKey);
+#endif
+			if (exit) return true;
+
+			// Prune moves which castles in check
+			if (move.isCastle() && b.inCheck(b.isWhiteTurn()))
+				return true;
+
+			// Prune moves which castles through check
+			if (move.getFlags() == 0x2)
+			{
+				cMove lastMove = cMove(move.getFrom(), move.getFrom() + 1);
+				b.movePiece(lastMove, s);
+				exit = b.inCheck(!b.isWhiteTurn());
+				b.unMovePiece(lastMove);
+				s = *b.m_s;
+#ifdef unMoveTest
+				if (b != b2)
+				{
+					b.displayCLI();
+					std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
+				}
+#endif
+				if (exit)
+					return true;
+
+				lastMove = cMove(move.getFrom(), move.getFrom() + 2);
+				b.movePiece(lastMove, s);
+				exit = b.inCheck(!b.isWhiteTurn());
+				b.unMovePiece(lastMove);
+				s = *b.m_s;
+#ifdef unMoveTest
+				if (b != b2)
+				{
+					b.displayCLI();
+					std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
+				}
+#endif
+				if (exit)
+					return true;
+			}
+			else if (move.getFlags() == 0x3)
+			{
+				cMove lastMove = cMove(move.getFrom(), move.getFrom() - 1);
+				b.movePiece(lastMove, s);
+				exit = b.inCheck(!b.isWhiteTurn());
+				b.unMovePiece(lastMove);
+				s = *b.m_s;
+#ifdef unMoveTest
+				if (b != b2)
+				{
+					b.displayCLI();
+					std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
+				}
+#endif
+				if (exit)
+					return true;
+
+				lastMove = cMove(move.getFrom(), move.getFrom() - 2);
+				b.movePiece(lastMove, s);
+				exit = b.inCheck(!b.isWhiteTurn());
+				b.unMovePiece(lastMove);
+				s = *b.m_s;
+#ifdef unMoveTest
+				if (b != b2)
+				{
+					b.displayCLI();
+					std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
+				}
+#endif
+				if (exit)
+					return true;
+			}
+			return false;
+			});
+#endif
+	}
 	static void generateMoveList(BoardParser &b, std::vector<cMove> &moveList, bool legalOnly = false, bool onlyCapture = false, bool onlyCheck = false)
 	{
 		std::vector<UInt> allyPositions = b.isWhiteTurn() ? b.boardParsed()->whitePos() : b.boardParsed()->blackPos();
@@ -186,13 +327,13 @@ public:
 
 		if (onlyCapture && !onlyCheck)
 		{
-			std::erase_if(moveList, [](cMove move) {return !move.isCapture();});
+			std::erase_if(moveList, [](const cMove &move) {return !move.isCapture();});
 		}
 
 		if (onlyCapture && onlyCheck)
 		{
 			const UInt oppKingPos = b.isWhiteTurn() ? b.whiteKing() : b.blackKing();
-			std::erase_if(moveList, [&b, oppKingPos](cMove move) mutable {
+			std::erase_if(moveList, [&b, oppKingPos](const cMove &move) mutable {
 				std::vector<cMove> moveListTmp;
 				BoardParser::State s(b);
 				b.movePiece(move, s);
@@ -205,144 +346,7 @@ public:
 
 		if (legalOnly)
 		{
-			// #define optLegalOnly
-#ifdef optLegalOnly
-			// Look for attacked squares
-			std::array<cMove, MAX_PLY> moveListAttack = {};
-			size_t moveListAttackSize = 0;
-			for (UInt tileIdx = 0; tileIdx < enemyPositions.size(); ++tileIdx)
-			{
-				UInt tile = enemyPositions[tileIdx];
-				const Piece *piece = b.boardParsed()->board()[tile];
-				std::vector<cMove> subMoveList;
-				piece->canMove(*b.boardParsed(), subMoveList);
-				std::copy(subMoveList.begin(), subMoveList.end(), moveListAttack.begin() + moveListAttackSize);
-				moveListAttackSize += subMoveList.size();
-			}
-
-			BoardParser::State s;
-			std::erase_if(moveList, [&b, &s, moveListAttack, moveListAttackSize](cMove move) {
-				b.movePiece(move, s);
-				// Prune moves which keep the king in check
-				const bool keepInCheck = b.inCheck(!b.isWhiteTurn());
-				b.unMovePiece(move);
-				if (keepInCheck) return true;
-
-				// Prune moves which castles in check
-				if (move.isCastle())
-					return b.inCheck(b.isWhiteTurn(), moveListAttack, moveListAttackSize);
-
-				// Prune moves which castles through check
-				if (move.getFlags() == 0x2)
-				{
-					return (std::find(moveListAttack.begin(), moveListAttack.begin() + moveListAttackSize, move.getFrom() + 1) != moveListAttack.begin() + moveListAttackSize) ||
-						(std::find(moveListAttack.begin(), moveListAttack.begin() + moveListAttackSize, move.getFrom() + 2) != moveListAttack.begin() + moveListAttackSize);
-				}
-				else if (move.getFlags() == 0x3)
-				{
-					return (std::find(moveListAttack.begin(), moveListAttack.begin() + moveListAttackSize, move.getFrom() - 1) != moveListAttack.begin() + moveListAttackSize) ||
-						(std::find(moveListAttack.begin(), moveListAttack.begin() + moveListAttackSize, move.getFrom() - 2) != moveListAttack.begin() + moveListAttackSize) ||
-						(std::find(moveListAttack.begin(), moveListAttack.begin() + moveListAttackSize, move.getFrom() - 3) != moveListAttack.begin() + moveListAttackSize);
-				}
-				return false;
-				});
-#endif
-#ifndef optLegalOnly
-			BoardParser::State s;
-
-			std::erase_if(moveList, [&b, &s](const cMove move) {
-#ifdef unMoveTest
-				BoardParser::State s2 = *b.m_s;
-				BoardParser b2(b, &s2);
-#endif
-				b.movePiece(move, s);
-				// Prune moves which keep the king in check
-				bool exit = b.inCheck(!b.isWhiteTurn());
-				b.unMovePiece(move);
-				s = *b.m_s;
-#ifdef unMoveTest
-				if (b != b2)
-				{
-					b.displayCLI();
-					std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
-				}
-				else
-					assert(b.m_s->materialKey == b2.m_s->materialKey);
-#endif
-				if (exit) return true;
-
-				// Prune moves which castles in check
-				if (move.isCastle() && b.inCheck(b.isWhiteTurn()))
-					return true;
-
-				// Prune moves which castles through check
-				if (move.getFlags() == 0x2)
-				{
-					cMove lastMove = cMove(move.getFrom(), move.getFrom() + 1);
-					b.movePiece(lastMove, s);
-					exit = b.inCheck(!b.isWhiteTurn());
-					b.unMovePiece(lastMove);
-					s = *b.m_s;
-#ifdef unMoveTest
-					if (b != b2)
-					{
-						b.displayCLI();
-						std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
-					}
-#endif
-					if (exit)
-						return true;
-
-					lastMove = cMove(move.getFrom(), move.getFrom() + 2);
-					b.movePiece(lastMove, s);
-					exit = b.inCheck(!b.isWhiteTurn());
-					b.unMovePiece(lastMove);
-					s = *b.m_s;
-#ifdef unMoveTest
-					if (b != b2)
-					{
-						b.displayCLI();
-						std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
-					}
-#endif
-					if (exit)
-						return true;
-				}
-				else if (move.getFlags() == 0x3)
-				{
-					cMove lastMove = cMove(move.getFrom(), move.getFrom() - 1);
-					b.movePiece(lastMove, s);
-					exit = b.inCheck(!b.isWhiteTurn());
-					b.unMovePiece(lastMove);
-					s = *b.m_s;
-#ifdef unMoveTest
-					if (b != b2)
-					{
-						b.displayCLI();
-						std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
-					}
-#endif
-					if (exit)
-						return true;
-
-					lastMove = cMove(move.getFrom(), move.getFrom() - 2);
-					b.movePiece(lastMove, s);
-					exit = b.inCheck(!b.isWhiteTurn());
-					b.unMovePiece(lastMove);
-					s = *b.m_s;
-#ifdef unMoveTest
-					if (b != b2)
-					{
-						b.displayCLI();
-						std::cout << b.m_s->materialKey << " " << b2.m_s->materialKey << std::endl;
-					}
-#endif
-					if (exit)
-						return true;
-				}
-				return false;
-				});
-#endif
+			legalMoves(b, moveList);
 		}
 	}
 
@@ -433,7 +437,7 @@ public:
 #ifndef opt
 		Search::generateMoveList(b, moveList, /*legalOnly =*/ true);
 #endif
-		for (const cMove move : moveList)
+		for (const cMove &move : moveList)
 		{
 #ifdef opt
 			// Castling

@@ -983,6 +983,12 @@ public:
 		return std::find_if(vTotal.begin(), vTotal.begin() + arraySize, [kingPos](const auto &ele) {return ele.getTo() == kingPos;}) != vTotal.begin() + arraySize;
 	}
 
+	bool inCheck(bool isWhite, std::vector<cMove> vTotal) const
+	{
+		UInt kingPos = isWhite ? whiteKing() : blackKing();
+		return std::find_if(vTotal.begin(), vTotal.end(), [kingPos](const auto &ele) {return ele.getTo() == kingPos;}) != vTotal.end();
+	}
+
 	bool isDraw() const
 	{
 		if (m_s->rule50 > 99)
