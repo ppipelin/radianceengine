@@ -17,6 +17,7 @@
 #include <numeric>
 #include <thread>
 #include <future>
+#include <sstream>
 
 bool g_stop = false;
 
@@ -214,7 +215,17 @@ void UCI::loop(int argc, char *argv[])
 			else if (token == "ponderhit")
 				std::cout << "UCI - ponderhit received" << std::endl;
 			else if (token == "uci")
-				std::cout << "id name chessengine" << "\n" << Options << "\nuciok" << std::endl;
+			{
+				std::stringstream patch;
+				if constexpr (PATCH != 0)
+					patch << "." << PATCH;
+				else
+					patch << "";
+				std::cout << "id name Radiance " << MAJOR << "." << MINOR << patch.str() << std::endl;
+				std::cout << "id author Paul-Elie Pipelin (ppipelin)" << std::endl;
+				std::cout << Options << std::endl;
+				std::cout << "uciok" << std::endl;
+			}
 			else if (token == "setoption")
 				setoption(is);
 			else if (token == "go")

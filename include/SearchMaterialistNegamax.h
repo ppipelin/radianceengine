@@ -271,6 +271,7 @@ public:
 	cMove nextMove(BoardParser &b, const Evaluate &e) override
 	{
 		const std::lock_guard<std::mutex> lock(mtx);
+		nodesSearched.fill(0);
 		// Checking book
 		cMove book = probeBook(b);
 		if (book != cMove())
@@ -334,7 +335,6 @@ public:
 
 			while (true)
 			{
-				nodesSearched.fill(0);
 				Value score = abSearch<Root>(ss, b, e, alpha, beta, currentDepth);
 
 				if (currentDepth > 1 && outOfTime())
