@@ -341,6 +341,7 @@ public:
 					s.lastCapturedPiece = m_board->board()[enPassantTile];
 
 					// Remove
+					Bitboards::remove(PieceType::PAWN, Color(s.lastCapturedPiece->isWhite()), enPassantTile);
 					m_s->materialKey ^= Zobrist::psq[(s.lastCapturedPiece->isWhite() ? 0 : 6) + 6 - s.lastCapturedPiece->value()][enPassantTile];
 
 					m_board->board()[enPassantTile] = nullptr;
@@ -361,6 +362,7 @@ public:
 					// Before delete we store the data we need
 					const bool isWhite = fromPiece->isWhite();
 					// Remove
+					Bitboards::remove(PieceType::PAWN, Color(isWhite), from);
 					m_s->materialKey ^= Zobrist::psq[(isWhite ? 0 : 6) + 6 - fromPiece->value()][from];
 					delete m_board->board()[from];
 					m_board->board()[from] = nullptr;
@@ -373,6 +375,7 @@ public:
 					else if (((move.m_move >> 12) & 0x3) == 3)
 						fromPiece = new Queen(from, isWhite, false);
 					// Add
+					Bitboards::add(fromPiece->value(), Color(fromPiece->isWhite()), from);
 					m_s->materialKey ^= Zobrist::psq[(fromPiece->isWhite() ? 0 : 6) + 6 - fromPiece->value()][from];
 				}
 			}
@@ -423,6 +426,7 @@ public:
 			s.lastCapturedPiece = toPiece;
 
 			// Remove
+			Bitboards::remove(toPiece->value(), Color(toPiece->isWhite()), to);
 			m_s->materialKey ^= Zobrist::psq[(toPiece->isWhite() ? 0 : 6) + 6 - toPiece->value()][to];
 			m_board->board()[to] = nullptr;
 			// Editing color table for captures
@@ -447,6 +451,9 @@ public:
 		m_s->materialKey ^= Zobrist::psq[(fromPiece->isWhite() ? 0 : 6) + 6 - fromPiece->value()][to];
 		m_board->board()[to] = fromPiece;
 		fromPiece->tile() = to;
+
+		// Remove/Add
+		Bitboards::removeAdd(fromPiece->value(), Color(fromPiece->isWhite()), from, to);
 
 		// Editing color table
 		// TODO : use std::replace_if ? or std::replace to avoid loop over all vector
@@ -522,6 +529,9 @@ public:
 		// Remove
 		m_board->board()[to] = nullptr;
 
+		// Remove/Add
+		Bitboards::removeAdd(toPiece->value(), Color(toPiece->isWhite()), to, from);
+
 		if (!silent)
 		{
 			boardParsed()->m_castleInfo = &m_s->previous->castleInfo;
@@ -540,9 +550,11 @@ public:
 				// Before delete we store the data we need
 				const bool isWhite = toPiece->isWhite();
 				// Remove promoted piece back into pawn (already moved back)
+				Bitboards::remove(toPiece->value(), Color(isWhite), from);
 				delete m_board->board()[from];
 				m_board->board()[from] = new Pawn(from, isWhite, false);
 				toPiece = m_board->board()[from];
+				Bitboards::add(toPiece->value(), Color(isWhite), from);
 			}
 
 			// Remove added enPassant and recover previous if there was one
@@ -568,6 +580,7 @@ public:
 			if (m_s->lastCapturedPiece->tile() != to)
 				localTo = m_s->lastCapturedPiece->isWhite() ? to + 8 : to - 8;
 
+			Bitboards::add(m_s->lastCapturedPiece->value(), Color(m_s->lastCapturedPiece->isWhite()), localTo);
 			m_board->board()[localTo] = m_s->lastCapturedPiece;
 
 			// Editing color table for captures
@@ -621,6 +634,7 @@ public:
 		}
 
 		s->materialKey = 0;
+		Bitboards::clear();
 		m_board->whitePos().clear();
 		m_board->blackPos().clear();
 		m_board->whitePos().reserve(BOARD_SIZE * 2);
@@ -658,63 +672,87 @@ public:
 				m_board->board()[counter] = new Pawn(counter, false, true);
 				m_board->blackPos().push_back(counter);
 				s->materialKey ^= Zobrist::psq[5 + 6][counter];
+				Bitboards::bbPieces[PieceType::PAWN] |= Bitboards::tileToBB(counter);
+				Bitboards::bbColors[Color::BLACK] |= Bitboards::tileToBB(counter);
 				break;
 			case 'P':
 				m_board->board()[counter] = new Pawn(counter, true, true);
 				m_board->whitePos().push_back(counter);
 				s->materialKey ^= Zobrist::psq[5][counter];
+				Bitboards::bbPieces[PieceType::PAWN] |= Bitboards::tileToBB(counter);
+				Bitboards::bbColors[Color::WHITE] |= Bitboards::tileToBB(counter);
 				break;
 			case 'k':
 				m_board->board()[counter] = new King(counter, false, true);
 				m_board->blackPos().push_back(counter);
 				s->materialKey ^= Zobrist::psq[0 + 6][counter];
+				Bitboards::bbPieces[PieceType::KING] |= Bitboards::tileToBB(counter);
+				Bitboards::bbColors[Color::BLACK] |= Bitboards::tileToBB(counter);
 				blackKing(counter);
 				break;
 			case 'K':
 				m_board->board()[counter] = new King(counter, true, true);
 				m_board->whitePos().push_back(counter);
 				s->materialKey ^= Zobrist::psq[0][counter];
+				Bitboards::bbPieces[PieceType::KING] |= Bitboards::tileToBB(counter);
+				Bitboards::bbColors[Color::WHITE] |= Bitboards::tileToBB(counter);
 				whiteKing(counter);
 				break;
 			case 'q':
 				m_board->board()[counter] = new Queen(counter, false, true);
 				m_board->blackPos().push_back(counter);
 				s->materialKey ^= Zobrist::psq[1 + 6][counter];
+				Bitboards::bbPieces[PieceType::QUEEN] |= Bitboards::tileToBB(counter);
+				Bitboards::bbColors[Color::BLACK] |= Bitboards::tileToBB(counter);
 				break;
 			case 'Q':
 				m_board->board()[counter] = new Queen(counter, true, true);
 				m_board->whitePos().push_back(counter);
 				s->materialKey ^= Zobrist::psq[1][counter];
+				Bitboards::bbPieces[PieceType::QUEEN] |= Bitboards::tileToBB(counter);
+				Bitboards::bbColors[Color::WHITE] |= Bitboards::tileToBB(counter);
 				break;
 			case 'r':
 				m_board->board()[counter] = new Rook(counter, false, true);
 				m_board->blackPos().push_back(counter);
 				s->materialKey ^= Zobrist::psq[2 + 6][counter];
+				Bitboards::bbPieces[PieceType::ROOK] |= Bitboard(Bitboards::tileToBB(counter));
+				Bitboards::bbColors[Color::BLACK] |= Bitboards::tileToBB(counter);
 				break;
 			case 'R':
 				m_board->board()[counter] = new Rook(counter, true, true);
 				m_board->whitePos().push_back(counter);
 				s->materialKey ^= Zobrist::psq[2][counter];
+				Bitboards::bbPieces[PieceType::ROOK] |= Bitboards::tileToBB(counter);
+				Bitboards::bbColors[Color::WHITE] |= Bitboards::tileToBB(counter);
 				break;
 			case 'b':
 				m_board->board()[counter] = new Bishop(counter, false, true);
 				m_board->blackPos().push_back(counter);
 				s->materialKey ^= Zobrist::psq[3 + 6][counter];
+				Bitboards::bbPieces[PieceType::BISHOP] |= Bitboards::tileToBB(counter);
+				Bitboards::bbColors[Color::BLACK] |= Bitboards::tileToBB(counter);
 				break;
 			case 'B':
 				m_board->board()[counter] = new Bishop(counter, true, true);
 				m_board->whitePos().push_back(counter);
 				s->materialKey ^= Zobrist::psq[3][counter];
+				Bitboards::bbPieces[PieceType::BISHOP] |= Bitboards::tileToBB(counter);
+				Bitboards::bbColors[Color::WHITE] |= Bitboards::tileToBB(counter);
 				break;
 			case 'n':
 				m_board->board()[counter] = new Knight(counter, false, true);
 				m_board->blackPos().push_back(counter);
 				s->materialKey ^= Zobrist::psq[4 + 6][counter];
+				Bitboards::bbPieces[PieceType::KNIGHT] |= Bitboards::tileToBB(counter);
+				Bitboards::bbColors[Color::BLACK] |= Bitboards::tileToBB(counter);
 				break;
 			case 'N':
 				m_board->board()[counter] = new Knight(counter, true, true);
 				m_board->whitePos().push_back(counter);
 				s->materialKey ^= Zobrist::psq[4 + 6][counter];
+				Bitboards::bbPieces[PieceType::KNIGHT] |= Bitboards::tileToBB(counter);
+				Bitboards::bbColors[Color::WHITE] |= Bitboards::tileToBB(counter);
 				break;
 			case '/':
 				counter -= BOARD_SIZE * 2 + 1;
@@ -722,6 +760,8 @@ public:
 			}
 			++counter;
 		}
+
+		Bitboards::computeAll();
 
 		if (words.size() > 1 && words[1] == "w")
 		{
@@ -1057,6 +1097,54 @@ public:
 		}
 
 		std::cout << out << std::string("|") << std::endl << std::endl;
+	}
+
+	void displayBBCLI(const Bitboard bb) const
+	{
+		std::string out;
+		for (UInt counter = BOARD_SIZE2 - BOARD_SIZE; counter != BOARD_SIZE - 1; ++counter)
+		{
+			Bitboard value = bb & (0x1ULL << counter);
+			out.append("|");
+			if (value == 0)
+			{
+				out.append(" ");
+			}
+			else
+			{
+				out.append("X");
+			}
+			if (Board::column(counter + 1) == 0)
+			{
+				out.append("|\n");
+				counter -= BOARD_SIZE * 2;
+			}
+		}
+		out.append("|");
+		Bitboard value = bb & (0x1ULL << (BOARD_SIZE - 1));
+		if (value == 0)
+		{
+			out.append(" ");
+		}
+		else
+		{
+			out.append("X");
+		}
+
+		std::cout << out << std::string("|") << std::endl << std::endl;
+	}
+
+	void displayBBCLI() const
+	{
+		for (UInt p = PieceType::NONE; p < PieceType::NB; ++p)
+		{
+			displayBBCLI(Bitboards::bbPieces[p]);
+		}
+
+		for (UInt c = Color::BLACK; c < Color::COLOR_NB; ++c)
+		{
+			displayBBCLI(Bitboards::bbColors[c]);
+		}
 	}
 
 	/**

@@ -1,5 +1,8 @@
 #include "../include/search.h"
 
+Bitboard Bitboards::bbPieces[PieceType::NB] = {};
+Bitboard Bitboards::bbColors[Color::COLOR_NB] = {};
+
 int main(int argc, char *argv[])
 {
 	BoardParser b;
@@ -10,4 +13,3 @@ int main(int argc, char *argv[])
 
 	return (Search::perft(b, 2, false) != 2039) || (Search::perft(b, 3, false) != 97862) || (Search::perft(b, 4, false) != 4085603);
 }
-

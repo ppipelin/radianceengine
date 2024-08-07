@@ -1,7 +1,11 @@
 #include "include.h"
+#include "board.h"
 #include "uci.h"
 
 #include <iostream>
+
+Bitboard Bitboards::bbPieces[PieceType::NB] = {};
+Bitboard Bitboards::bbColors[Color::COLOR_NB] = {};
 
 int main(int argc, char *argv[])
 {

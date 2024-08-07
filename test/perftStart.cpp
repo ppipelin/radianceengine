@@ -1,5 +1,8 @@
 #include "../include/search.h"
 
+Bitboard Bitboards::bbPieces[PieceType::NB] = {};
+Bitboard Bitboards::bbColors[Color::COLOR_NB] = {};
+
 int main(int argc, char *argv[])
 {
 	BoardParser b;

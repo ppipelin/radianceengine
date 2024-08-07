@@ -1,9 +1,14 @@
 #pragma once
 
 #include "include.h"
+#include "cMove.h"
 
 #include <algorithm>
 #include <cmath>
+
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif // _MSC_VER
 
 class Piece;
 
@@ -151,5 +156,165 @@ public:
 	static constexpr std::string toString(const UInt tile)
 	{
 		return std::string(1, char('a' + tile % BOARD_SIZE)) + std::string(1, char('1' + (tile / BOARD_SIZE)));
+	}
+};
+
+const enum PieceType : UInt
+{
+	NONE,
+	PAWN,
+	KNIGHT,
+	BISHOP,
+	ROOK,
+	QUEEN,
+	KING,
+	ALL,
+	NB
+};
+
+const enum Color
+{
+	BLACK,
+	WHITE,
+	COLOR_NB // rename en NB
+};
+
+class Bitboards
+{
+public:
+	static Bitboard bbPieces[PieceType::NB];
+	static Bitboard bbColors[Color::COLOR_NB];
+
+	static constexpr Bitboard column = 0x0101010101010101ULL;
+	static constexpr Bitboard row = 0xFFULL;
+
+	static void clear()
+	{
+		for (UInt p = PieceType::NONE; p < PieceType::NB; ++p)
+		{
+			Bitboards::bbPieces[p] = 0;
+		}
+		Bitboards::bbColors[0] = 0;
+		Bitboards::bbColors[1] = 0;
+	}
+
+	static void remove(PieceType p, Color c, UInt tile)
+	{
+		const Bitboard removeFilter = ~Bitboards::tileToBB(tile);
+		Bitboards::bbPieces[p] &= removeFilter;
+		Bitboards::bbPieces[PieceType::ALL] &= removeFilter;
+		Bitboards::bbColors[c] &= removeFilter;
+	}
+
+	static void add(PieceType p, Color c, UInt tile)
+	{
+		const Bitboard removeFilter = Bitboards::tileToBB(tile);
+		Bitboards::bbPieces[p] |= removeFilter;
+		Bitboards::bbPieces[PieceType::ALL] |= removeFilter;
+		Bitboards::bbColors[c] |= removeFilter;
+	}
+
+	static void removeAdd(PieceType p, Color c, UInt removeTile, UInt addTile)
+	{
+		const Bitboard removeFilter = Bitboards::tileToBB(removeTile) | Bitboards::tileToBB(addTile);
+		Bitboards::bbPieces[p] ^= removeFilter;
+		Bitboards::bbPieces[PieceType::ALL] ^= removeFilter;
+		Bitboards::bbColors[c] ^= removeFilter;
+	}
+
+	static void computeAll()
+	{
+		for (UInt p = PieceType::NONE + 1; p < PieceType::ALL; ++p)
+		{
+			Bitboards::bbPieces[PieceType::ALL] |= Bitboards::bbPieces[p];
+		}
+	}
+
+	static constexpr Bitboard tileToBB(UInt tile)
+	{
+		return (0b1ULL << tile);
+	}
+
+#ifdef _MSC_VER
+	static constexpr std::vector<UInt> getBitIndices(Bitboard bb)
+	{
+		std::vector<UInt> indices;
+		indices.reserve(__popcnt64(bb));
+
+		while (bb)
+		{
+			unsigned long lsbIndex;
+			_BitScanForward64(&lsbIndex, bb); // Find index of the least significant set bit
+			indices.push_back(static_cast<UInt>(lsbIndex));
+			bb &= bb - 1; // Clear the least significant set bit
+		}
+
+		return indices;
+	}
+#else
+	static constexpr std::vector<UInt> getBitIndices(Bitboard bb)
+	{
+		std::vector<UInt> indices;
+		indices.reserve(64);
+		for (UInt i = 0; i < 64; ++i)
+		{
+			if (bb & (1ULL << i))
+			{
+				indices.push_back(i);
+			}
+		}
+		return indices;
+	}
+#endif // _MSC_VER
+
+	static void displayBitIndices(Bitboard bb)
+	{
+		for (Int i = 63; i >= 0; --i)
+		{
+			if (bb & (1ULL << i))
+			{
+				std::cout << "X";
+			}
+			else
+			{
+				std::cout << "O";
+			}
+			if (i % BOARD_SIZE == 0)
+				std::cout << std::endl;
+		}
+		std::cout << std::endl;
+	}
+
+#ifdef _MSC_VER
+	static constexpr void generateMoves(std::vector<cMove> &moveList, Bitboard bb, UInt from, UInt flags = 0)
+	{
+		while (bb)
+		{
+			unsigned long lsbIndex;
+			_BitScanForward64(&lsbIndex, bb); // Find index of the least significant set bit
+			moveList.push_back(cMove(from, static_cast<UInt>(lsbIndex), flags));
+			bb &= bb - 1; // Clear the least significant set bit
+		}
+	}
+#else
+	static constexpr void generateMoves(std::vector<cMove> &moveList, Bitboard bb, UInt from, UInt flags = 0)
+	{
+		for (UInt i = std::max(0, Int(from) - Int(BOARD_SIZE * 3)); bb != 0ULL && i < std::min(BOARD_SIZE2, from + BOARD_SIZE * 3); ++i)
+			for (UInt i = 0; bb != 0ULL && i < 64; ++i)
+			{
+				if (bb & (1ULL << i))
+				{
+					moveList.push_back(cMove(from, i, flags));
+				}
+			}
+	}
+#endif // _MSC_VER
+
+	static constexpr Bitboard filterAdjacent(UInt tile)
+	{
+		const UInt colIdx = Board::column(tile);
+		const Int max = (colIdx == 0) ? 1 : 0;
+		const UInt min = (colIdx == BOARD_SIZE - 1) ? BOARD_SIZE - 2 : BOARD_SIZE - 1;
+		return (Bitboards::column << std::max(max, Int(colIdx - 1))) | (Bitboards::column << std::min(min, colIdx + 1));
 	}
 };
