@@ -11,13 +11,6 @@
 #include <fstream>
 #include <numeric>
 
-enum Color
-{
-	WHITE,
-	BLACK,
-	COLOR_NB = 2
-};
-
 using TimePoint = std::chrono::milliseconds::rep; // A value in milliseconds
 static_assert(sizeof(TimePoint) == sizeof(int64_t), "TimePoint should be 64 bits");
 inline TimePoint now()
@@ -34,7 +27,7 @@ namespace {
 class Search
 {
 protected:
-	enum NodeType
+	const enum NodeType
 	{
 		NonPV,
 		PV,

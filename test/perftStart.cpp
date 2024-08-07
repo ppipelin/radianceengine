@@ -1,14 +1,10 @@
 #include "../include/search.h"
 
-#include <queue>
-
 int main(int argc, char *argv[])
 {
 	BoardParser b;
 	BoardParser::State s;
 	const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-	using StateListPtr = std::unique_ptr<std::deque<BoardParser::State> >;
-	StateListPtr states(new std::deque<BoardParser::State>(1));
 
 	b.fillBoard(startFen, &s);
 

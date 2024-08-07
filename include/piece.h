@@ -4,6 +4,27 @@
 #include "board.h"
 #include "cMove.h"
 
+
+const enum PieceType : UInt
+{
+	NONE,
+	PAWN,
+	KNIGHT,
+	BISHOP,
+	ROOK,
+	QUEEN,
+	KING,
+	ALL,
+	NB
+};
+
+const enum Color
+{
+	BLACK,
+	WHITE,
+	COLOR_NB
+};
+
 /**
 	* @brief Piece class.
 	* @details This class is used to represent a piece on the board.
@@ -46,18 +67,7 @@ public:
 		m_neverMoved = p.m_neverMoved;
 	}
 
-	enum valuePiece : UInt
-	{
-		VALUE_NONE,
-		VALUE_PAWN,
-		VALUE_KNIGHT,
-		VALUE_BISHOP,
-		VALUE_ROOK,
-		VALUE_QUEEN,
-		VALUE_KING
-	};
-
-	virtual UInt value() const { return VALUE_NONE; }
+	virtual PieceType value() const { return PieceType::NONE; }
 
 	// Mutators
 	UInt &tile() { return m_tile; }

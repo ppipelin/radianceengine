@@ -365,7 +365,7 @@ public:
 					// Before delete we store the data we need
 					const bool isWhite = fromPiece->isWhite();
 					// Remove
-					m_s->materialKey ^= Zobrist::psq[(fromPiece->isWhite() ? 0 : 6) + 6 - fromPiece->value()][from];
+					m_s->materialKey ^= Zobrist::psq[(isWhite ? 0 : 6) + 6 - fromPiece->value()][from];
 					delete m_board->board()[from];
 					m_board->board()[from] = nullptr;
 					if (((move.m_move >> 12) & 0x3) == 0)
@@ -817,7 +817,7 @@ public:
 
 		const Piece *p = (*boardParsed())[from];
 		// Detect castle and flag
-		if (p != nullptr && p->value() == Piece::VALUE_KING)
+		if (p != nullptr && p->value() == PieceType::KING)
 		{
 			if (to - from == 2)
 			{
@@ -911,7 +911,7 @@ public:
 					{
 						int offset = (enPassant == 0) ? 1 : (BOARD_SIZE - 2);
 						const Piece *p = boardParsed()->board()[32 + offset];
-						if (p == nullptr || !p->isWhite() || p->value() != Piece::VALUE_PAWN)
+						if (p == nullptr || !p->isWhite() || p->value() != PieceType::PAWN)
 						{
 							enPassant = -1;
 						}
@@ -920,7 +920,7 @@ public:
 					{
 						const Piece *p1 = boardParsed()->board()[32 + enPassant - 1];
 						const Piece *p2 = boardParsed()->board()[32 + enPassant + 1];
-						if ((p1 == nullptr || !p1->isWhite() || p1->value() != Piece::VALUE_PAWN) && (p2 == nullptr || !p2->isWhite() || p2->value() != Piece::VALUE_PAWN))
+						if ((p1 == nullptr || !p1->isWhite() || p1->value() != PieceType::PAWN) && (p2 == nullptr || !p2->isWhite() || p2->value() != PieceType::PAWN))
 						{
 							enPassant = -1;
 						}
@@ -933,7 +933,7 @@ public:
 					{
 						int offset = (enPassant == 0) ? 1 : (BOARD_SIZE - 2);
 						const Piece *p = boardParsed()->board()[24 + offset];
-						if (p == nullptr || p->isWhite() || p->value() != Piece::VALUE_PAWN)
+						if (p == nullptr || p->isWhite() || p->value() != PieceType::PAWN)
 						{
 							enPassant = -1;
 						}
@@ -942,7 +942,7 @@ public:
 					{
 						const Piece *p1 = boardParsed()->board()[24 + enPassant - 1];
 						const Piece *p2 = boardParsed()->board()[24 + enPassant + 1];
-						if ((p1 == nullptr || p1->isWhite() || p1->value() != Piece::VALUE_PAWN) && (p2 == nullptr || p2->isWhite() || p2->value() != Piece::VALUE_PAWN))
+						if ((p1 == nullptr || p1->isWhite() || p1->value() != PieceType::PAWN) && (p2 == nullptr || p2->isWhite() || p2->value() != PieceType::PAWN))
 						{
 							enPassant = -1;
 						}

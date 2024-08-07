@@ -268,11 +268,8 @@ std::string UCI::square(const UInt s)
 /// UCI::move() converts a Move to a string in coordinate notation (g1f3, a7a8q).
 std::string UCI::move(cMove m)
 {
-	if (m == MOVE_NONE)
+	if (m == cMove())
 		return "(none)";
-
-	if (m == MOVE_NULL)
-		return "0000";
 
 	const UInt from = m.getFrom();
 	const UInt to = m.getTo();

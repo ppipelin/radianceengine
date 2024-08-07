@@ -39,9 +39,3 @@ public:
 	// protected:
 	UInt m_move; // Has to be 16 bits
 };
-
-enum Move : UInt
-{
-	MOVE_NONE,
-	MOVE_NULL = 65
-};

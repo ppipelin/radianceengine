@@ -15,7 +15,7 @@ public:
 		m_neverMoved = p.neverMoved();
 	}
 
-	UInt value() const override { return VALUE_QUEEN; }
+	PieceType value() const override { return PieceType::QUEEN; }
 
 	void canMove(const Board &b, std::vector<cMove> &v) const;
 

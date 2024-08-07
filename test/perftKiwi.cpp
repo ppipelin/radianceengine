@@ -1,7 +1,5 @@
 #include "../include/search.h"
 
-#include <queue>
-
 int main(int argc, char *argv[])
 {
 	BoardParser b;
