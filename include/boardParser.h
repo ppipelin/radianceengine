@@ -73,6 +73,29 @@ namespace {
 				}
 			}
 		}
+		// Pawn bb
+		for (UInt i = 0; i < BOARD_SIZE2 - 2 * BOARD_SIZE; ++i)
+		{
+			for (UInt color = Color::BLACK; color != Color::COLOR_NB; color++)
+			{
+				UInt tile = i + BOARD_SIZE;
+				Bitboards::filterCapturesComputed[i][color] = filterCaptures(tile, Color(color));
+				Bitboards::filterForwardComputed[i][color] = filterForward(tile, Color(color));
+				Bitboards::generateMoves(Bitboards::filterForwardComputedMoves[i][color], filterForward(tile, Color(color)), tile, 0);
+				for (UInt enPassantCol = 0; enPassantCol < BOARD_SIZE; ++enPassantCol)
+				{
+					Bitboard	enPassantTile = color ? Bitboards::row << BOARD_SIZE * 5 : Bitboards::row << BOARD_SIZE * 2; // Row filter
+					enPassantTile &= Bitboards::column << enPassantCol; // Column filter
+					// Once we have the enPassantTile, we assert it can be taken from tile
+					// Create a front 'corner' pattern and check if intersects with tile
+					// Front direction is determined from the current turn
+					Bitboard enPassantFilter = color ? (enPassantTile >> (BOARD_SIZE + 1)) | (enPassantTile >> (BOARD_SIZE - 1)) : (enPassantTile << (BOARD_SIZE + 1)) | (enPassantTile << (BOARD_SIZE - 1));
+					// Pattern has to not overlap the board
+					enPassantFilter &= Bitboards::filterAdjacent(Bitboards::getBitIndices(enPassantTile).front());
+					Bitboards::filterEnPassantComputed[i][color][enPassantCol] = (enPassantFilter & Bitboards::tileToBB(tile) ? enPassantTile : 0);
+				}
+			}
+		}
 	}
 }
 

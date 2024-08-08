@@ -19,6 +19,11 @@ std::unordered_map<Bitboard, Bitboard> Bitboards::movesBishopLegal[BOARD_SIZE2] 
 
 Bitboard Bitboards::movesKnight[BOARD_SIZE2] = {};
 
+Bitboard Bitboards::filterCapturesComputed[BOARD_SIZE2 - 2 * BOARD_SIZE][Color::COLOR_NB] = {};
+Bitboard Bitboards::filterForwardComputed[BOARD_SIZE2 - 2 * BOARD_SIZE][Color::COLOR_NB] = {};
+Bitboard Bitboards::filterEnPassantComputed[BOARD_SIZE2 - 2 * BOARD_SIZE][Color::COLOR_NB][BOARD_SIZE] = {};
+std::vector<cMove> Bitboards::filterForwardComputedMoves[BOARD_SIZE2 - 2 * BOARD_SIZE][Color::COLOR_NB] = {};
+
 int main(int argc, char *argv[])
 {
 	bbInit();
