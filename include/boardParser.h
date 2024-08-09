@@ -1005,7 +1005,7 @@ public:
 		return false;
 	}
 
-	void displayCout()
+	void displayCout() const
 	{
 		std::cout << "displayCout" << std::endl;
 		for (UInt counter = BOARD_SIZE2 - BOARD_SIZE; counter != BOARD_SIZE - 1; ++counter)
@@ -1024,7 +1024,7 @@ public:
 		}
 	}
 
-	void displayCLI()
+	void displayCLI() const
 	{
 		std::string out;
 		for (UInt counter = BOARD_SIZE2 - BOARD_SIZE; counter != BOARD_SIZE - 1; ++counter)
@@ -1063,7 +1063,7 @@ public:
 		* @brief Display board in CLI by parsing the optimized vectors.
 		*
 		*/
-	void displayCLIWhiteBlack()
+	void displayCLIWhiteBlack() const
 	{
 		std::string out;
 		for (UInt counter = BOARD_SIZE2 - BOARD_SIZE; counter != BOARD_SIZE - 1; ++counter)
@@ -1113,7 +1113,7 @@ public:
 		* @brief Display board in CLI and shows how can a piece move.
 		*
 		*/
-	void displayCLIMove(UInt tile)
+	void displayCLIMove(UInt tile) const
 	{
 		std::string out;
 		const Piece *piece = m_board->board()[tile];

@@ -40,7 +40,6 @@ public:
 					score -= 40;
 				else
 					score -= 25;
-
 			}
 
 			// Isolated pawn

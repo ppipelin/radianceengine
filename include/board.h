@@ -3,6 +3,7 @@
 #include "include.h"
 
 #include <algorithm>
+#include <cmath>
 
 class Piece;
 
@@ -85,51 +86,52 @@ public:
 
 	const std::vector<UInt> &blackPos() const { return m_blackPos; }
 
+	// constexpr will be supported in C++23
 	static bool sameLine(UInt a, UInt b)
 	{
-		return floor(a / BOARD_SIZE) == floor(b / BOARD_SIZE);
+		return std::floor(float(a) / float(BOARD_SIZE)) == std::floor(float(b) / float(BOARD_SIZE));
 	}
 
-	static bool sameColumn(UInt a, UInt b)
+	static constexpr bool sameColumn(UInt a, UInt b)
 	{
 		return a % BOARD_SIZE == b % BOARD_SIZE;
 	}
 
-	static bool leftCol(UInt tile)
+	static constexpr bool leftCol(UInt tile)
 	{
 		return tile % BOARD_SIZE == 0; // is 0 % smth always true ?
 	}
 
-	static bool rightCol(UInt tile)
+	static constexpr bool rightCol(UInt tile)
 	{
 		if (tile > BOARD_SIZE2 - 1)
 			err("Going beyond board.");
 		return (tile + 1) % (BOARD_SIZE) == 0;
 	}
 
-	static bool botRow(UInt tile)
+	static constexpr bool botRow(UInt tile)
 	{
 		return tile < BOARD_SIZE;
 	}
 
-	static bool topRow(UInt tile)
+	static constexpr bool topRow(UInt tile)
 	{
 		if (tile > BOARD_SIZE2 - 1)
 			err("Going beyond board.");
 		return tile >= BOARD_SIZE * (BOARD_SIZE - 1);
 	}
 
-	static UInt row(UInt tile)
+	static constexpr UInt row(UInt tile)
 	{
 		return tile / BOARD_SIZE;
 	}
 
-	static UInt column(UInt tile)
+	static constexpr UInt column(UInt tile)
 	{
 		return tile % BOARD_SIZE;
 	}
 
-	static UInt toTiles(const std::string &s)
+	static constexpr UInt toTiles(const std::string &s)
 	{
 		if (s.length() != 2) return 0;
 		UInt letter = s[0] - 'a';
@@ -146,7 +148,7 @@ public:
 		catch (const std::exception &) { return 0; }
 	}
 
-	static std::string toString(const UInt tile)
+	static constexpr std::string toString(const UInt tile)
 	{
 		return std::string(1, char('a' + tile % BOARD_SIZE)) + std::string(1, char('1' + (tile / BOARD_SIZE)));
 	}
