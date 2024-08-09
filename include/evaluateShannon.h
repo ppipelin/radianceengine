@@ -78,17 +78,17 @@ public:
 				const Piece *p = b.boardParsed()->board()[pieceIdx];
 				if (p == nullptr)
 					continue;
-				if (typeid(*p) == typeid(King))
+				if (p->value() == PieceType::KING)
 					score += 20000;
-				else if (typeid(*p) == typeid(Queen))
+				else if (p->value() == PieceType::QUEEN)
 					score += 900;
-				else if (typeid(*p) == typeid(Rook))
+				else if (p->value() == PieceType::ROOK)
 					score += 500;
-				else if (typeid(*p) == typeid(Bishop))
+				else if (p->value() == PieceType::BISHOP)
 					score += 300;
-				else if (typeid(*p) == typeid(Knight))
+				else if (p->value() == PieceType::KNIGHT)
 					score += 300;
-				else if (typeid(*p) == typeid(Pawn))
+				else if (p->value() == PieceType::PAWN)
 				{
 					score += 100;
 					pawnPositions.push_back(pieceIdx);

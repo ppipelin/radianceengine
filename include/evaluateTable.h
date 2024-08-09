@@ -105,27 +105,27 @@ public:
 
 				if (p == nullptr)
 					continue;
-				if (typeid(*p) == typeid(King))
+				if (p->value() == PieceType::KING)
 				{
 					*scoreCurrent += 20000;
 				}
-				else if (typeid(*p) == typeid(Queen))
+				else if (p->value() == PieceType::QUEEN)
 				{
 					*scoreCurrent += 950;
 				}
-				else if (typeid(*p) == typeid(Rook))
+				else if (p->value() == PieceType::ROOK)
 				{
 					*scoreCurrent += 563;
 				}
-				else if (typeid(*p) == typeid(Bishop))
+				else if (p->value() == PieceType::BISHOP)
 				{
 					*scoreCurrent += 333;
 				}
-				else if (typeid(*p) == typeid(Knight))
+				else if (p->value() == PieceType::KNIGHT)
 				{
 					*scoreCurrent += 305;
 				}
-				else if (typeid(*p) == typeid(Pawn))
+				else if (p->value() == PieceType::PAWN)
 				{
 					*scoreCurrent += 100;
 					pawnPositions.push_back(pieceIdx);
@@ -157,7 +157,7 @@ public:
 				Int idxTable = i == 1 ? ((BOARD_SIZE - 1) - Board::row(pieceIdx)) * BOARD_SIZE + Board::column(pieceIdx) : pieceIdx;
 				if (p == nullptr)
 					continue;
-				if (typeid(*p) == typeid(King))
+				if (p->value() == PieceType::KING)
 				{
 					p->canMove(*b.boardParsed(), moveset);
 					if (endgame)
@@ -170,11 +170,11 @@ public:
 						score += kingTable[idxTable] - Value(moveset.size());
 					}
 				}
-				else if (typeid(*p) == typeid(Queen))
+				else if (p->value() == PieceType::QUEEN)
 				{
 					score += queenTable[idxTable];
 				}
-				else if (typeid(*p) == typeid(Rook))
+				else if (p->value() == PieceType::ROOK)
 				{
 					if (endgame)
 					{
@@ -183,16 +183,16 @@ public:
 					}
 					score += rookTable[idxTable];
 				}
-				else if (typeid(*p) == typeid(Bishop))
+				else if (p->value() == PieceType::BISHOP)
 				{
 					p->canMove(*b.boardParsed(), moveset);
 					score += bishopTable[idxTable] + 5 * Value(moveset.size());
 				}
-				else if (typeid(*p) == typeid(Knight))
+				else if (p->value() == PieceType::KNIGHT)
 				{
 					score += knightTable[idxTable];
 				}
-				else if (typeid(*p) == typeid(Pawn))
+				else if (p->value() == PieceType::PAWN)
 				{
 					score += pawnTable[idxTable];
 				}

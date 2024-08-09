@@ -55,17 +55,17 @@ public:
 				const Piece *p = b.boardParsed()->board()[pieceIdx];
 				if (p == nullptr)
 					continue;
-				if (typeid(*p) == typeid(King))
+				if (p->value() == PieceType::KING)
 					(i == 1 ? scorePieceWhite : scorePieceBlack) += 20000;
-				else if (typeid(*p) == typeid(Queen))
+				else if (p->value() == PieceType::QUEEN)
 					(i == 1 ? scorePieceWhite : scorePieceBlack) += 950;
-				else if (typeid(*p) == typeid(Rook))
+				else if (p->value() == PieceType::ROOK)
 					(i == 1 ? scorePieceWhite : scorePieceBlack) += 563;
-				else if (typeid(*p) == typeid(Bishop))
+				else if (p->value() == PieceType::BISHOP)
 					(i == 1 ? scorePieceWhite : scorePieceBlack) += 333;
-				else if (typeid(*p) == typeid(Knight))
+				else if (p->value() == PieceType::KNIGHT)
 					(i == 1 ? scorePieceWhite : scorePieceBlack) += 305;
-				else if (typeid(*p) == typeid(Pawn))
+				else if (p->value() == PieceType::PAWN)
 				{
 					(i == 1 ? scorePieceWhite : scorePieceBlack) += 100;
 					pawnPositions.push_back(pieceIdx);
@@ -73,7 +73,7 @@ public:
 				}
 				moveset.clear();
 				p->canMove(*b.boardParsed(), moveset);
-				if (typeid(*p) == typeid(King))
+				if (p->value() == PieceType::KING)
 					(i == 1 ? movesetWhiteKing : movesetBlackKing) = Int(moveset.size());
 				else
 					score += 10 * Value(moveset.size());

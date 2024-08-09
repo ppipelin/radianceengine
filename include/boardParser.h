@@ -126,19 +126,17 @@ public:
 			const Piece *p = b.boardParsed()->board()[i];
 			if (p == nullptr)
 				continue;
-			if (typeid(*p) == typeid(Piece))
-				m_board->board()[i] = new Piece(*(*b.boardParsed())[i]);
-			else if (typeid(*p) == typeid(King))
+			if (p->value() == PieceType::KING)
 				m_board->board()[i] = new King(*(*b.boardParsed())[i]);
-			else if (typeid(*p) == typeid(Queen))
+			else if (p->value() == PieceType::QUEEN)
 				m_board->board()[i] = new Queen(*(*b.boardParsed())[i]);
-			else if (typeid(*p) == typeid(Rook))
+			else if (p->value() == PieceType::ROOK)
 				m_board->board()[i] = new Rook(*(*b.boardParsed())[i]);
-			else if (typeid(*p) == typeid(Bishop))
+			else if (p->value() == PieceType::BISHOP)
 				m_board->board()[i] = new Bishop(*(*b.boardParsed())[i]);
-			else if (typeid(*p) == typeid(Knight))
+			else if (p->value() == PieceType::KNIGHT)
 				m_board->board()[i] = new Knight(*(*b.boardParsed())[i]);
-			else if (typeid(*p) == typeid(Pawn))
+			else if (p->value() == PieceType::PAWN)
 				m_board->board()[i] = new Pawn(*(*b.boardParsed())[i]);
 		}
 		m_board->whitePos() = b.boardParsed()->whitePos();
@@ -173,19 +171,17 @@ public:
 			Piece *p = b.boardParsed()->board()[i];
 			if (p == nullptr)
 				continue;
-			if (typeid(*p) == typeid(Piece))
-				m_board->board()[i] = new Piece(*(*b.boardParsed())[i]);
-			else if (typeid(*p) == typeid(King))
+			if (p->value() == PieceType::KING)
 				m_board->board()[i] = new King(*(*b.boardParsed())[i]);
-			else if (typeid(*p) == typeid(Queen))
+			else if (p->value() == PieceType::QUEEN)
 				m_board->board()[i] = new Queen(*(*b.boardParsed())[i]);
-			else if (typeid(*p) == typeid(Rook))
+			else if (p->value() == PieceType::ROOK)
 				m_board->board()[i] = new Rook(*(*b.boardParsed())[i]);
-			else if (typeid(*p) == typeid(Bishop))
+			else if (p->value() == PieceType::BISHOP)
 				m_board->board()[i] = new Bishop(*(*b.boardParsed())[i]);
-			else if (typeid(*p) == typeid(Knight))
+			else if (p->value() == PieceType::KNIGHT)
 				m_board->board()[i] = new Knight(*(*b.boardParsed())[i]);
-			else if (typeid(*p) == typeid(Pawn))
+			else if (p->value() == PieceType::PAWN)
 				m_board->board()[i] = new Pawn(*(*b.boardParsed())[i]);
 		}
 		m_board->whitePos() = b.boardParsed()->whitePos();
@@ -284,7 +280,7 @@ public:
 		}
 
 		// Disable castle if king/rook is moved
-		if (typeid(*fromPiece) == typeid(King))
+		if (fromPiece->value() == PieceType::KING)
 		{
 			if (fromPiece->isWhite())
 			{
@@ -305,7 +301,7 @@ public:
 				s.castleInfo &= ~0b0011;
 			}
 		}
-		else if (typeid(*fromPiece) == typeid(Rook))
+		else if (fromPiece->value() == PieceType::ROOK)
 		{
 			const bool white = fromPiece->isWhite();
 			if (Board::column(from) == 7)
@@ -325,7 +321,7 @@ public:
 				}
 			}
 		}
-		else if (typeid(*fromPiece) == typeid(Pawn))
+		else if (fromPiece->value() == PieceType::PAWN)
 		{
 			// Updates enPassant if possible next turn
 			if (fabs(Int(from) - Int(to)) == 16)
@@ -860,17 +856,17 @@ public:
 					s += std::to_string(accumulate);
 					accumulate = 0;
 				}
-				if (typeid(*p) == typeid(King))
+				if (p->value() == PieceType::KING)
 					s += p->isWhite() ? "K" : "k";
-				else if (typeid(*p) == typeid(Queen))
+				else if (p->value() == PieceType::QUEEN)
 					s += p->isWhite() ? "Q" : "q";
-				else if (typeid(*p) == typeid(Rook))
+				else if (p->value() == PieceType::ROOK)
 					s += p->isWhite() ? "R" : "r";
-				else if (typeid(*p) == typeid(Bishop))
+				else if (p->value() == PieceType::BISHOP)
 					s += p->isWhite() ? "B" : "b";
-				else if (typeid(*p) == typeid(Knight))
+				else if (p->value() == PieceType::KNIGHT)
 					s += p->isWhite() ? "N" : "n";
-				else if (typeid(*p) == typeid(Pawn))
+				else if (p->value() == PieceType::PAWN)
 					s += p->isWhite() ? "P" : "p";
 			}
 		}

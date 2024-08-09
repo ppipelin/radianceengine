@@ -109,7 +109,7 @@ public:
 
 				if (p == nullptr)
 					continue;
-				if (typeid(*p) == typeid(King))
+				if (p->value() == PieceType::KING)
 				{
 					*scoreCurrent += 20000;
 
@@ -119,14 +119,14 @@ public:
 					egScore += i * (i == 1 ? scoreKingWhite : scoreKingBlack);
 					mgScore += i * (kingTable[idxTable] - Value(moveset.size()));
 				}
-				else if (typeid(*p) == typeid(Queen))
+				else if (p->value() == PieceType::QUEEN)
 				{
 					*scoreCurrent += 950;
 					const Value v = queenTable[idxTable];
 					mgScore += i * v;
 					egScore += i * v;
 				}
-				else if (typeid(*p) == typeid(Rook))
+				else if (p->value() == PieceType::ROOK)
 				{
 					*scoreCurrent += 563;
 
@@ -136,7 +136,7 @@ public:
 					mgScore += i * v;
 					egScore += i * v;
 				}
-				else if (typeid(*p) == typeid(Bishop))
+				else if (p->value() == PieceType::BISHOP)
 				{
 					*scoreCurrent += 333;
 
@@ -145,7 +145,7 @@ public:
 					mgScore += i * v;
 					egScore += i * v;
 				}
-				else if (typeid(*p) == typeid(Knight))
+				else if (p->value() == PieceType::KNIGHT)
 				{
 					*scoreCurrent += 305;
 
@@ -153,7 +153,7 @@ public:
 					mgScore += i * v;
 					egScore += i * v;
 				}
-				else if (typeid(*p) == typeid(Pawn))
+				else if (p->value() == PieceType::PAWN)
 				{
 					*scoreCurrent += 100;
 					pawnPositions.push_back(pieceIdx);
