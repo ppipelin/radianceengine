@@ -3,8 +3,14 @@
 Bitboard Bitboards::bbPieces[PieceType::NB] = {};
 Bitboard Bitboards::bbColors[Color::COLOR_NB] = {};
 
+Bitboard Bitboards::filterCapturesComputed[BOARD_SIZE2 - 2 * BOARD_SIZE][Color::COLOR_NB] = {};
+Bitboard Bitboards::filterForwardComputed[BOARD_SIZE2 - 2 * BOARD_SIZE][Color::COLOR_NB] = {};
+Bitboard Bitboards::filterEnPassantComputed[BOARD_SIZE2 - 2 * BOARD_SIZE][Color::COLOR_NB][BOARD_SIZE] = {};
+std::vector<cMove> Bitboards::filterForwardComputedMoves[BOARD_SIZE2 - 2 * BOARD_SIZE][Color::COLOR_NB] = {};
+
 int main(int, char **)
 {
+	bbInit();
 	BoardParser b;
 	BoardParser::State s;
 	const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";

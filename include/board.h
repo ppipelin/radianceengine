@@ -188,6 +188,12 @@ public:
 	static constexpr Bitboard column = 0x0101010101010101ULL;
 	static constexpr Bitboard row = 0xFFULL;
 
+	// No pawn on first and last row
+	static Bitboard filterCapturesComputed[BOARD_SIZE2 - 2 * BOARD_SIZE][Color::COLOR_NB];
+	static Bitboard filterForwardComputed[BOARD_SIZE2 - 2 * BOARD_SIZE][Color::COLOR_NB];
+	static Bitboard filterEnPassantComputed[BOARD_SIZE2 - 2 * BOARD_SIZE][Color::COLOR_NB][BOARD_SIZE];
+	static std::vector<cMove> filterForwardComputedMoves[BOARD_SIZE2 - 2 * BOARD_SIZE][Color::COLOR_NB];
+
 	static void clear()
 	{
 		for (UInt p = PieceType::NONE; p < PieceType::NB; ++p)
