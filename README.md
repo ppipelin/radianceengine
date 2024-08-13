@@ -1,4 +1,7 @@
 # Radiance Engine
+[![Build Status](https://github.com/ppipelin/radiance/actions/workflows/cmake-single-platform.yml/badge.svg)](https://github.com/ppipelin/radiance/actions/workflows/cmake-single-platform.yml)
+[![Latest Release](https://img.shields.io/github/v/release/ppipelin/radiance?display_name=release)](https://github.com/ppipelin/radiance/releases)
+![License](https://img.shields.io/github/license/ppipelin/radiance)
 
 [![Lichess classical rating](https://lichess-shield.vercel.app/api?username=radianceengine&format=classical)](https://lichess.org/@/radianceengine/perf/classical)
 [![Lichess rapid rating](https://lichess-shield.vercel.app/api?username=radianceengine&format=rapid)](https://lichess.org/@/radianceengine/perf/rapid)
@@ -22,18 +25,19 @@ C++ chess engine
 - _AlphaZero_ average piece values
 - Endgame heuristics
 
-# Versions tournament
+## Versions tournament
 
-| Rank | Name          | Elo   | +/- | Games | Score | Draw  |
-| ---- | ------------- | ----- | --- | ----- | ----- | ----- |
-| 1    | radiance_3.1  |   334 |  23 |  1600 | 87.2% |  8.6% |
-| 2    | radiance_3.0  |   196 |  18 |  1600 | 75.5% | 10.1% |
-| 3    | radiance_2.4  |   195 |  18 |  1600 | 75.4% | 12.3% |
-| 4    | radiance_2.3  |   143 |  17 |  1600 | 69.5% | 11.8% |
-| 5    | radiance_2.2  |   -23 |  16 |  1600 | 46.7% | 12.2% |
-| 6    | radiance_2.1  |   -51 |  16 |  1600 | 42.8% | 10.8% |
-| 7    | radiance_2.0  |   -70 |  16 |  1600 | 40.1% | 10.1% |
-| 8    | radiance_1.5  |  -343 |  26 |  1600 | 12.2% |  0.0% |
-| 9    | radiance_1.4  |  -881 | 126 |  1600 |  0.6% |  0.0% |
+| Rank | Name           | Elo   | +/- | Games | Score | Draw  |
+| ---- | -------------- | ----- | --- | ----- | ----- | ----- |
+| 1    | radiance_3.2   |   487 |  22 |  3600 | 94.3% |  3.9% |
+| 2    | radiance_3.1.1 |   317 |  15 |  3600 | 86.1% |  6.3% |
+| 3    | radiance_3.0.1 |   114 |  11 |  3600 | 65.8% |  8.1% |
+| 4    | radiance_2.4   |   114 |  11 |  3600 | 65.8% | 10.0% |
+| 5    | radiance_2.3   |    93 |  11 |  3600 | 63.1% |  8.9% |
+| 6    | radiance_2.2   |   -60 |  11 |  3600 | 41.5% |  6.7% |
+| 7    | radiance_2.1   |   -91 |  11 |  3600 | 37.2% |  6.4% |
+| 8    | radiance_2.0   |  -122 |  12 |  3600 | 33.2% |  5.0% |
+| 9    | radiance_1.5   |  -337 |  17 |  3600 | 12.6% |  0.8% |
+| 10   | radiance_1.4   |  -940 |  93 |  3600 |  0.4% |  0.0% |
 
 _I'm radiant!_
