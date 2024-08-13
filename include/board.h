@@ -235,6 +235,26 @@ public:
 		return (0b1ULL << tile);
 	}
 
+	// bb has to be non-zero
+	static inline UInt leastBit(Bitboard &bb)
+	{
+		unsigned long lsbIndex;
+#ifdef _MSC_VER
+		_BitScanForward64(&lsbIndex, bb); // Find index of the least significant set bit
+#else
+		lsbIndex = __builtin_ctzll(bb);
+#endif
+		return static_cast<UInt>(lsbIndex);
+	}
+
+	// bb has to be non-zero
+	static inline UInt popLeastBit(Bitboard &bb)
+	{
+		UInt idx = Bitboards::leastBit(bb);
+		bb &= bb - 1; // Clear the least significant set bit
+		return idx;
+	}
+
 #ifdef _MSC_VER
 	static constexpr std::vector<UInt> getBitIndices(Bitboard bb)
 	{
@@ -243,10 +263,7 @@ public:
 
 		while (bb)
 		{
-			unsigned long lsbIndex;
-			_BitScanForward64(&lsbIndex, bb); // Find index of the least significant set bit
-			indices.push_back(static_cast<UInt>(lsbIndex));
-			bb &= bb - 1; // Clear the least significant set bit
+			indices.push_back(Bitboards::popLeastBit(bb));
 		}
 
 		return indices;
@@ -258,7 +275,7 @@ public:
 		indices.reserve(64);
 		for (UInt i = 0; i < 64; ++i)
 		{
-			if (bb & (1ULL << i))
+			if (bb & Bitboards::tileToBB(i))
 			{
 				indices.push_back(i);
 			}
@@ -271,7 +288,7 @@ public:
 	{
 		for (Int i = 63; i >= 0; --i)
 		{
-			if (bb & (1ULL << i))
+			if (bb & Bitboards::tileToBB(i))
 			{
 				std::cout << "X";
 			}
@@ -290,10 +307,7 @@ public:
 	{
 		while (bb)
 		{
-			unsigned long lsbIndex;
-			_BitScanForward64(&lsbIndex, bb); // Find index of the least significant set bit
-			moveList.push_back(cMove(from, static_cast<UInt>(lsbIndex), flags));
-			bb &= bb - 1; // Clear the least significant set bit
+			moveList.push_back(cMove(from, Bitboards::popLeastBit(bb), flags));
 		}
 	}
 #else
@@ -302,7 +316,7 @@ public:
 		for (UInt i = std::max(0, Int(from) - Int(BOARD_SIZE * 3)); bb != 0ULL && i < std::min(BOARD_SIZE2, from + BOARD_SIZE * 3); ++i)
 			for (UInt i = 0; bb != 0ULL && i < 64; ++i)
 			{
-				if (bb & (1ULL << i))
+				if (bb & Bitboards::tileToBB(i))
 				{
 					moveList.push_back(cMove(from, i, flags));
 				}

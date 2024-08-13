@@ -1104,7 +1104,7 @@ public:
 		std::string out;
 		for (UInt counter = BOARD_SIZE2 - BOARD_SIZE; counter != BOARD_SIZE - 1; ++counter)
 		{
-			Bitboard value = bb & (0x1ULL << counter);
+			Bitboard value = bb & Bitboards::tileToBB(counter);
 			out.append("|");
 			if (value == 0)
 			{
@@ -1121,7 +1121,7 @@ public:
 			}
 		}
 		out.append("|");
-		Bitboard value = bb & (0x1ULL << (BOARD_SIZE - 1));
+		Bitboard value = bb & Bitboards::tileToBB(BOARD_SIZE - 1);
 		if (value == 0)
 		{
 			out.append(" ");

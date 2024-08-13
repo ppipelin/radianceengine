@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 
+include(CheckCXXCompilerFlag)
+
 project(radiance
 	VERSION 1.0
 	DESCRIPTION "Radiance chess engine"
@@ -33,6 +35,14 @@ target_include_directories(radiance PRIVATE
 )
 
 set(CMAKE_CXX_STANDARD 23)
+
+check_cxx_compiler_flag("-mavx2" COMPILER_SUPPORTS_AVX2)
+check_cxx_compiler_flag("-mbmi2" COMPILER_SUPPORTS_BMI2)
+
+if(COMPILER_SUPPORTS_AVX2 AND COMPILER_SUPPORTS_BMI2)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2 -mbmi2")
+endif()
+
 target_compile_features(radiance PRIVATE cxx_std_23)
 
 target_compile_definitions(radiance PRIVATE _WIN32_WINNT=0x0A00)
