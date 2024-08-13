@@ -244,12 +244,14 @@ public:
 					// Fail high
 					if (score >= beta)
 					{
+#ifdef transposition
 						auto it = transpositionTable.find(key);
 						const bool found = it != transpositionTable.end();
 						if (!found)
 							transpositionTable[key] = std::tuple<Value, UInt, cMove>(score, depth - 1, move);
 						else if (std::get<1>(it->second) <= depth - 1)
 							it->second = std::tuple<Value, UInt, cMove>(score, depth - 1, move);
+#endif
 						break;
 					}
 					else
