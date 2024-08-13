@@ -37,18 +37,18 @@ void Pawn::canMove(const Board &b, std::vector<cMove> &v) const
 		thirdOrSixthDoubled = ((Bitboards::row << BOARD_SIZE * 5) & Bitboards::bbPieces[PieceType::ALL] & ~tileBB) >> BOARD_SIZE;
 	Bitboard filterF = Bitboards::filterForwardComputed[m_tile - BOARD_SIZE][col] & ~Bitboards::bbPieces[PieceType::ALL] & ~thirdOrSixthDoubled;
 
-	// Bitboards::generateMoves(*vRef, filterF, m_tile, 0);
+#ifdef _MSC_VER
 	Bitboard bb = Bitboards::filterForwardComputed[m_tile - BOARD_SIZE][col];
 	UInt cnt = 0;
 	while (bb)
 	{
-		unsigned long lsbIndex;
-		_BitScanForward64(&lsbIndex, bb); // Find index of the least significant set bit
-		if (Bitboards::tileToBB(lsbIndex) & filterF)
+		if (Bitboards::tileToBB(Bitboards::popLeastBit(bb)) & filterF)
 			vRef->push_back(Bitboards::filterForwardComputedMoves[m_tile - BOARD_SIZE][col][cnt]);
-		bb &= bb - 1; // Clear the least significant set bit
 		++cnt;
 	}
+#else
+	Bitboards::generateMoves(*vRef, filterF, m_tile, 0);
+#endif // _MSC_VER
 
 	// If we are going to the last rank, previous computed moves are promotions
 	if ((m_isWhite && Board::row(m_tile + BOARD_SIZE) == BOARD_SIZE - 1) || (!m_isWhite && Board::row(m_tile - BOARD_SIZE) == 0))

@@ -37,7 +37,7 @@ namespace {
 				UInt tile = i + BOARD_SIZE;
 				Bitboards::filterCapturesComputed[i][color] = filterCaptures(tile, Color(color));
 				Bitboards::filterForwardComputed[i][color] = filterForward(tile, Color(color));
-				Bitboards::generateMoves(Bitboards::filterForwardComputedMoves[i][color], filterForward(tile, Color(color)), tile, 4);
+				Bitboards::generateMoves(Bitboards::filterForwardComputedMoves[i][color], filterForward(tile, Color(color)), tile, 0);
 				for (UInt enPassantCol = 0; enPassantCol < BOARD_SIZE; ++enPassantCol)
 				{
 					Bitboard	enPassantTile = color ? Bitboards::row << BOARD_SIZE * 5 : Bitboards::row << BOARD_SIZE * 2; // Row filter
