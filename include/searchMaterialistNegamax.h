@@ -164,7 +164,7 @@ public:
 					if (depth >= 2 && moveCount > 3 && !move.isCapture() && !move.isPromotion() && !b.inCheck(b.isWhiteTurn()))
 					{
 						// Reduced LMR
-						UInt d = std::max(1, Int(depth) - 4);
+						UInt d = std::max(Int(1), Int(depth) - 4);
 						score = -abSearch<NonPV>(ss + 1, b, e, -(alpha + 1), -alpha, d - 1);
 						// Failed so roll back to full-depth null window
 						if (score > alpha && depth > d)

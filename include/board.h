@@ -159,7 +159,7 @@ public:
 	}
 };
 
-const enum PieceType : UInt
+enum PieceType : UInt
 {
 	NONE,
 	PAWN,
@@ -172,7 +172,7 @@ const enum PieceType : UInt
 	NB
 };
 
-const enum Color
+enum Color
 {
 	BLACK,
 	WHITE,
@@ -313,7 +313,7 @@ public:
 #else
 	static constexpr void generateMoves(std::vector<cMove> &moveList, Bitboard bb, UInt from, UInt flags = 0)
 	{
-		for (UInt i = std::max(0, Int(from) - Int(BOARD_SIZE * 3)); bb != 0ULL && i < std::min(BOARD_SIZE2, from + BOARD_SIZE * 3); ++i)
+		for (UInt i = std::max(Int(0), Int(from) - Int(BOARD_SIZE * 3)); bb != 0ULL && i < std::min(BOARD_SIZE2, from + BOARD_SIZE * 3); ++i)
 			for (UInt i = 0; bb != 0ULL && i < 64; ++i)
 			{
 				if (bb & Bitboards::tileToBB(i))
