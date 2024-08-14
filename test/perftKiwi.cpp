@@ -1,9 +1,9 @@
-#include "../include/search.h"
+#include "search.h"
 
 Bitboard Bitboards::bbPieces[PieceType::NB] = {};
 Bitboard Bitboards::bbColors[Color::COLOR_NB] = {};
 
-int main(int argc, char *argv[])
+int main(int, char **)
 {
 	BoardParser b;
 	BoardParser::State s;

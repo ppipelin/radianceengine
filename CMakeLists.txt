@@ -28,7 +28,11 @@ target_sources(radiance PRIVATE
 )
 
 # target_compile_options(radiance PRIVATE -W4 ${OpenMP_CXX_FLAGS})
-target_compile_options(radiance PRIVATE -W4)
+if(MSVC)
+	add_compile_options(/W4)
+else()
+	add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
 target_include_directories(radiance PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/include
@@ -56,13 +60,13 @@ target_compile_definitions(radiance PRIVATE _WIN32_WINNT=0x0A00)
 ############ Tests
 enable_testing()
 
-include_directories(
-	${CMAKE_CURRENT_LIST_DIR}/include
-)
-
 add_executable(perftStart test/perftStart.cpp ${SOURCES})
 add_executable(perftKiwi test/perftKiwi.cpp ${SOURCES})
 add_executable(bitboardMoves test/bitboardMoves.cpp ${SOURCES})
+
+target_include_directories(perftStart PRIVATE	${CMAKE_CURRENT_LIST_DIR}/include)
+target_include_directories(perftKiwi PRIVATE	${CMAKE_CURRENT_LIST_DIR}/include)
+target_include_directories(bitboardMoves PRIVATE	${CMAKE_CURRENT_LIST_DIR}/include)
 
 # Define tests
 add_test(NAME perftStart COMMAND perftStart)
