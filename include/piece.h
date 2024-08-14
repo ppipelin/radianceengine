@@ -38,7 +38,7 @@ public:
 		*/
 	Piece(UInt tile, bool isWhite = true, bool neverMoved = true) : m_tile(tile), m_isWhite(isWhite), m_neverMoved(neverMoved) {}
 	Piece() {}
-	~Piece() {}
+	virtual ~Piece() = default;
 	Piece(const Piece &p)
 	{
 		m_tile = p.m_tile;

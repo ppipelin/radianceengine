@@ -7,7 +7,7 @@ class Pawn : public Piece
 public:
 	Pawn(UInt a, UInt b, bool isWhite = true, bool neverMoved = true) : Piece(a, b, isWhite, neverMoved) {}
 	Pawn(UInt a, bool isWhite = true, bool neverMoved = true) : Piece(a, isWhite, neverMoved) {}
-	~Pawn() {}
+	~Pawn() override = default;
 	Pawn(const Piece &p)
 	{
 		m_tile = p.tile();
