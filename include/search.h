@@ -27,7 +27,7 @@ namespace {
 class Search
 {
 protected:
-	const enum NodeType
+	enum NodeType
 	{
 		NonPV,
 		PV,
