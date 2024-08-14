@@ -12,9 +12,9 @@
 class EvaluateTableTuned : virtual public EvaluateShannonHeuristics
 {
 public:
-	EvaluateTableTuned() {}
-	EvaluateTableTuned(const EvaluateTableTuned &) {}
-	~EvaluateTableTuned() {}
+	EvaluateTableTuned() = default;
+	EvaluateTableTuned(const EvaluateTableTuned &) = default;
+	~EvaluateTableTuned() = default;
 
 	// Tables are displayed for white which corresponds to black order of tiles
 	// https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function

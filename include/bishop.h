@@ -7,7 +7,7 @@ class Bishop : public Piece
 public:
 	Bishop(UInt a, UInt b, bool isWhite = true, bool neverMoved = true) : Piece(a, b, isWhite, neverMoved) {}
 	Bishop(UInt a, bool isWhite = true, bool neverMoved = true) : Piece(a, isWhite, neverMoved) {}
-	~Bishop() {}
+	~Bishop() override = default;
 	Bishop(const Piece &p)
 	{
 		m_tile = p.tile();

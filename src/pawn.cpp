@@ -7,7 +7,7 @@ void Pawn::canMove(const Board &b, std::vector<cMove> &v) const
 	std::vector<cMove> tmp = std::vector<cMove>();
 	std::vector<cMove> *vRef = &tmp;
 	// Promotion cases uses temporary vector to duplicate moveset during promotion
-	const bool promotion = m_isWhite && Board::row(m_tile + BOARD_SIZE) == BOARD_SIZE - 1 || !m_isWhite && Board::row(m_tile - BOARD_SIZE) == 0;
+	const bool promotion = (m_isWhite && Board::row(m_tile + BOARD_SIZE) == BOARD_SIZE - 1) || (!m_isWhite && Board::row(m_tile - BOARD_SIZE) == 0);
 	if (promotion)
 	{
 		vRef->reserve(4);
@@ -88,7 +88,7 @@ void Pawn::canMove(const Board &b, std::vector<cMove> &v) const
 		}
 	}
 	// If we are going to the last rank, previous computed moves are promotions
-	if (m_isWhite && Board::row(m_tile + BOARD_SIZE) == BOARD_SIZE - 1 || !m_isWhite && Board::row(m_tile - BOARD_SIZE) == 0)
+	if ((m_isWhite && Board::row(m_tile + BOARD_SIZE) == BOARD_SIZE - 1) || (!m_isWhite && Board::row(m_tile - BOARD_SIZE) == 0))
 	{
 		for (auto &move : *vRef)
 		{

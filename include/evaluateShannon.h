@@ -10,9 +10,9 @@
 class EvaluateShannon : virtual public Evaluate
 {
 public:
-	EvaluateShannon() {}
-	EvaluateShannon(const EvaluateShannon &) {}
-	~EvaluateShannon() {}
+	EvaluateShannon() = default;
+	EvaluateShannon(const EvaluateShannon &) = default;
+	~EvaluateShannon() = default;
 
 	// Should be precomputed for 64-16 tiles and both colors
 	Bitboard filterPassedPawn(UInt tile, Color col) const

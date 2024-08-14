@@ -7,7 +7,7 @@ class Knight : public Piece
 public:
 	Knight(UInt a, UInt b, bool isWhite = true, bool neverMoved = true) : Piece(a, b, isWhite, neverMoved) {}
 	Knight(UInt a, bool isWhite = true, bool neverMoved = true) : Piece(a, isWhite, neverMoved) {}
-	~Knight() {}
+	~Knight() override = default;
 	Knight(const Piece &p)
 	{
 		m_tile = p.tile();
