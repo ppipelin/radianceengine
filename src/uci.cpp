@@ -309,7 +309,7 @@ std::string UCI::pv(const Search &s, UInt depth)
 			<< " pv";
 
 		auto a = std::count_if(s.rootMoves[i].pv.begin(), s.rootMoves[i].pv.end(), [](const cMove c) { return c != 0; });
-		for (UInt j = 0; j < a; ++j)
+		for (UInt j = 0; j < UInt(a); ++j)
 			ss << " " << UCI::move(s.rootMoves[i].pv[j]);
 	}
 	return ss.str();

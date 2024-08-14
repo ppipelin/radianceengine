@@ -12,9 +12,9 @@
 class EvaluateShannonHeuristics : virtual public EvaluateShannon
 {
 public:
-	EvaluateShannonHeuristics() {}
-	EvaluateShannonHeuristics(const EvaluateShannonHeuristics &) {}
-	~EvaluateShannonHeuristics() {}
+	EvaluateShannonHeuristics() = default;
+	EvaluateShannonHeuristics(const EvaluateShannonHeuristics &) = default;
+	~EvaluateShannonHeuristics() = default;
 
 	// Chebyshev distance of kings
 	Int distanceKings(const BoardParser &b) const

@@ -89,7 +89,7 @@ public:
 			for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
 				Zobrist::psq[pc][tile] = rng.rand<Key>();
 
-		for (UInt col = 0; col <= BOARD_SIZE; ++col)
+		for (UInt col = 0; col < BOARD_SIZE; ++col)
 			Zobrist::enPassant[col] = rng.rand<Key>();
 
 		for (UInt cr = 0; cr < 4; ++cr)

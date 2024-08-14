@@ -26,15 +26,6 @@ namespace {
 
 class Search
 {
-protected:
-	enum NodeType
-	{
-		NonPV,
-		PV,
-		Root
-	};
-	bool *g_stop;
-	std::mutex mtx;
 public:
 	struct LimitsType
 	{
@@ -514,4 +505,14 @@ public:
 		if (Limits.infinite || remaining == 0) return false;
 		return elapsed() > remaining;
 	}
+
+protected:
+	enum NodeType
+	{
+		NonPV,
+		PV,
+		Root
+	};
+	bool *g_stop;
+	std::mutex mtx;
 };

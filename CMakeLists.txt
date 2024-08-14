@@ -31,7 +31,7 @@ target_sources(radiance PRIVATE
 if(MSVC)
 	add_compile_options(/W4)
 else()
-	add_compile_options(-Wall -Wextra -Wpedantic)
+	add_compile_options(-Wall -Wextra -Wpedantic -Wno-unknown-pragmas)
 endif()
 
 target_include_directories(radiance PRIVATE

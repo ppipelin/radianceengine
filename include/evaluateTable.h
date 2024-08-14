@@ -12,9 +12,9 @@
 class EvaluateTable : virtual public EvaluateShannonHeuristics
 {
 public:
-	EvaluateTable() {}
-	EvaluateTable(const EvaluateTable &) {}
-	~EvaluateTable() {}
+	EvaluateTable() = default;
+	EvaluateTable(const EvaluateTable &) = default;
+	~EvaluateTable() = default;
 
 	// Tables are displayed for white which corresponds to black order of tiles
 	// https://www.chessprogramming.org/Simplified_Evaluation_Function
