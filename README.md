@@ -1,5 +1,5 @@
 # Radiance Engine
-[![Build Status](https://github.com/ppipelin/radiance/actions/workflows/cmake-single-platform.yml/badge.svg)](https://github.com/ppipelin/radiance/actions/workflows/cmake-single-platform.yml)
+[![Build Status](https://github.com/ppipelin/radiance/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/ppipelin/radiance/actions/workflows/cmake-multi-platform.yml)
 [![Latest Release](https://img.shields.io/github/v/release/ppipelin/radiance?display_name=release)](https://github.com/ppipelin/radiance/releases)
 ![License](https://img.shields.io/github/license/ppipelin/radiance)
 
