@@ -92,6 +92,7 @@ public:
 	cMove nextMove(BoardParser &b, const Evaluate &e) override
 	{
 		const std::lock_guard<std::mutex> lock(mtx);
+		nodesSearched.fill(0);
 		// Checking book
 		cMove book = probeBook(b);
 		if (book != cMove())
@@ -131,12 +132,23 @@ public:
 			for (const auto &move : moveList)
 				rootMoves.emplace_back(move);
 
-		nodesSearched.fill(0);
+		// Iterative deepening algorithm
+		// This is only useful to manage time
+		// It would be risky to estimate depth based on time since positions are sometimes easier to compute
+		// A heuristic based on remaining pieces should work fine
+		for (UInt currentDepth = 1; currentDepth < MAX_PLY && !(Limits.depth && currentDepth > Limits.depth); ++currentDepth)
+		{
+			search<Root>(ss, b, e, currentDepth);
 
-		search<Root>(ss, b, e, Limits.depth);
+			// Even if outofTime we keep a better move if there is one
+			std::stable_sort(rootMoves.begin(), rootMoves.end());
 
-		std::stable_sort(rootMoves.begin(), rootMoves.end());
-		std::cout << UCI::pv(*this, Limits.depth) << std::endl;
+			if (currentDepth > 1 && outOfTime())
+			{
+				break;
+			}
+			std::cout << UCI::pv(*this, currentDepth) << std::endl;
+		}
 		return rootMoves[0].pv[0];
 	}
 };

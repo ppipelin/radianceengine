@@ -2,6 +2,8 @@
 
 #include "search.h"
 
+#include <random>
+
 class SearchRandom : virtual public Search
 {
 public:
@@ -9,23 +11,16 @@ public:
 	SearchRandom(const SearchRandom &s) : Search(s.Limits, s.g_stop) {}
 	~SearchRandom() {}
 
-	cMove nextMove(const BoardParser &b, const Evaluate &) override
+	cMove nextMove(BoardParser &b, const Evaluate &) override
 	{
 		const std::lock_guard<std::mutex> lock(mtx);
+		// Checking book
+		cMove book = probeBook(b);
+		if (book != cMove())
+			return book;
 		std::vector<cMove> moveList;
-		for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
-		{
-			const Piece *piece = b.boardParsed()->board()[tile];
-			if (piece == nullptr || (piece->isWhite() != b.isWhiteTurn()))
-			{
-				continue;
-			}
-			if (piece->isWhite() != b.isWhiteTurn())
-			{
-				warn("is wrong turn");
-			}
-			piece->canMove(*b.boardParsed(), moveList);
-		}
+		Search::generateMoveList(b, moveList, /*legalOnly=*/ true, /*onlyCapture=*/ false);
+
 		if (moveList.empty())
 		{
 			err("Cannot move after checkmate.");
@@ -33,21 +28,14 @@ public:
 		}
 		else if (moveList.size() == 1)
 		{
-			return moveList[1];
+			return moveList[0];
 		}
-		// Verify not in check
-		BoardParser b2;
-		cMove move;
-		do
-		{
-			BoardParser::State s;
-			b2 = BoardParser(b);
 
-			UInt idx = UInt(double(std::rand()) / double(RAND_MAX) * double(moveList.size()));
-			move = moveList[idx];
-			b2.movePiece(move, s);
-			moveList.erase(moveList.begin() + idx);
-		} while (b2.inCheck(!b2.isWhiteTurn()) && !moveList.empty());
-		return move;
+		std::random_device rd;
+		std::mt19937 gen(rd()); // Mersenne Twister engine
+		std::uniform_int_distribution<> dis(0, Int(moveList.size()) - 1);
+
+		UInt idx = dis(gen);
+		return moveList[idx];
 	}
 };
