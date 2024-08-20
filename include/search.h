@@ -10,6 +10,7 @@
 #include <mutex>
 #include <fstream>
 #include <numeric>
+#include <memory>
 
 using TimePoint = std::chrono::milliseconds::rep; // A value in milliseconds
 static_assert(sizeof(TimePoint) == sizeof(int64_t), "TimePoint should be 64 bits");
@@ -95,9 +96,9 @@ public:
 	std::array<Int, MAX_PLY> nodesSearched = { 0 };
 	UInt transpositionUsed = 0;
 
-	Search(const Search::LimitsType &limits, bool *g_stop) : Limits(limits), g_stop(g_stop) {}
-	Search(const Search &) {}
-	~Search() {}
+	Search(const Search::LimitsType &limits, bool *g_stop) : Limits(limits), g_stop(g_stop), mtx(std::make_unique<std::mutex>()) {}
+	Search(const Search &) = delete;
+	virtual ~Search() = default;
 
 	virtual cMove nextMove(const BoardParser &, const Evaluate &)
 	{
@@ -514,5 +515,5 @@ protected:
 		Root
 	};
 	bool *g_stop;
-	std::mutex mtx;
+	std::unique_ptr<std::mutex> mtx;
 };

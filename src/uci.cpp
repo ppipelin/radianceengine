@@ -18,6 +18,7 @@
 #include <thread>
 #include <future>
 #include <sstream>
+#include <optional>
 
 bool g_stop = false;
 
@@ -84,8 +85,8 @@ namespace {
 		while (is >> token)
 			value += (value.empty() ? "" : " ") + token;
 
-		if (Options.count(name))
-			Options[name] = value;
+		if (g_options.count(name))
+			g_options[name] = value;
 		else
 			std::cout << "No such option: " << name << std::endl;
 	}
@@ -109,8 +110,8 @@ namespace {
 					;
 			else if (token == "wtime")     is >> limits.time[WHITE];
 			else if (token == "btime")     is >> limits.time[BLACK];
-			// else if (token == "winc")      is >> limits.inc[WHITE];
-			// else if (token == "binc")      is >> limits.inc[BLACK];
+			else if (token == "winc")      is >> limits.inc[WHITE];
+			else if (token == "binc")      is >> limits.inc[BLACK];
 			// else if (token == "movestogo") is >> limits.movestogo;
 			else if (token == "depth")     is >> limits.depth;
 			// else if (token == "nodes")     is >> limits.nodes;
@@ -132,18 +133,27 @@ namespace {
 		}
 		else
 		{
-			// SearchRandom search = SearchRandom(limits, &g_stop);
-			// SearchMaterialist search = SearchMaterialist(limits, &g_stop);
-			SearchMaterialistNegamax search = SearchMaterialistNegamax(limits, &g_stop);
-			// EvaluateShannon evaluate = EvaluateShannon();
-			// EvaluateShannonHeuristics evaluate = EvaluateShannonHeuristics();
-			// EvaluateTable evaluate = EvaluateTable();
-			EvaluateTableTuned evaluate = EvaluateTableTuned();
+			std::optional<std::unique_ptr<Search>> search;
+			const std::string strSearch = static_cast<std::string>(g_options["Search"]);
+			if (strSearch == "Random")
+				search.emplace(std::make_unique<SearchRandom>(limits, &g_stop));
+			else if (strSearch == "Minimax")
+				search.emplace(std::make_unique<SearchMaterialist>(limits, &g_stop));
+			else
+				search.emplace(std::make_unique<SearchMaterialistNegamax>(limits, &g_stop));
 
-			// std::future<cMove> moveAsync = std::async(&(SearchMaterialistNegamax::nextMove), std::ref(search), std::ref(pos), std::ref(evaluate));
-			// cMove move = moveAsync.get();
+			std::optional<std::unique_ptr<Evaluate>> evaluate;
+			const std::string strEval = static_cast<std::string>(g_options["Evaluation"]);
+			if (strEval == "Shannon")
+				evaluate.emplace(std::make_unique<EvaluateShannon>());
+			else if (strEval == "ShannonHeuristics")
+				evaluate.emplace(std::make_unique<EvaluateShannonHeuristics>());
+			else if (strEval == "PSQ")
+				evaluate.emplace(std::make_unique<EvaluateTable>());
+			else
+				evaluate.emplace(std::make_unique<EvaluateTableTuned>());
 
-			cMove move = search.nextMove(pos, evaluate);
+			cMove move = (*search)->nextMove(pos, **evaluate);
 
 			std::cout << "bestmove " << UCI::move(move) << std::endl;
 		}
@@ -224,7 +234,7 @@ void UCI::loop(int argc, char *argv[])
 					patch << "";
 				std::cout << "id name Radiance " << MAJOR << "." << MINOR << patch.str() << std::endl;
 				std::cout << "id author Paul-Elie Pipelin (ppipelin)" << std::endl;
-				std::cout << Options << std::endl;
+				std::cout << g_options << std::endl;
 				std::cout << "uciok" << std::endl;
 			}
 			else if (token == "setoption")
