@@ -8,12 +8,12 @@ class SearchRandom : virtual public Search
 {
 public:
 	SearchRandom(const Search::LimitsType &limits, bool *g_stop) : Search(limits, g_stop) {}
-	SearchRandom(const SearchRandom &s) : Search(s.Limits, s.g_stop) {}
-	~SearchRandom() {}
+	SearchRandom(const SearchRandom &s) = default;
+	~SearchRandom() = default;
 
 	cMove nextMove(BoardParser &b, const Evaluate &) override
 	{
-		const std::lock_guard<std::mutex> lock(mtx);
+		const std::lock_guard<std::mutex> lock(*mtx);
 		// Checking book
 		cMove book = probeBook(b);
 		if (book != cMove())

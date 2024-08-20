@@ -25,14 +25,12 @@ namespace UCI {
 	/// The Option class implements each option as specified by the UCI protocol
 	class Option
 	{
-		using OnChange = void (*)(const Option &);
-
 	public:
-		Option(OnChange = nullptr);
-		Option(bool v, OnChange = nullptr);
-		Option(const char *v, OnChange = nullptr);
-		Option(double v, int minv, int maxv, OnChange = nullptr);
-		Option(const char *v, const char *cur, OnChange = nullptr);
+		Option();
+		Option(bool v);
+		Option(const char *v);
+		Option(double v, int minv, int maxv);
+		Option(const char *v, const char *cur);
 
 		Option &operator=(const std::string &);
 		void operator<<(const Option &);
@@ -41,15 +39,14 @@ namespace UCI {
 		bool operator==(const char *) const;
 
 	private:
-		friend std::ostream &operator<<(std::ostream &, const OptionsMap &);
+		friend std::ostream &operator<<(std::ostream &, const UCI::OptionsMap &);
 
 		std::string defaultValue, currentValue, type;
 		int min, max;
-		size_t idx;
-		OnChange on_change;
+		size_t idx = 0; // Order of Option in the OptionsMap
 	};
 
-	void init(OptionsMap &);
+	void init(UCI::OptionsMap &);
 	void loop(int argc, char *argv[]);
 	std::string square(UInt s);
 	std::string move(cMove m);
@@ -57,4 +54,4 @@ namespace UCI {
 	std::string pv(const Search &s, UInt depth);
 } // namespace UCI
 
-extern UCI::OptionsMap Options;
+extern UCI::OptionsMap g_options;

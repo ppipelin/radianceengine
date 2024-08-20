@@ -7,7 +7,7 @@ class Evaluate
 public:
 	Evaluate() = default;
 	Evaluate(const Evaluate &) = default;
-	~Evaluate() = default;
+	virtual ~Evaluate() = default;
 
 	virtual Value evaluate(const BoardParser &) const
 	{
