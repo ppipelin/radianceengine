@@ -3,7 +3,7 @@
 
 #include "uci.h"
 
-UCI::OptionsMap Options; // Global object
+UCI::OptionsMap g_options; // Global object
 
 namespace UCI {
 	/// Our case insensitive less() function as required by UCI protocol
@@ -14,38 +14,26 @@ namespace UCI {
 	}
 
 	/// UCI::init() initializes the UCI options to their hard-coded default values
-	void init(OptionsMap &)
+	void init(UCI::OptionsMap &o)
 	{
-		// constexpr int MaxHashMB = 33554432;
-		// o["Debug Log File"] << Option("", on_logger);
-		// o["Threads"] << Option(1, 1, 1024, on_threads);
-		// o["Hash"] << Option(16, 1, MaxHashMB, on_hash_size);
-		// o["Clear Hash"] << Option(on_clear_hash);
+		constexpr int MaxHashMB = 131072;
+		o["Threads"] << Option(1, 1, 1);
+		o["Hash"] << Option(256, 0, MaxHashMB);
+		o["Search"] << Option("abNegamax var abNegamax var Minimax var Random", "abNegamax");
+		o["Evaluation"] << Option("PSQTuned var PSQTuned var PSQ var Shannon var ShannonHeuristics", "PSQTuned");
 		// o["Ponder"] << Option(false);
 		// o["MultiPV"] << Option(1, 1, 500);
-		// o["Skill Level"] << Option(20, 0, 20);
-		// o["Move Overhead"] << Option(10, 0, 5000);
-		// o["Slow Mover"] << Option(100, 10, 1000);
 		// o["nodestime"] << Option(0, 0, 10000);
-		// o["UCI_Chess960"] << Option(false);
-		// o["UCI_AnalyseMode"] << Option(false);
-		// o["UCI_LimitStrength"] << Option(false);
-		// o["UCI_Elo"] << Option(1320, 1320, 3190);
-		// o["UCI_ShowWDL"] << Option(false);
-		// o["SyzygyPath"] << Option("<empty>", on_tb_path);
-		// o["SyzygyProbeDepth"] << Option(1, 1, 100);
-		// o["Syzygy50MoveRule"] << Option(true);
-		// o["SyzygyProbeLimit"] << Option(7, 0, 7);
-		// o["EvalFile"] << Option(EvalFileDefaultName, on_eval_file);
 	}
 
 	/// operator<<() is used to print all the options default values in chronological
 	/// insertion order (the idx field) and in the format defined by the UCI protocol.
-	std::ostream &operator<<(std::ostream &os, const OptionsMap &om)
+	std::ostream &operator<<(std::ostream &os, const UCI::OptionsMap &om)
 	{
-
 		for (size_t idx = 0; idx < om.size(); ++idx)
+		{
 			for (const auto &it : om)
+			{
 				if (it.second.idx == idx)
 				{
 					const Option &o = it.second;
@@ -61,28 +49,29 @@ namespace UCI {
 
 					break;
 				}
-
+			}
+		}
 		return os;
 	}
 
-	Option::Option(const char *v, OnChange f) : type("string"), min(0), max(0), on_change(f)
+	Option::Option(const char *v) : type("string"), min(0), max(0)
 	{
 		defaultValue = currentValue = v;
 	}
 
-	Option::Option(bool v, OnChange f) : type("check"), min(0), max(0), on_change(f)
+	Option::Option(bool v) : type("check"), min(0), max(0)
 	{
 		defaultValue = currentValue = (v ? "true" : "false");
 	}
 
-	Option::Option(OnChange f) : type("button"), min(0), max(0), on_change(f) {}
+	Option::Option() : type("button"), min(0), max(0) {}
 
-	Option::Option(double v, int minv, int maxv, OnChange f) : type("spin"), min(minv), max(maxv), on_change(f)
+	Option::Option(double v, int minv, int maxv) : type("spin"), min(minv), max(maxv)
 	{
 		defaultValue = currentValue = std::to_string(v);
 	}
 
-	Option::Option(const char *v, const char *cur, OnChange f) : type("combo"), min(0), max(0), on_change(f)
+	Option::Option(const char *v, const char *cur) : type("combo"), min(0), max(0)
 	{
 		defaultValue = v; currentValue = cur;
 	}
@@ -95,7 +84,7 @@ namespace UCI {
 
 	Option::operator std::string() const
 	{
-		assert(type == "string");
+		assert(type == "string" || type == "combo");
 		return currentValue;
 	}
 
@@ -106,10 +95,9 @@ namespace UCI {
 			&& !CaseInsensitiveLess()(s, currentValue);
 	}
 
-	/// operator<<() inits options and assigns idx in the correct printing order
+	/// operator<<() inits g_options and assigns idx in the correct printing order
 	void Option::operator<<(const Option &o)
 	{
-
 		static size_t insert_order = 0;
 
 		*this = o;
@@ -121,7 +109,6 @@ namespace UCI {
 	/// from the user by console window, so let's check the bounds anyway.
 	Option &Option::operator=(const std::string &v)
 	{
-
 		assert(!type.empty());
 
 		if ((type != "button" && type != "string" && v.empty())
@@ -142,9 +129,6 @@ namespace UCI {
 
 		if (type != "button")
 			currentValue = v;
-
-		if (on_change)
-			on_change(*this);
 
 		return *this;
 	}

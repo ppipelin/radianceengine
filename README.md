@@ -40,4 +40,27 @@ C++ chess engine
 | 9    | radiance_1.5   |  -337 |  17 |  3600 | 12.6% |  0.8% |
 | 10   | radiance_1.4   |  -940 |  93 |  3600 |  0.4% |  0.0% |
 
+## Getting started
+
+### Compilation
+
+```
+export CXX=g++-12
+export CC=gcc-12
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make
+./radiance
+```
+
+### UCI options
+
+| Name         | Type  | Default value |  Valid values                                       | Description                                          |
+| ------------ | ----- | ------------- | --------------------------------------------------- | ---------------------------------------------------- |
+| `Hash`       | spin  |      256      |                     [1, 131072]                     | Memory allocated to the transposition table (in MB). |
+| `Threads`    | spin  |       1       |                       [1, 1]                        | Number of threads used to search.                    |
+| `Evaluation` | combo |  "PSQTuned"   | ["PSQTuned", "PSQ", "Shannon", "ShannonHeuristics"] | Type of evaluation function.                         |
+| `Search`     | combo |  "abNegamax"  |          ["abNegamax", "Minimax", "Random"]         | Type of search function.                             |
+
 _I'm radiant!_

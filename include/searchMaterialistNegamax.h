@@ -10,8 +10,8 @@ class SearchMaterialistNegamax : virtual public Search
 {
 public:
 	SearchMaterialistNegamax(const Search::LimitsType &limits, bool *g_stop) : Search(limits, g_stop) {}
-	SearchMaterialistNegamax(const SearchMaterialistNegamax &s) : Search(s.Limits, s.g_stop) {}
-	~SearchMaterialistNegamax() {}
+	SearchMaterialistNegamax(const SearchMaterialistNegamax &s) = default;
+	~SearchMaterialistNegamax() = default;
 
 	template <NodeType nodeType>
 	Value quiesce(Stack *ss, BoardParser &b, const Evaluate &e, Value alpha, Value beta)
@@ -272,7 +272,7 @@ public:
 
 	cMove nextMove(BoardParser &b, const Evaluate &e) override
 	{
-		const std::lock_guard<std::mutex> lock(mtx);
+		const std::lock_guard<std::mutex> lock(*mtx);
 		nodesSearched.fill(0);
 		// Checking book
 		cMove book = probeBook(b);

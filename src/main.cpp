@@ -9,7 +9,7 @@ Bitboard Bitboards::bbColors[Color::COLOR_NB] = {};
 
 int main(int argc, char *argv[])
 {
-	UCI::init(Options);
+	UCI::init(g_options);
 	UCI::loop(argc, argv);
 	std::cout << "Hello, world!" << std::endl;
 	return 0;
