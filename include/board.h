@@ -275,7 +275,7 @@ public:
 		indices.reserve(64);
 		for (UInt i = 0; i < 64; ++i)
 		{
-			if (bb & Bitboards::tileToBB(i))
+			if (((bb >> i) & 1) == 1)
 			{
 				indices.push_back(i);
 			}
