@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <unordered_map>
 #include <cmath>
 
 #include "cMove.h"
@@ -188,6 +189,10 @@ public:
 	static constexpr Bitboard column = 0x0101010101010101ULL; // A file
 	static constexpr Bitboard row = 0xFFULL; // First rank
 
+	static Bitboard movesRook[BOARD_SIZE2];
+	static Bitboard movesRookMask[BOARD_SIZE2];
+	static std::unordered_map<Bitboard, Bitboard> movesRookLegal[BOARD_SIZE2]; // Key: Blocker bb; Value: Moveable tiles bb.
+
 	static void clear()
 	{
 		for (UInt p = PieceType::NONE; p < PieceType::NB; ++p)
@@ -303,6 +308,11 @@ public:
 		return idx;
 	}
 
+	static inline Bitboard allPiecesColor(const Color col)
+	{
+		return bbPieces[PieceType::ALL] & bbColors[col];
+	}
+
 #ifdef _MSC_VER
 	static constexpr std::vector<UInt> getBitIndices(Bitboard bb)
 	{
@@ -376,5 +386,20 @@ public:
 	{
 		const UInt colIdx = Board::column(tile);
 		return (Bitboards::column << std::max(Int(0), Int(colIdx) - 1)) | (Bitboards::column << std::min(BOARD_SIZE - 1, colIdx + 1));
+	}
+
+	static void computeBlockers(const Bitboard mask, std::vector<Bitboard> &v)
+	{
+		std::vector<UInt> bitIndices = Bitboards::getBitIndices(mask);
+		for (Bitboard blockerConfiguration = 1; blockerConfiguration < std::pow(2, bitIndices.size()); ++blockerConfiguration)
+		{
+			Bitboard currentBlockerBB = 0;
+			for (UInt bitIdx = 0; bitIdx < bitIndices.size(); ++bitIdx)
+			{
+				Bitboard currentBit = (blockerConfiguration >> bitIdx) & 1; // Is the shifted bit in blockerMask activated
+				currentBlockerBB |= currentBit << bitIndices[bitIdx]; // Shift it back to its position
+			}
+			v.push_back(currentBlockerBB);
+		}
 	}
 };

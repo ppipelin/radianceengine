@@ -23,6 +23,33 @@ namespace {
 		Key castling[4];
 		Key side;
 	}
+
+	void bbInit()
+	{
+		// Precompute bitboards
+		// Rook bb
+		for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
+		{
+			Bitboards::movesRook[tile] = Rook::filterMoves(tile);
+			Bitboards::movesRookMask[tile] = Rook::filterMoves(tile, true);
+		}
+		// Compute blockers
+		for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
+		{
+			std::vector<Bitboard> movesRookBlockers;
+			Bitboards::computeBlockers(Bitboards::movesRookMask[tile], movesRookBlockers);
+			for (const Bitboard &blockers : movesRookBlockers)
+			{
+				Bitboards::movesRookLegal[tile][blockers] = 0;
+				constexpr std::array<Int, 4> directions{ 1, -1, 8, -8 };
+				for (const Int direction : directions)
+				{
+					// Compute moves
+					Piece::slidingBB(tile, blockers, direction, Bitboards::movesRookLegal[tile][blockers]);
+				}
+			}
+		}
+	}
 }
 
 /**
