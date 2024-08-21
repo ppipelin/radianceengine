@@ -185,8 +185,8 @@ public:
 	static Bitboard bbPieces[PieceType::NB];
 	static Bitboard bbColors[Color::COLOR_NB];
 
-	static constexpr Bitboard column = 0x0101010101010101ULL;
-	static constexpr Bitboard row = 0xFFULL;
+	static constexpr Bitboard column = 0x0101010101010101ULL; // A file
+	static constexpr Bitboard row = 0xFFULL; // First rank
 
 	static void clear()
 	{
@@ -320,8 +320,6 @@ public:
 	static constexpr Bitboard filterAdjacent(UInt tile)
 	{
 		const UInt colIdx = Board::column(tile);
-		const Int max = (colIdx == 0) ? 1 : 0;
-		const UInt min = (colIdx == BOARD_SIZE - 1) ? BOARD_SIZE - 2 : BOARD_SIZE - 1;
-		return (Bitboards::column << std::max(max, Int(colIdx - 1))) | (Bitboards::column << std::min(min, colIdx + 1));
+		return (Bitboards::column << std::max(Int(0), Int(colIdx) - 1)) | (Bitboards::column << std::min(BOARD_SIZE - 1, colIdx + 1)) & ~(Bitboards::column << colIdx);
 	}
 };

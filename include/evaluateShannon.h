@@ -18,7 +18,7 @@ public:
 	Bitboard filterPassedPawn(UInt tile, Color col) const
 	{
 		UInt colIdx = Board::column(tile);
-		Bitboard filterAdjacent = (Bitboards::column << colIdx) | (Bitboards::column << std::max(Int(0), Int(colIdx - 1))) | (Bitboards::column << std::min(BOARD_SIZE - 1, colIdx + 1));
+		Bitboard filterAdjacent = (Bitboards::column << colIdx) | Bitboards::filterAdjacent(tile);
 		UInt rowIdx = Board::row(tile);
 		Bitboard filterTopBot = col == Color::WHITE ? bbMax << BOARD_SIZE * (rowIdx + 1) : bbMax >> BOARD_SIZE * (BOARD_SIZE - rowIdx);
 		return filterAdjacent & filterTopBot;
