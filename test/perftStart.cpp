@@ -8,8 +8,13 @@
 Bitboard Bitboards::bbPieces[PieceType::NB] = {};
 Bitboard Bitboards::bbColors[Color::COLOR_NB] = {};
 
+Bitboard Bitboards::movesRook[BOARD_SIZE2] = {};
+Bitboard Bitboards::movesRookMask[BOARD_SIZE2] = {};
+std::unordered_map<Bitboard, Bitboard> Bitboards::movesRookLegal[BOARD_SIZE2] = {};
+
 int main(int, char **)
 {
+	bbInit();
 	BoardParser b;
 	BoardParser::State s;
 	const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
