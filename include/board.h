@@ -230,6 +230,54 @@ public:
 		}
 	}
 
+	static void displayBBCLI(const Bitboard bb)
+	{
+		std::string out;
+		for (UInt counter = BOARD_SIZE2 - BOARD_SIZE; counter != BOARD_SIZE - 1; ++counter)
+		{
+			Bitboard value = bb & Bitboards::tileToBB(counter);
+			out.append("|");
+			if (value == 0)
+			{
+				out.append(" ");
+			}
+			else
+			{
+				out.append("X");
+			}
+			if (Board::column(counter + 1) == 0)
+			{
+				out.append("|\n");
+				counter -= BOARD_SIZE * 2;
+			}
+		}
+		out.append("|");
+		Bitboard value = bb & Bitboards::tileToBB(BOARD_SIZE - 1);
+		if (value == 0)
+		{
+			out.append(" ");
+		}
+		else
+		{
+			out.append("X");
+		}
+
+		std::cout << out << std::string("|") << std::endl << std::endl;
+	}
+
+	static void displayBBCLI()
+	{
+		for (UInt p = PieceType::NONE; p < PieceType::NB; ++p)
+		{
+			displayBBCLI(Bitboards::bbPieces[p]);
+		}
+
+		for (UInt c = Color::BLACK; c < Color::COLOR_NB; ++c)
+		{
+			displayBBCLI(Bitboards::bbColors[c]);
+		}
+	}
+
 	static constexpr Bitboard tileToBB(UInt tile)
 	{
 		return (0b1ULL << tile);

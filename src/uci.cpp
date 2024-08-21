@@ -218,7 +218,7 @@ void UCI::loop(int argc, char *argv[])
 			else if (token == "d")
 			{
 				pos.displayCLI();
-				pos.displayBBCLI();
+				Bitboards::displayBBCLI();
 				std::cout << "fen: " << pos.fen() << std::endl;
 				std::cout << "zobrist: " << pos.m_s->materialKey << std::endl;
 			}
