@@ -13,6 +13,10 @@ Bitboard Bitboards::movesRook[BOARD_SIZE2] = {};
 Bitboard Bitboards::movesRookMask[BOARD_SIZE2] = {};
 std::unordered_map<Bitboard, Bitboard> Bitboards::movesRookLegal[BOARD_SIZE2] = {};
 
+Bitboard Bitboards::movesBishop[BOARD_SIZE2] = {};
+Bitboard Bitboards::movesBishopMask[BOARD_SIZE2] = {};
+std::unordered_map<Bitboard, Bitboard> Bitboards::movesBishopLegal[BOARD_SIZE2] = {};
+
 int main(int argc, char *argv[])
 {
 	bbInit();
