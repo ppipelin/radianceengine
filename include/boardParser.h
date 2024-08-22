@@ -24,9 +24,9 @@ namespace {
 		Key side;
 	}
 
+	// Precompute bitboards
 	void bbInit()
 	{
-		// Precompute bitboards
 		// Rook bb
 		for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
 		{
@@ -49,6 +49,31 @@ namespace {
 				}
 			}
 		}
+
+		// Bishop bb
+		for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
+		{
+			Bitboards::movesBishop[tile] = Bishop::filterMoves(tile);
+			Bitboards::movesBishopMask[tile] = Bishop::filterMoves(tile, true);
+			Bitboards::displayBBCLI(Bitboards::movesBishop[tile]);
+			Bitboards::displayBBCLI(Bitboards::movesBishopMask[tile]);
+		}
+		// // Compute blockers
+		// for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
+		// {
+		// 	std::vector<Bitboard> movesRookBlockers;
+		// 	Bitboards::computeBlockers(Bitboards::movesRookMask[tile], movesRookBlockers);
+		// 	for (const Bitboard &blockers : movesRookBlockers)
+		// 	{
+		// 		Bitboards::movesRookLegal[tile][blockers] = 0;
+		// 		constexpr std::array<Int, 4> directions{ 1, -1, 8, -8 };
+		// 		for (const Int direction : directions)
+		// 		{
+		// 			// Compute moves
+		// 			Piece::slidingBB(tile, blockers, direction, Bitboards::movesRookLegal[tile][blockers]);
+		// 		}
+		// 	}
+		// }
 	}
 }
 

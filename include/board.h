@@ -188,10 +188,16 @@ public:
 
 	static constexpr Bitboard column = 0x0101010101010101ULL; // A file
 	static constexpr Bitboard row = 0xFFULL; // First rank
+	static constexpr Bitboard diagonalClockwise = 0b1000000001000000001000000001000000001000000001000000001000000001;
+	static constexpr Bitboard diagonalCounterClockwise = 0b0000000100000010000001000000100000010000001000000100000010000000;
 
 	static Bitboard movesRook[BOARD_SIZE2];
 	static Bitboard movesRookMask[BOARD_SIZE2];
 	static std::unordered_map<Bitboard, Bitboard> movesRookLegal[BOARD_SIZE2]; // Key: Blocker bb; Value: Moveable tiles bb.
+
+	static Bitboard movesBishop[BOARD_SIZE2];
+	static Bitboard movesBishopMask[BOARD_SIZE2];
+	static std::unordered_map<Bitboard, Bitboard> movesBishopLegal[BOARD_SIZE2]; // Key: Blocker bb; Value: Moveable tiles bb.
 
 	static void clear()
 	{
