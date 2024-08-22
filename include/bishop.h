@@ -20,8 +20,6 @@ public:
 	static constexpr Bitboard filterMoves(UInt tile, bool mask = false)
 	{
 		Bitboard b = 0ULL;
-		const UInt currentCol = Board::column(tile);
-		const UInt currentRow = Board::row(tile);
 		const Bitboard tileBB = Bitboards::tileToBB(tile);
 
 		// Surely not the fastest: finds the diagonals that collides with tile

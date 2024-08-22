@@ -7,7 +7,7 @@
 #include "include.h"
 #include "rook.h"
 
-void Rook::canMove(const Board &b, std::vector<cMove> &v) const
+void Rook::canMove(const Board &, std::vector<cMove> &v) const
 {
 	v.reserve(v.size() + 14);
 	const Bitboard blockers = Bitboards::movesRookMask[m_tile] & Bitboards::bbPieces[PieceType::ALL];
