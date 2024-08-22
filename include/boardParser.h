@@ -27,53 +27,50 @@ namespace {
 	// Precompute bitboards
 	void bbInit()
 	{
-		// Rook bb
+		// Compute moveable tiles
 		for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
 		{
 			Bitboards::movesRook[tile] = Rook::filterMoves(tile);
 			Bitboards::movesRookMask[tile] = Rook::filterMoves(tile, true);
+
+			Bitboards::movesBishop[tile] = Bishop::filterMoves(tile);
+			Bitboards::movesBishopMask[tile] = Bishop::filterMoves(tile, true);
 		}
-		// Compute blockers
+
+		// Compute rook blockers
 		for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
 		{
 			std::vector<Bitboard> movesRookBlockers;
 			Bitboards::computeBlockers(Bitboards::movesRookMask[tile], movesRookBlockers);
+
 			for (const Bitboard &blockers : movesRookBlockers)
 			{
 				Bitboards::movesRookLegal[tile][blockers] = 0;
 				constexpr std::array<Int, 4> directions{ 1, -1, 8, -8 };
 				for (const Int direction : directions)
 				{
-					// Compute moves
+					// Compute pseudo legal moves
 					Piece::slidingBB(tile, blockers, direction, Bitboards::movesRookLegal[tile][blockers]);
 				}
 			}
 		}
 
-		// Bishop bb
+		// Compute bishop blockers
 		for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
 		{
-			Bitboards::movesBishop[tile] = Bishop::filterMoves(tile);
-			Bitboards::movesBishopMask[tile] = Bishop::filterMoves(tile, true);
-			Bitboards::displayBBCLI(Bitboards::movesBishop[tile]);
-			Bitboards::displayBBCLI(Bitboards::movesBishopMask[tile]);
+			std::vector<Bitboard> movesBishopBlockers;
+			Bitboards::computeBlockers(Bitboards::movesBishopMask[tile], movesBishopBlockers);
+			for (const Bitboard &blockers : movesBishopBlockers)
+			{
+				Bitboards::movesBishopLegal[tile][blockers] = 0;
+				constexpr std::array<Int, 4> directions{ -9, -7, 7, 9 };
+				for (const Int direction : directions)
+				{
+					// Compute pseudo legal moves
+					Piece::slidingBB(tile, blockers, direction, Bitboards::movesBishopLegal[tile][blockers]);
+				}
+			}
 		}
-		// // Compute blockers
-		// for (UInt tile = 0; tile < BOARD_SIZE2; ++tile)
-		// {
-		// 	std::vector<Bitboard> movesRookBlockers;
-		// 	Bitboards::computeBlockers(Bitboards::movesRookMask[tile], movesRookBlockers);
-		// 	for (const Bitboard &blockers : movesRookBlockers)
-		// 	{
-		// 		Bitboards::movesRookLegal[tile][blockers] = 0;
-		// 		constexpr std::array<Int, 4> directions{ 1, -1, 8, -8 };
-		// 		for (const Int direction : directions)
-		// 		{
-		// 			// Compute moves
-		// 			Piece::slidingBB(tile, blockers, direction, Bitboards::movesRookLegal[tile][blockers]);
-		// 		}
-		// 	}
-		// }
 	}
 }
 
