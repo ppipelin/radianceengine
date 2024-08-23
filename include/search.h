@@ -296,29 +296,43 @@ public:
 			});
 #endif
 	}
+
+	/**
+		* @brief Generate pseudo-legal, legal, capturing, checking, moves.
+		*
+		* @param b
+		* @param moveList is direct outputted vector move list, if generated moves are pseudo legal use temporary moveListPseudo
+		* @param legalOnly
+		* @param onlyCapture
+		* @param onlyCheck
+		*/
 	static void generateMoveList(BoardParser &b, std::vector<cMove> &moveList, bool legalOnly = false, bool onlyCapture = false, bool onlyCheck = false)
 	{
 		std::vector<UInt> allyPositions = b.isWhiteTurn() ? b.boardParsed()->whitePos() : b.boardParsed()->blackPos();
 		std::vector<UInt> enemyPositions = !b.isWhiteTurn() ? b.boardParsed()->whitePos() : b.boardParsed()->blackPos();
 		std::sort(allyPositions.begin(), allyPositions.end());
 		std::sort(enemyPositions.begin(), enemyPositions.end());
+
+		std::vector<cMove> moveListPseudo;
+		moveListPseudo.reserve(MAX_PLY);
 		moveList.reserve(MAX_PLY);
+
 		for (UInt tileIdx = 0; tileIdx < allyPositions.size(); ++tileIdx)
 		{
 			UInt tile = allyPositions[tileIdx];
 			const Piece *piece = b.boardParsed()->board()[tile];
-			piece->canMove(*b.boardParsed(), moveList);
+			piece->canMove(*b.boardParsed(), moveListPseudo);
 		}
 
 		if (onlyCapture && !onlyCheck)
 		{
-			std::erase_if(moveList, [](const cMove &move) {return !move.isCapture();});
+			std::erase_if(moveListPseudo, [](const cMove &move) {return !move.isCapture();});
 		}
 
 		if (onlyCapture && onlyCheck)
 		{
 			const UInt oppKingPos = b.isWhiteTurn() ? b.whiteKing() : b.blackKing();
-			std::erase_if(moveList, [&b, oppKingPos](const cMove &move) mutable {
+			std::erase_if(moveListPseudo, [&b, oppKingPos](const cMove &move) mutable {
 				std::vector<cMove> moveListTmp;
 				BoardParser::State s(b);
 				b.movePiece(move, s);
@@ -331,8 +345,9 @@ public:
 
 		if (legalOnly)
 		{
-			legalMoves(b, moveList);
+			legalMoves(b, moveListPseudo);
 		}
+		moveList.insert(moveList.end(), moveListPseudo.begin(), moveListPseudo.end());
 	}
 
 	struct MoveComparator
