@@ -6,7 +6,17 @@
 #include "include.h"
 #include "pawn.h"
 
-void Pawn::canMove(const Board &b, std::vector<cMove> &v) const
+void Pawn::canAttack(Bitboard &bb) const
+{
+	Bitboard tileBB = Bitboards::tileToBB(m_tile);
+	UInt columnIdx = Board::column(m_tile);
+	if (isWhite())
+		bb |= (columnIdx > 0 ? tileBB << 9 : Bitboard(0)) | (columnIdx < 7 ? tileBB << 7 : Bitboard(0));
+	else
+		bb |= (columnIdx > 0 ? tileBB >> 9 : Bitboard(0)) | (columnIdx < 7 ? tileBB >> 7 : Bitboard(0));
+}
+
+void Pawn::canMove(const Board &b, std::vector<cMove> &v, bool legal, bool capture) const
 {
 	const UInt c = Board::column(m_tile);
 	// Default behavior, we push_back() to v

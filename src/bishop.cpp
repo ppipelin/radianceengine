@@ -7,7 +7,19 @@
 #include "cMove.h"
 #include "include.h"
 
-void Bishop::canMove(const Board &, std::vector<cMove> &v) const
+void Bishop::canAttack(Bitboard &bb) const
+{
+	const Bitboard blockers = Bitboards::movesBishopMask[m_tile] & Bitboards::bbPieces[PieceType::ALL];
+	Bitboard pseudoLegalMovesBBPartial = 0;
+	if (blockers == 0)
+		pseudoLegalMovesBBPartial = Bitboards::movesBishop[m_tile];
+	else
+		pseudoLegalMovesBBPartial = Bitboards::movesBishopLegal[m_tile][blockers];
+
+	bb = pseudoLegalMovesBBPartial & Bitboards::allPiecesColor(Color(!isWhite()));
+}
+
+void Bishop::canMove(const Board &, std::vector<cMove> &v, bool legal, bool capture) const
 {
 	v.reserve(v.size() + 13);
 	const Bitboard blockers = Bitboards::movesBishopMask[m_tile] & Bitboards::bbPieces[PieceType::ALL];

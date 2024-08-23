@@ -313,6 +313,17 @@ public:
 		std::sort(allyPositions.begin(), allyPositions.end());
 		std::sort(enemyPositions.begin(), enemyPositions.end());
 
+		// Generate opponnent sliding attacks to find pins
+		Bitboard enemyPositionsBB = Bitboards::bbPieces[PieceType::ALL] & Bitboards::bbColors[b.isWhiteTurn()];
+		Bitboard attackBB = 0ULL;
+		while (enemyPositionsBB)
+		{
+			UInt tile = Bitboards::popLeastBit(enemyPositionsBB);
+			const Piece *piece = b.boardParsed()->board()[tile];
+			piece->canAttack(attackBB);
+			// Bitboards::displayBBCLI(attackBB);
+		}
+
 		std::vector<cMove> moveListPseudo;
 		moveListPseudo.reserve(MAX_PLY);
 		moveList.reserve(MAX_PLY);
@@ -321,7 +332,11 @@ public:
 		{
 			UInt tile = allyPositions[tileIdx];
 			const Piece *piece = b.boardParsed()->board()[tile];
-			piece->canMove(*b.boardParsed(), moveListPseudo);
+			// if (piece->value() == PieceType::QUEEN || piece->value() == PieceType::ROOK || piece->value() == PieceType::BISHOP)
+			if (piece->value() == PieceType::ROOK)
+				piece->canMove(*b.boardParsed(), moveList, true);
+			else
+				piece->canMove(*b.boardParsed(), moveListPseudo);
 		}
 
 		if (onlyCapture && !onlyCheck)

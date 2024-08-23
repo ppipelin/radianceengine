@@ -1,6 +1,25 @@
 #include "queen.h"
 
-void Queen::canMove(const Board &, std::vector<cMove> &v) const
+void Queen::canAttack(Bitboard &bb) const
+{
+	const Bitboard blockersRook = Bitboards::movesRookMask[m_tile] & Bitboards::bbPieces[PieceType::ALL];
+	Bitboard pseudoLegalMovesBBPartialRook = 0;
+	if (blockersRook == 0)
+		pseudoLegalMovesBBPartialRook = Bitboards::movesRook[m_tile];
+	else
+		pseudoLegalMovesBBPartialRook = Bitboards::movesRookLegal[m_tile][blockersRook];
+
+	const Bitboard blockersBishop = Bitboards::movesBishopMask[m_tile] & Bitboards::bbPieces[PieceType::ALL];
+	Bitboard pseudoLegalMovesBBPartialBishop = 0;
+	if (blockersBishop == 0)
+		pseudoLegalMovesBBPartialBishop = Bitboards::movesBishop[m_tile];
+	else
+		pseudoLegalMovesBBPartialBishop = Bitboards::movesBishopLegal[m_tile][blockersBishop];
+
+	bb = (pseudoLegalMovesBBPartialRook | pseudoLegalMovesBBPartialBishop) & Bitboards::allPiecesColor(Color(!isWhite()));
+}
+
+void Queen::canMove(const Board &, std::vector<cMove> &v, bool legal, bool capture) const
 {
 	v.reserve(v.size() + 27);
 	const Bitboard blockersRook = Bitboards::movesRookMask[m_tile] & Bitboards::bbPieces[PieceType::ALL];

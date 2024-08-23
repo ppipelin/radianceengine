@@ -6,7 +6,13 @@
 #include "include.h"
 #include "king.h"
 
-void King::canMove(const Board &b, std::vector<cMove> &v) const
+void King::canAttack(Bitboard &bb) const
+{
+	Bitboard tileBB = Bitboards::tileToBB(m_tile);
+	bb |= tileBB << 7 | tileBB << 8 | tileBB << 9 | tileBB << 1 | tileBB >> 1 | tileBB >> 7 | tileBB >> 8 | tileBB >> 9;
+}
+
+void King::canMove(const Board &b, std::vector<cMove> &v, bool legal, bool capture) const
 {
 	v.reserve(v.size() + 8);
 	const bool left = Board::leftCol(m_tile);

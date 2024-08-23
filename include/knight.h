@@ -47,7 +47,9 @@ public:
 
 	}
 
-	void canMove(const Board &b, std::vector<cMove> &v) const;
+	void canAttack(Bitboard &bb) const;
+
+	void canMove(const Board &b, std::vector<cMove> &v, bool legal, bool capture) const;
 
 	bool exists() const override;
 

@@ -184,6 +184,7 @@ class Bitboards
 {
 public:
 	static Bitboard bbPieces[PieceType::NB];
+	static inline Bitboard bbSliding = Bitboards::bbPieces[PieceType::QUEEN] | Bitboards::bbPieces[PieceType::BISHOP] | Bitboards::bbPieces[PieceType::ROOK];
 	static Bitboard bbColors[Color::COLOR_NB];
 
 	static constexpr Bitboard column = 0x0101010101010101ULL; // A file

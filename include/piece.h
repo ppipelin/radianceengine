@@ -54,12 +54,20 @@ public:
 	const UInt &tile() const { return m_tile; }
 
 	/**
+	* @brief Returns athe modified bitboard of the tiles where Piece can attack.
+	*
+	* @param bb
+	*/
+	virtual void canAttack(Bitboard &) const
+	{}
+
+	/**
 		* @brief Returns a vector of the tiles where Piece can move.
 		*
 		* @param b current board.
 		* @param v	vector of tiles where Piece can move.
 		*/
-	virtual void canMove(const Board &, std::vector<cMove> &) const
+	virtual void canMove(const Board &, std::vector<cMove> &, bool = false, bool = false) const
 	{}
 
 	/**
