@@ -242,7 +242,7 @@ public:
 #ifdef _MSC_VER
 		_BitScanForward64(&lsbIndex, bb); // Find index of the least significant set bit
 #else
-		lsbIndex = __builtin_ctzll(bb);
+		lsbIndex = __builtin_ffsll(bb);
 #endif
 		return static_cast<UInt>(lsbIndex);
 	}
