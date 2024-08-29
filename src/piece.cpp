@@ -1,3 +1,9 @@
+#include <string>
+#include <vector>
+
+#include "board.h"
+#include "cMove.h"
+#include "include.h"
 #include "piece.h"
 
 void Piece::sliding(const Board &b, Int direction, std::vector<cMove> &v) const

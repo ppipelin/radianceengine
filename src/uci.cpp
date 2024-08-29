@@ -1,24 +1,35 @@
 #include "uci.h"
 
-#include "cMove.h"
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <deque>
+#include <iosfwd>
+#include <iostream>
+#include <memory>
+#include <numeric>
+#include <optional>
+#include <ostream>
+#include <queue>
+#include <sstream>
+#include <string>
+#include <thread>
+#include <type_traits>
+#include <utility>
+
+#include "board.h"
 #include "boardParser.h"
-#include "search.h"
-#include "searchRandom.h"
-#include "searchMaterialist.h"
-#include "searchMaterialistNegamax.h"
+#include "cMove.h"
 #include "evaluate.h"
 #include "evaluateShannon.h"
 #include "evaluateShannonHeuristics.h"
 #include "evaluateTable.h"
 #include "evaluateTableTuned.h"
-
-#include <queue>
-#include <chrono>
-#include <numeric>
-#include <thread>
-#include <future>
-#include <sstream>
-#include <optional>
+#include "include.h"
+#include "search.h"
+#include "searchMaterialist.h"
+#include "searchMaterialistNegamax.h"
+#include "searchRandom.h"
 
 bool g_stop = false;
 

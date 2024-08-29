@@ -1,4 +1,11 @@
+#include <array>
+#include <string>
+#include <vector>
+
 #include "bishop.h"
+#include "board.h"
+#include "cMove.h"
+#include "include.h"
 
 void Bishop::canMove(const Board &b, std::vector<cMove> &v) const
 {

@@ -1,3 +1,10 @@
+#include <array>
+#include <string>
+#include <vector>
+
+#include "board.h"
+#include "cMove.h"
+#include "include.h"
 #include "rook.h"
 
 void Rook::canMove(const Board &b, std::vector<cMove> &v) const

@@ -1,3 +1,9 @@
+#include <string>
+#include <vector>
+
+#include "board.h"
+#include "cMove.h"
+#include "include.h"
 #include "pawn.h"
 
 void Pawn::canMove(const Board &b, std::vector<cMove> &v) const

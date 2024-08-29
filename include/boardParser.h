@@ -1,20 +1,18 @@
 #pragma once
 
-#include "include.h"
+#include <algorithm>
+#include <sstream>
 
-#include "piece.h"
-#include "pawn.h"
-#include "king.h"
-#include "queen.h"
-#include "rook.h"
 #include "bishop.h"
-#include "knight.h"
-
 #include "board.h"
 #include "cMove.h"
-
-#include <sstream>
-#include <algorithm>
+#include "include.h"
+#include "king.h"
+#include "knight.h"
+#include "pawn.h"
+#include "piece.h"
+#include "queen.h"
+#include "rook.h"
 
 namespace {
 	namespace Zobrist {

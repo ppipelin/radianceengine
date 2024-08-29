@@ -1,4 +1,9 @@
-#include "search.h"
+#include <string>
+
+#include "board.h"
+#include "boardParser.h"
+#include "cMove.h"
+#include "include.h"
 
 Bitboard Bitboards::bbPieces[PieceType::NB] = {};
 Bitboard Bitboards::bbColors[Color::COLOR_NB] = {};

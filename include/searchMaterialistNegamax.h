@@ -1,10 +1,10 @@
 #pragma once
 
-#include "include.h"
-#include "search.h"
-
 #include <algorithm>
 #include <vector>
+
+#include "include.h"
+#include "search.h"
 
 class SearchMaterialistNegamax : virtual public Search
 {

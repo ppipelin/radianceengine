@@ -1,16 +1,16 @@
 #pragma once
 
-#include "include.h"
-#include "cMove.h"
-#include "boardParser.h"
-#include "evaluate.h"
-
 #include <array>
-#include <unordered_map>
-#include <mutex>
 #include <fstream>
-#include <numeric>
 #include <memory>
+#include <mutex>
+#include <numeric>
+#include <unordered_map>
+
+#include "boardParser.h"
+#include "cMove.h"
+#include "evaluate.h"
+#include "include.h"
 
 using TimePoint = std::chrono::milliseconds::rep; // A value in milliseconds
 static_assert(sizeof(TimePoint) == sizeof(int64_t), "TimePoint should be 64 bits");
