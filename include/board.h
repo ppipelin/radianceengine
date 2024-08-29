@@ -199,6 +199,8 @@ public:
 	static Bitboard movesBishopMask[BOARD_SIZE2];
 	static std::unordered_map<Bitboard, Bitboard> movesBishopLegal[BOARD_SIZE2]; // Key: Blocker bb; Value: Moveable tiles bb.
 
+	static Bitboard movesKnight[BOARD_SIZE2];
+
 	static void clear()
 	{
 		for (UInt p = PieceType::NONE; p < PieceType::NB; ++p)
