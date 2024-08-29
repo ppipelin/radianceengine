@@ -35,6 +35,8 @@ namespace {
 
 			Bitboards::movesBishop[tile] = Bishop::filterMoves(tile);
 			Bitboards::movesBishopMask[tile] = Bishop::filterMoves(tile, true);
+
+			Bitboards::movesKnight[tile] = Knight::filterMoves(tile);
 		}
 
 		// Compute rook blockers

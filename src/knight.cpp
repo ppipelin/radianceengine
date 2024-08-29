@@ -1,4 +1,3 @@
-#include <array>
 #include <string>
 #include <vector>
 
@@ -7,29 +6,27 @@
 #include "include.h"
 #include "knight.h"
 
-void Knight::canMove(const Board &b, std::vector<cMove> &v) const
+void Knight::canMove(const Board &, std::vector<cMove> &v) const
 {
 	v.reserve(v.size() + 8);
 
-	const std::array<std::array<Int, 2>, 8> knightMoves = { {
-		{-2, -1}, {-2, 1}, // 2 bottom
-		{-1, -2}, {-1, 2}, // 2 mid-bottom
-		{1, -2}, {1, 2}, // 2 mid-top
-		{2, -1}, {2, 1} // 2 top
-	} };
+	// Generate possible moves for the knight
+	Bitboard pseudoLegalMovesBB = Bitboards::movesKnight[m_tile];
 
-	for (auto &move : knightMoves)
+	// Mask out our own pieces
+	Bitboard pseudoLegalQuietBB = pseudoLegalMovesBB & ~Bitboards::bbPieces[PieceType::ALL];
+
+	// Iterate over possible quiet moves
+	while (pseudoLegalQuietBB)
 	{
-		Int newRow = m_tile / BOARD_SIZE + move[0];
-		Int newCol = m_tile % BOARD_SIZE + move[1];
-		if (newRow >= 0 && newRow < BOARD_SIZE && newCol >= 0 && newCol < BOARD_SIZE)
-		{
-			UInt newTile = newRow * BOARD_SIZE + newCol;
-			if (b[newTile] == nullptr || b[newTile]->isWhite() != isWhite())
-			{
-				v.push_back(cMove(m_tile, newTile, b[newTile] == nullptr ? 0 : 4));
-			}
-		}
+		v.push_back(cMove(m_tile, Bitboards::popLeastBit(pseudoLegalQuietBB), 0));
+	}
+
+	// Iterate over possible capture moves
+	Bitboard pseudoLegalCapturesBB = pseudoLegalMovesBB & Bitboards::bbColors[Color(!isWhite())];
+	while (pseudoLegalCapturesBB)
+	{
+		v.push_back(cMove(m_tile, Bitboards::popLeastBit(pseudoLegalCapturesBB), 4));
 	}
 }
 

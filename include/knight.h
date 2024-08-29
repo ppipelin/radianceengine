@@ -1,5 +1,9 @@
 #pragma once
 
+#include <array>
+
+#include "board.h"
+#include "include.h"
 #include "piece.h"
 
 class Knight : public Piece
@@ -16,6 +20,29 @@ public:
 	}
 
 	PieceType value() const override { return PieceType::KNIGHT; }
+
+	static constexpr Bitboard filterMoves(UInt tile, bool = false)
+	{
+		Bitboard b = 0ULL;
+
+		const std::array<std::array<Int, 2>, BOARD_SIZE> knightMoves = { {
+			{-2, -1}, {-2, 1}, // 2 bottom
+			{-1, -2}, {-1, 2}, // 2 mid-bottom
+			{1, -2}, {1, 2}, // 2 mid-top
+			{2, -1}, {2, 1} // 2 top
+		} };
+
+		for (auto &move : knightMoves)
+		{
+			const UInt newRow = tile / BOARD_SIZE + move[0];
+			const UInt newCol = tile % BOARD_SIZE + move[1];
+			if (newRow >= 0 && newRow < BOARD_SIZE && newCol >= 0 && newCol < BOARD_SIZE)
+			{
+				b |= Bitboards::tileToBB(newRow * BOARD_SIZE + newCol);
+			}
+		}
+		return b;
+	}
 
 	void canMove(const Board &b, std::vector<cMove> &v) const;
 
