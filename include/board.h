@@ -242,7 +242,7 @@ public:
 #ifdef _MSC_VER
 		_BitScanForward64(&lsbIndex, bb); // Find index of the least significant set bit
 #else
-		lsbIndex = __builtin_ctzll(bb);
+		lsbIndex = __builtin_ffsll(bb) - 1;
 #endif
 		return static_cast<UInt>(lsbIndex);
 	}
@@ -255,11 +255,19 @@ public:
 		return idx;
 	}
 
-#ifdef _MSC_VER
+	static inline Bitboard allPiecesColor(const Color col)
+	{
+		return bbPieces[PieceType::ALL] & bbColors[col];
+	}
+
 	static constexpr std::vector<UInt> getBitIndices(Bitboard bb)
 	{
 		std::vector<UInt> indices;
+#ifdef _MSC_VER
 		indices.reserve(__popcnt64(bb));
+#else
+		indices.reserve(__builtin_popcountll(bb));
+#endif // _MSC_VER
 
 		while (bb)
 		{
@@ -268,21 +276,6 @@ public:
 
 		return indices;
 	}
-#else
-	static constexpr std::vector<UInt> getBitIndices(Bitboard bb)
-	{
-		std::vector<UInt> indices;
-		indices.reserve(64);
-		for (UInt i = 0; i < 64; ++i)
-		{
-			if (bb & Bitboards::tileToBB(i))
-			{
-				indices.push_back(i);
-			}
-		}
-		return indices;
-	}
-#endif // _MSC_VER
 
 	static void displayBitIndices(Bitboard bb)
 	{
