@@ -16,6 +16,8 @@ Bitboard Bitboards::movesBishop[BOARD_SIZE2] = {};
 Bitboard Bitboards::movesBishopMask[BOARD_SIZE2] = {};
 std::unordered_map<Bitboard, Bitboard> Bitboards::movesBishopLegal[BOARD_SIZE2] = {};
 
+Bitboard Bitboards::movesKnight[BOARD_SIZE2] = {};
+
 int main(int, char **)
 {
 	BoardParser b;
