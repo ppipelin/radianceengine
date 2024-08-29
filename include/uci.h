@@ -1,10 +1,10 @@
 #pragma once
 
-#include "include.h"
-
+#include <deque>
 #include <map>
 #include <string>
-#include <deque>
+
+#include "include.h"
 
 class BoardParser;
 class cMove;

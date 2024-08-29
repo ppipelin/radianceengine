@@ -1,8 +1,8 @@
 #pragma once
 
-#include "include.h"
 #include "board.h"
 #include "cMove.h"
+#include "include.h"
 
 /**
 	* @brief Piece class.

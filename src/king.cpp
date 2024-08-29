@@ -1,3 +1,9 @@
+#include <string>
+#include <vector>
+
+#include "board.h"
+#include "cMove.h"
+#include "include.h"
 #include "king.h"
 
 void King::canMove(const Board &b, std::vector<cMove> &v) const

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "include.h"
-#include "evaluate.h"
-#include "evaluateShannonHeuristics.h"
-#include "boardParser.h"
-
 #include <algorithm>
 #include <cmath>
 #include <unordered_map>
+
+#include "boardParser.h"
+#include "evaluate.h"
+#include "evaluateShannonHeuristics.h"
+#include "include.h"
 
 class EvaluateTable : virtual public EvaluateShannonHeuristics
 {

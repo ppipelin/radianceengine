@@ -1,8 +1,8 @@
 #pragma once
 
-#include "search.h"
-
 #include <algorithm>
+
+#include "search.h"
 
 class SearchMaterialist : virtual public Search
 {

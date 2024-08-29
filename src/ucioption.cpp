@@ -1,5 +1,7 @@
 #include <cassert>
-#include <sstream>
+#include <cctype>
+#include <iosfwd>
+#include <string>
 
 #include "uci.h"
 

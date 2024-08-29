@@ -1,10 +1,10 @@
 #pragma once
 
-#include "include.h"
-#include "cMove.h"
-
 #include <algorithm>
 #include <cmath>
+
+#include "cMove.h"
+#include "include.h"
 
 #ifdef _MSC_VER
 #include <intrin.h>

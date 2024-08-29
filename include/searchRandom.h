@@ -1,8 +1,8 @@
 #pragma once
 
-#include "search.h"
-
 #include <random>
+
+#include "search.h"
 
 class SearchRandom : virtual public Search
 {

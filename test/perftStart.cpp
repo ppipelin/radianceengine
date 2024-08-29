@@ -1,3 +1,8 @@
+#include <string>
+
+#include "board.h"
+#include "boardParser.h"
+#include "include.h"
 #include "search.h"
 
 Bitboard Bitboards::bbPieces[PieceType::NB] = {};
