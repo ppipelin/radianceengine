@@ -1,3 +1,4 @@
+#include <array>
 #include <string>
 #include <vector>
 
@@ -9,84 +10,25 @@
 void Knight::canMove(const Board &b, std::vector<cMove> &v) const
 {
 	v.reserve(v.size() + 8);
-	bool lc = Board::leftCol(m_tile);
-	bool llc = lc || Board::leftCol(m_tile - 1);
-	bool rc = Board::rightCol(m_tile);
-	bool rrc = rc || Board::rightCol(m_tile + 1);
 
-	//	2 bottom
-	if (Int(m_tile) - Int(BOARD_SIZE) * 2 >= 0)
-	{
-		// Left
-		if (!lc)
-		{
-			UInt tile = m_tile - BOARD_SIZE * 2 - 1;
-			if (b[tile] == nullptr || b[tile]->isWhite() != isWhite())
-				v.push_back(cMove(m_tile, tile, b[tile] == nullptr ? 0 : 4));
-		}
-		// Right
-		if (!rc)
-		{
-			UInt tile = m_tile - BOARD_SIZE * 2 + 1;
-			if (b[tile] == nullptr || b[tile]->isWhite() != isWhite())
-				v.push_back(cMove(m_tile, tile, b[tile] == nullptr ? 0 : 4));
-		}
-	}
+	const std::array<std::array<Int, 2>, 8> knightMoves = { {
+		{-2, -1}, {-2, 1}, // 2 bottom
+		{-1, -2}, {-1, 2}, // 2 mid-bottom
+		{1, -2}, {1, 2}, // 2 mid-top
+		{2, -1}, {2, 1} // 2 top
+	} };
 
-	// 2 mid-bottom
-	if (Int(m_tile) - Int(BOARD_SIZE) >= 0)
+	for (auto &move : knightMoves)
 	{
-		// Left
-		if (!llc)
+		Int newRow = m_tile / BOARD_SIZE + move[0];
+		Int newCol = m_tile % BOARD_SIZE + move[1];
+		if (newRow >= 0 && newRow < BOARD_SIZE && newCol >= 0 && newCol < BOARD_SIZE)
 		{
-			UInt tile = m_tile - BOARD_SIZE - 2;
-			if (b[tile] == nullptr || b[tile]->isWhite() != isWhite())
-				v.push_back(cMove(m_tile, tile, b[tile] == nullptr ? 0 : 4));
-		}
-		// Right
-		if (!rrc)
-		{
-			UInt tile = m_tile - BOARD_SIZE + 2;
-			if (b[tile] == nullptr || b[tile]->isWhite() != isWhite())
-				v.push_back(cMove(m_tile, tile, b[tile] == nullptr ? 0 : 4));
-		}
-	}
-
-	// 2 mid-top
-	if (m_tile + BOARD_SIZE < BOARD_SIZE2)
-	{
-		// Left
-		if (!llc)
-		{
-			UInt tile = m_tile + BOARD_SIZE - 2;
-			if (b[tile] == nullptr || b[tile]->isWhite() != isWhite())
-				v.push_back(cMove(m_tile, tile, b[tile] == nullptr ? 0 : 4));
-		}
-		// Right
-		if (!rrc)
-		{
-			UInt tile = m_tile + BOARD_SIZE + 2;
-			if (b[tile] == nullptr || b[tile]->isWhite() != isWhite())
-				v.push_back(cMove(m_tile, tile, b[tile] == nullptr ? 0 : 4));
-		}
-	}
-
-	// 2 top
-	if (m_tile + BOARD_SIZE * 2 < BOARD_SIZE2)
-	{
-		// Left
-		if (!lc)
-		{
-			UInt tile = m_tile + BOARD_SIZE * 2 - 1;
-			if (b[tile] == nullptr || b[tile]->isWhite() != isWhite())
-				v.push_back(cMove(m_tile, tile, b[tile] == nullptr ? 0 : 4));
-		}
-		// Right
-		if (!rc)
-		{
-			UInt tile = m_tile + BOARD_SIZE * 2 + 1;
-			if (b[tile] == nullptr || b[tile]->isWhite() != isWhite())
-				v.push_back(cMove(m_tile, tile, b[tile] == nullptr ? 0 : 4));
+			UInt newTile = newRow * BOARD_SIZE + newCol;
+			if (b[newTile] == nullptr || b[newTile]->isWhite() != isWhite())
+			{
+				v.push_back(cMove(m_tile, newTile, b[newTile] == nullptr ? 0 : 4));
+			}
 		}
 	}
 }
