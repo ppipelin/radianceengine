@@ -38,9 +38,10 @@ void Pawn::canMove(const Board &b, std::vector<cMove> &v) const
 	// Remove m_tile in case pawn is on this row
 	const Bitboard tileBB = Bitboards::tileToBB(m_tile);
 	if (m_isWhite)
-		thirdOrSixthDoubled = ((Bitboards::row << BOARD_SIZE * 2) & (Bitboards::bbPieces[PieceType::ALL] & ~tileBB) << BOARD_SIZE);
+		thirdOrSixthDoubled = (Bitboards::bbPieces[PieceType::ALL] & ~tileBB) << BOARD_SIZE;
 	else
-		thirdOrSixthDoubled = ((Bitboards::row << BOARD_SIZE * 5) & (Bitboards::bbPieces[PieceType::ALL] & ~tileBB) >> BOARD_SIZE);
+		thirdOrSixthDoubled = (Bitboards::bbPieces[PieceType::ALL] & ~tileBB) >> BOARD_SIZE;
+
 	Bitboard filterF = Bitboards::filterForwardComputed[m_tile - BOARD_SIZE][col] & ~Bitboards::bbPieces[PieceType::ALL] & ~thirdOrSixthDoubled;
 
 #ifdef _MSC_VER
