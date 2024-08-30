@@ -7,13 +7,28 @@
 #include "include.h"
 #include "rook.h"
 
-void Rook::canMove(const Board &b, std::vector<cMove> &v) const
+void Rook::canMove(const Board &, std::vector<cMove> &v) const
 {
 	v.reserve(v.size() + 14);
-	constexpr std::array<Int, 4> directions{ 1, -1, 8, -8 };
-	for (const Int direction : directions)
+	const Bitboard blockers = Bitboards::movesRookMask[m_tile] & Bitboards::bbPieces[PieceType::ALL];
+	Bitboard pseudoLegalMovesBBPartial = 0;
+	if (blockers == 0)
+		pseudoLegalMovesBBPartial = Bitboards::movesRook[m_tile];
+	else
+		pseudoLegalMovesBBPartial = Bitboards::movesRookLegal[m_tile][blockers];
+	Bitboard pseudoLegalQuietBB = pseudoLegalMovesBBPartial & ~Bitboards::bbPieces[PieceType::ALL];
+	Bitboard pseudoLegalCapturesBB = pseudoLegalMovesBBPartial & Bitboards::allPiecesColor(Color(!isWhite()));
+
+	// Quiet moves
+	while (pseudoLegalQuietBB)
 	{
-		sliding(b, direction, v);
+		v.push_back(cMove(m_tile, Bitboards::popLeastBit(pseudoLegalQuietBB), 0));
+	}
+
+	// Capture moves
+	while (pseudoLegalCapturesBB)
+	{
+		v.push_back(cMove(m_tile, Bitboards::popLeastBit(pseudoLegalCapturesBB), 4));
 	}
 }
 

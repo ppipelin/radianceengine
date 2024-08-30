@@ -17,6 +17,26 @@ public:
 
 	PieceType value() const override { return PieceType::ROOK; }
 
+	static constexpr Bitboard filterMoves(UInt tile, bool mask = false)
+	{
+		Bitboard b = 0ULL;
+		const UInt currentCol = Board::column(tile);
+		const UInt currentRow = Board::row(tile);
+
+		b |= Bitboards::column << currentCol;
+		b |= Bitboards::row << (currentRow * BOARD_SIZE);
+		b &= ~Bitboards::tileToBB(tile);
+
+		if (mask)
+		{
+			b &= ~Bitboards::tileToBB(0 + currentCol); // Bottom
+			b &= ~Bitboards::tileToBB(BOARD_SIZE2 - BOARD_SIZE + currentCol); // Top
+			b &= ~Bitboards::tileToBB(BOARD_SIZE - 1 + (currentRow * BOARD_SIZE)); // Right
+			b &= ~Bitboards::tileToBB(currentRow * BOARD_SIZE); // Left
+		}
+		return b;
+	}
+
 	void canMove(const Board &b, std::vector<cMove> &v) const;
 
 	bool exists() const override;

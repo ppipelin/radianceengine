@@ -79,6 +79,8 @@ public:
 
 	void sliding(const Board &b, Int direction, std::vector<cMove> &v) const;
 
+	static void slidingBB(const UInt tile, const Bitboard &blockers, Int direction, Bitboard &bb);
+
 	const bool isWhite() const;
 
 	const bool neverMoved() const;
