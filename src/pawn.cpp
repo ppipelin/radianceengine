@@ -38,9 +38,9 @@ void Pawn::canMove(const Board &b, std::vector<cMove> &v) const
 	// Remove m_tile in case pawn is on this row
 	const Bitboard tileBB = Bitboards::tileToBB(m_tile);
 	if (m_isWhite)
-		thirdOrSixthDoubled = ((Bitboards::row << BOARD_SIZE * 2) & Bitboards::bbPieces[PieceType::ALL] & ~tileBB) << BOARD_SIZE;
+		thirdOrSixthDoubled = ((Bitboards::row << BOARD_SIZE * 2) & (Bitboards::bbPieces[PieceType::ALL] & ~tileBB) << BOARD_SIZE);
 	else
-		thirdOrSixthDoubled = ((Bitboards::row << BOARD_SIZE * 5) & Bitboards::bbPieces[PieceType::ALL] & ~tileBB) >> BOARD_SIZE;
+		thirdOrSixthDoubled = ((Bitboards::row << BOARD_SIZE * 5) & (Bitboards::bbPieces[PieceType::ALL] & ~tileBB) >> BOARD_SIZE);
 	Bitboard filterF = Bitboards::filterForwardComputed[m_tile - BOARD_SIZE][col] & ~Bitboards::bbPieces[PieceType::ALL] & ~thirdOrSixthDoubled;
 
 #ifdef _MSC_VER
@@ -59,31 +59,28 @@ void Pawn::canMove(const Board &b, std::vector<cMove> &v) const
 	// If we are going to the last rank, previous computed moves are promotions
 	if ((m_isWhite && Board::row(m_tile + BOARD_SIZE) == BOARD_SIZE - 1) || (!m_isWhite && Board::row(m_tile - BOARD_SIZE) == 0))
 	{
-		for (auto &move : *vRef)
+		for (auto const &move : *vRef)
 		{
 			if (move.isCapture())
 			{
-				move.setFlags(12);
-				v.push_back(move);
-				move.setFlags(13);
-				v.push_back(move);
-				move.setFlags(14);
-				v.push_back(move);
-				move.setFlags(15);
-				v.push_back(move);
+				for (UInt flag = 12; flag <= 15; ++flag)
+				{
+					cMove promotionMove = move;
+					promotionMove.setFlags(flag);
+					v.push_back(promotionMove);
+				}
 			}
 			else
 			{
-				move.setFlags(8);
-				v.push_back(move);
-				move.setFlags(9);
-				v.push_back(move);
-				move.setFlags(10);
-				v.push_back(move);
-				move.setFlags(11);
-				v.push_back(move);
+				for (UInt flag = 8; flag <= 11; ++flag)
+				{
+					cMove promotionMove = move;
+					promotionMove.setFlags(flag);
+					v.push_back(promotionMove);
+				}
 			}
 		}
+
 	}
 }
 
