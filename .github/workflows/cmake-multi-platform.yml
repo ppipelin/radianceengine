@@ -1,6 +1,14 @@
 name: CMake on multiple platforms
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '*'
+  pull_request:
+    branches:
+      - '**'
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -9,7 +17,7 @@ env:
 jobs:
   build:
     strategy:
-      fail-fast: false # change to true
+      fail-fast: true
       matrix:
         os: [windows-latest, ubuntu-latest]
 

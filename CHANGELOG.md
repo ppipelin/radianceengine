@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3] - 2024-09-05
+
+### Added
+
+- Hardware-dependent bitboard functions
+- Hardware-dependent compiler flags
+- Github deployement actions
+- UCI options to select `search` and `evaluation` functions
+- Bitboard generation for queen, rook, bishop and knight.
+
+### Fixed
+
+- Prevent transitive include and sorted include
+- Less compiler warnings
+- Refresh previous search functions
+- Better CMakeLists
+
 ## [3.2] - 2024-08-13
 
 ### Added
@@ -205,7 +222,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UCI `position` command
 - `Random` search
 
-[Unreleased]: https://github.com/ppipelin/radiance/compare/3.2...HEAD
+[Unreleased]: https://github.com/ppipelin/radiance/compare/3.3...HEAD
+[3.3]: https://github.com/ppipelin/radiance/compare/3.2...3.3
 [3.2]: https://github.com/ppipelin/radiance/compare/3.1.1...3.2
 [3.1.1]: https://github.com/ppipelin/radiance/compare/3.1...3.1.1
 [3.1]: https://github.com/ppipelin/radiance/compare/3.0.1...3.1

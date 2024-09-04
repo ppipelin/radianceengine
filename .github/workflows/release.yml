@@ -1,0 +1,96 @@
+name: release
+
+on:
+  push:
+    tags:
+      - '**'
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up compiler
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y g++-12
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 100
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE }} -DCMAKE_CXX_COMPILER=g++-12
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Upload Windows Executable
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: radiance_${{ github.ref_name }}_windows
+        path: ${{ github.workspace }}/build/Release/radiance.exe
+
+    - name: Upload Linux Executable
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: radiance_${{ github.ref_name }}_linux
+        path: ${{ github.workspace }}/build/radiance
+
+  release:
+    needs: build
+    strategy:
+      fail-fast: false
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract release notes
+        uses: ffurrer2/extract-release-notes@v2
+        with:
+          release_notes_file: RELEASE_NOTES.md
+
+      - name: Download Artifacts Windows
+        uses: actions/download-artifact@v4
+        with:
+          name: radiance_${{ github.ref_name }}_windows
+          path: ${{ github.workspace }}/exe/
+
+      - name: Download Artifacts linux
+        uses: actions/download-artifact@v4
+        with:
+          name: radiance_${{ github.ref_name }}_linux
+          path: ${{ github.workspace }}/exe/
+
+      - name: Create release
+        run: gh release create ${{ github.ref_name }} -t "Radiance ${{ github.ref_name }}" --notes-file RELEASE_NOTES.md --prerelease
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Rename file
+        run: |
+          mv ${{ github.workspace }}/exe/radiance.exe ${{ github.workspace }}/exe/radiance_${{ github.ref_name }}.exe
+          mv ${{ github.workspace }}/exe/radiance ${{ github.workspace }}/exe/radiance_${{ github.ref_name }}
+
+      - name: Upload executables
+        run: |
+          gh release upload ${{ github.ref_name }} ${{ github.workspace }}/exe/radiance_${{ github.ref_name }}.exe
+          gh release upload ${{ github.ref_name }} ${{ github.workspace }}/exe/radiance_${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
