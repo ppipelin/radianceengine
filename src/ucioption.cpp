@@ -22,7 +22,7 @@ namespace UCI {
 		o["Threads"] << Option(1, 1, 1);
 		o["Hash"] << Option(256, 0, MaxHashMB);
 		o["Search"] << Option("abNegamax var abNegamax var Minimax var Random", "abNegamax");
-		o["Evaluation"] << Option("PSQTuned var PSQTuned var PSQ var Shannon var ShannonHeuristics", "PSQTuned");
+		o["Evaluation"] << Option("PSQTunedBB var PSQTunedBB var PSQTuned var PSQ var Shannon var ShannonHeuristics", "PSQTunedBB");
 		// o["Ponder"] << Option(false);
 		// o["MultiPV"] << Option(1, 1, 500);
 		// o["nodestime"] << Option(0, 0, 10000);

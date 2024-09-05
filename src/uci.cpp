@@ -25,6 +25,7 @@
 #include "evaluateShannonHeuristics.h"
 #include "evaluateTable.h"
 #include "evaluateTableTuned.h"
+#include "evaluateTableTunedBitboard.h"
 #include "include.h"
 #include "search.h"
 #include "searchMaterialist.h"
@@ -161,8 +162,10 @@ namespace {
 				evaluate.emplace(std::make_unique<EvaluateShannonHeuristics>());
 			else if (strEval == "PSQ")
 				evaluate.emplace(std::make_unique<EvaluateTable>());
-			else
+			else if (strEval == "PSQTuned")
 				evaluate.emplace(std::make_unique<EvaluateTableTuned>());
+			else
+				evaluate.emplace(std::make_unique<EvaluateTableTunedBitboard>());
 
 			cMove move = (*search)->nextMove(pos, **evaluate);
 
