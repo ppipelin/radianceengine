@@ -34,9 +34,9 @@ public:
 
 		for (auto &move : knightMoves)
 		{
-			const UInt newRow = tile / BOARD_SIZE + move[0];
-			const UInt newCol = tile % BOARD_SIZE + move[1];
-			if (newRow >= 0 && newRow < BOARD_SIZE && newCol >= 0 && newCol < BOARD_SIZE)
+			const Int newRow = tile / BOARD_SIZE + move[0];
+			const Int newCol = tile % BOARD_SIZE + move[1];
+			if (newRow >= 0 && UInt(newRow) < BOARD_SIZE && newCol >= 0 && UInt(newCol) < BOARD_SIZE)
 			{
 				b |= Bitboards::tileToBB(newRow * BOARD_SIZE + newCol);
 			}
