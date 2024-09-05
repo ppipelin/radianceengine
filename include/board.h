@@ -321,14 +321,19 @@ public:
 		return bbPieces[PieceType::ALL] & bbColors[col];
 	}
 
-	static constexpr std::vector<UInt> getBitIndices(Bitboard bb)
+	static inline UInt popCount(const Bitboard &bb)
+	{
+#ifdef _MSC_VER
+		return UInt(__popcnt64(bb));
+#else
+		return UInt(__builtin_popcountll(bb));
+#endif // _MSC_VER
+	}
+
+	static inline std::vector<UInt> getBitIndices(Bitboard bb)
 	{
 		std::vector<UInt> indices;
-#ifdef _MSC_VER
-		indices.reserve(__popcnt64(bb));
-#else
-		indices.reserve(__builtin_popcountll(bb));
-#endif // _MSC_VER
+		indices.reserve(Bitboards::popCount(bb));
 
 		while (bb)
 		{
@@ -381,7 +386,7 @@ public:
 	static constexpr Bitboard filterAdjacent(UInt tile)
 	{
 		const UInt colIdx = Board::column(tile);
-		return (Bitboards::column << std::max(Int(0), Int(colIdx) - 1)) | (Bitboards::column << std::min(BOARD_SIZE - 1, colIdx + 1)) & ~(Bitboards::column << colIdx);
+		return ((Bitboards::column << std::max(Int(0), Int(colIdx) - 1)) | (Bitboards::column << std::min(BOARD_SIZE - 1, colIdx + 1))) & ~(Bitboards::column << colIdx);
 	}
 
 	static void computeBlockers(const Bitboard mask, std::vector<Bitboard> &v)
