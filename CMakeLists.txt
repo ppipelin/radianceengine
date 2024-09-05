@@ -35,7 +35,7 @@ set_target_properties(radiance PROPERTIES LINK_WHAT_YOU_USE TRUE)
 if(MSVC)
 	add_compile_options(/W4)
 else()
-	add_compile_options(-Wall -Wextra -Wpedantic -Wno-unknown-pragmas)
+	add_compile_options(-Wall -Wextra -Wpedantic -Wno-unknown-pragmas -Wno-ignored-qualifiers)
 endif()
 
 target_include_directories(radiance PRIVATE
