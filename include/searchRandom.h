@@ -8,7 +8,7 @@ class SearchRandom : virtual public Search
 {
 public:
 	SearchRandom(const Search::LimitsType &limits, bool *g_stop) : Search(limits, g_stop) {}
-	SearchRandom(const SearchRandom &s) = default;
+	SearchRandom(const SearchRandom &s) = delete;
 	~SearchRandom() = default;
 
 	cMove nextMove(BoardParser &b, const Evaluate &) override

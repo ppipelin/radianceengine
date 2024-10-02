@@ -18,7 +18,13 @@ std::unordered_map<Bitboard, Bitboard> Bitboards::movesBishopLegal[BOARD_SIZE2] 
 
 Bitboard Bitboards::movesKnight[BOARD_SIZE2] = {};
 
-int main(int, char **)
+#ifdef _WIN32
+#define CALL_CONV __cdecl
+#else
+#define CALL_CONV
+#endif
+
+int CALL_CONV main(int, char **)
 {
 	bbInit();
 	BoardParser b;

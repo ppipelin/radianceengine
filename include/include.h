@@ -10,6 +10,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <algorithm>
+
+#if defined(__arm__) || defined(__aarch64__)
+#include <arm_neon.h>
+#endif
 
 using UInt = std::uint_fast16_t;
 using Key = std::uint64_t;
