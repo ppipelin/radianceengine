@@ -17,6 +17,7 @@
 #endif
 
 using UInt = std::uint_fast16_t;
+using UIntL = std::int_fast64_t;
 using Key = std::uint64_t;
 using Bitboard = std::uint64_t;
 using Int = std::int_fast16_t;

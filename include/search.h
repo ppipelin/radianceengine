@@ -387,76 +387,19 @@ public:
 	* @param depth
 	* @return UInt number of possibles position after all possible moves on b
 	*/
-	static UInt perft(BoardParser &b, UInt depth = 1, bool verbose = false)
+	static UIntL perft(BoardParser &b, UInt depth = 1, bool verbose = false)
 	{
 		std::vector<cMove> moveList;
-		UInt nodes = 0;
-		std::vector<UInt> tiles;
+		UIntL nodes = 0;
 
 		if (depth == 0)
 		{
 			return 1;
 		}
 
-		// #define opt
-#ifdef opt
-		if (b.isWhiteTurn())
-		{
-			tiles = b.boardParsed()->whitePos();
-		}
-		else
-		{
-			tiles = b.boardParsed()->blackPos();
-		}
-		for (const auto tile : tiles)
-		{
-			const Piece *piece = (*b.boardParsed())[tile];
-			if (piece == nullptr)
-			{
-				continue;
-			}
-
-			piece->canMove(*b.boardParsed(), moveList);
-		}
-#endif
-#ifndef opt
 		Search::generateMoveList(b, moveList, /*legalOnly =*/ true);
-#endif
 		for (const cMove &move : moveList)
 		{
-#ifdef opt
-			// Castling
-			if (move.isCastle())
-			{
-				// Castling from a controlled tile is illegal
-				if (b.inCheck(b.isWhiteTurn()))
-				{
-					continue;
-				}
-				// Castling over a controlled tile is illegal
-				cMove moveCastle = cMove(move.getFrom(), move.getTo());
-				UInt to = move.getFlags() == 2 ? move.getFrom() + 1 : move.getFrom() - 1;
-				BoardParser::State s;
-				BoardParser b3 = BoardParser(b, &s);
-				moveCastle.setTo(to);
-				b3.movePiece(moveCastle);
-				if (b3.inCheck(!b3.isWhiteTurn()))
-				{
-					continue;
-				}
-				// Queen castle requires another check, keeps last board for performances and re-move king
-				if (move.getFlags() == 3)
-				{
-					moveCastle.setFrom(moveCastle.getTo());
-					moveCastle.setTo(move.getFrom() - 2);
-					b3.movePiece(moveCastle);
-					if (b3.inCheck(!b3.isWhiteTurn()))
-					{
-						continue;
-					}
-				}
-			}
-#endif
 			BoardParser::State s;
 
 			if (!b.movePiece(move, s))
@@ -464,19 +407,15 @@ public:
 				b.unMovePiece(move);
 				continue;
 			}
-#ifdef opt
-			// We assert that we are not in check after we just moved
-			if (b2.inCheck(!b2.isWhiteTurn()))
-			{
-				// We don't count illegal moves
-				continue;
-			}
-#endif
-			UInt nodesNumber = perft(b, depth - 1);
+			UIntL nodesNumber = perft(b, depth - 1);
 			b.unMovePiece(move);
 			if (verbose)
 			{
-				std::cout << Board::toString(move.getFrom()) << Board::toString(move.getTo()) << " : " << nodesNumber << std::endl;
+				std::string promoteChar = "";
+				const std::array<std::string, 4> promoteCharArray = { "n","b","r","q" };
+				if (move.isPromotion())
+					promoteChar = promoteCharArray[move.getFlags() & 0b11];
+				std::cout << Board::toString(move.getFrom()) << Board::toString(move.getTo()) << promoteChar << " : " << nodesNumber << std::endl;
 			}
 			nodes += nodesNumber;
 		}

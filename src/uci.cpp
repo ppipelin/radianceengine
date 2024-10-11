@@ -137,8 +137,7 @@ namespace {
 		if (limits.perft > 0)
 		{
 			auto t1 = std::chrono::high_resolution_clock::now();
-			UInt nodes = Search::perft(pos, limits.perft, true);
-			std::cout << "info nodes " << nodes;
+			std::cout << "info nodes " << Search::perft(pos, limits.perft, true);
 			auto t2 = std::chrono::high_resolution_clock::now();
 			auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
 			std::cout << " time " << ms_int.count() << std::endl;
