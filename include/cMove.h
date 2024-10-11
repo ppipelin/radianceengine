@@ -29,7 +29,7 @@ public:
 
 	bool isCapture() const { return bool(getFlags() & 0x4); }
 	bool isCastle() const { return bool((getFlags() ^ 0x2) <= 1); }
-	bool isPromotion() const { return getFlags() >= 8; }
+	bool isPromotion() const { return getFlags() >> 3; }
 
 	UInt getButterflyIndex() const { return m_move & 0x0fff; }
 	bool operator==(cMove a) const { return (m_move & 0xffff) == (a.m_move & 0xffff); }
