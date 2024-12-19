@@ -1,10 +1,16 @@
+# EditorConfig is awesome: https://editorconfig.org
+
+# top-most EditorConfig file
+root = true
+
 [*]
 end_of_line = lf
-insert_final_newline = true
 indent_style=tab
 indent_size=1
+insert_final_newline = true
+trim_trailing_whitespace = true
 
-[*.{h,cpp}]
+# [*.{h,cpp,hpp,c++,h++}]
 cpp_indent_braces=false
 cpp_indent_multi_line_relative_to=innermost_parenthesis
 cpp_indent_within_parentheses=indent
@@ -18,9 +24,9 @@ cpp_indent_preprocessor=leftmost_column
 cpp_indent_access_specifiers=false
 cpp_indent_namespace_contents=true
 cpp_indent_preserve_comments=false
-cpp_new_line_before_open_brace_namespace=same_line 
+cpp_new_line_before_open_brace_namespace=same_line
 cpp_new_line_before_open_brace_type=new_line
-cpp_new_line_before_open_brace_function=new_line 
+cpp_new_line_before_open_brace_function=new_line
 cpp_new_line_before_open_brace_block=new_line
 cpp_new_line_before_open_brace_lambda=ignore
 cpp_new_line_scope_braces_on_separate_lines=false
