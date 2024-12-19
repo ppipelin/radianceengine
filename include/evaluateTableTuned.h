@@ -46,7 +46,7 @@ public:
 		-6,  13,  13,  26,  34,  12,  10,   4,
 		0,  15,  15,  15,  14,  27,  18,  10,
 		4,  15,  16,   0,   7,  21,  33,   1,
-		-33,  -3, -14, -21, -13, -12, -39, -21, };
+		-33,  -3, -14, -21, -13, -12, -39, -21 };
 
 	static constexpr std::array<Value, 64> rookTable = {
 		32,  42,  32,  51, 63,  9,  31,  43,
@@ -104,7 +104,6 @@ public:
 
 			for (const auto &pieceIdx : table)
 			{
-				moveset.clear();
 				const Piece *p = b.boardParsed()->board()[pieceIdx];
 				// Find idx in piece-square table
 				Int idxTable = i == 1 ? ((BOARD_SIZE - 1) - Board::row(pieceIdx)) * BOARD_SIZE + Board::column(pieceIdx) : pieceIdx;
@@ -115,6 +114,7 @@ public:
 				{
 					*scoreCurrent += 20000;
 
+					moveset.clear();
 					p->canMove(*b.boardParsed(), moveset);
 					egScore += i * Value(moveset.size());
 					(i == 1 ? scoreKingWhite : scoreKingBlack) = kingEndgameTable[idxTable];
@@ -132,9 +132,9 @@ public:
 				{
 					*scoreCurrent += 563;
 
+					moveset.clear();
 					p->canMove(*b.boardParsed(), moveset);
-					egScore += i * (5 * Value(moveset.size()));
-					const Value v = rookTable[idxTable];
+					const Value v = rookTable[idxTable] + 5 * Value(moveset.size());
 					mgScore += i * v;
 					egScore += i * v;
 				}
@@ -142,6 +142,7 @@ public:
 				{
 					*scoreCurrent += 333;
 
+					moveset.clear();
 					p->canMove(*b.boardParsed(), moveset);
 					const Value v = bishopTable[idxTable] + 5 * Value(moveset.size());
 					mgScore += i * v;
@@ -180,11 +181,10 @@ public:
 			finalScore += i * (*scoreCurrent);
 		}
 
+		// Final score adjustments based on the endgame condition
 		// Once ennemy has less pieces our king attacks the other one
 		// King, seven pawns a rook and a bishop
 		const bool endgame = (b.isWhiteTurn() ? scorePieceBlack : scorePieceWhite) <= 20000 + 7 * 100 + 563 + 333;
-		// King, six pawns a bishop and a knight
-		// const bool endgameHard = (b.isWhiteTurn() ? scorePieceBlack : scorePieceWhite) <= 20000 + 4 * 100 + 333 + 305;
 
 		if (endgame)
 		{
@@ -195,7 +195,6 @@ public:
 				finalScore += -scoreKingBlack;
 			else if (scorePieceWhite < scorePieceBlack)
 				finalScore += scoreKingWhite;
-			// finalScore -= (scorePieceWhite > scorePieceBlack ? -scoreKingBlack : scoreKingWhite) * 100;
 			finalScore += egScore;
 		}
 		else

@@ -24,58 +24,49 @@ public:
 
 		// Helper lambda to evaluate a given piece type
 		auto evaluatePiece = [&](PieceType pieceType, Value baseValue, const Value pieceTable[64]) {
+			auto evaluatePieceColor = [&](Bitboard &pieces, Value &scorePiece, bool isWhite)
+				{
+					while (pieces)
+					{
+						const UInt pieceIdx = Bitboards::popLeastBit(pieces);
+						const UInt idxTable = isWhite ? ((BOARD_SIZE - 1) - Board::row(pieceIdx)) * BOARD_SIZE + Board::column(pieceIdx) : pieceIdx;
+
+						if (pieceType == PieceType::KING)
+						{
+							scorePiece += 20000;
+							moveset.clear();
+							b.boardParsed()->board()[pieceIdx]->canMove(*b.boardParsed(), moveset);
+							int moveSize = Value(moveset.size());
+							egScore += isWhite ? moveSize : -moveSize;
+							int scoreKing = kingEndgameTable[idxTable];
+							egScore += isWhite ? scoreKing : -scoreKing;
+							mgScore += isWhite ? (kingTable[idxTable] - moveSize) : -(kingTable[idxTable] - moveSize);
+						}
+						else
+						{
+							scorePiece += baseValue;
+							Value v = pieceTable[idxTable];
+							if (pieceType == PieceType::ROOK || pieceType == PieceType::BISHOP)
+							{
+								moveset.clear();
+								b.boardParsed()->board()[pieceIdx]->canMove(*b.boardParsed(), moveset);
+								v += 5 * Value(moveset.size());
+							}
+							mgScore += isWhite ? v : -v;
+							egScore += isWhite ? v : -v;
+						}
+					}
+				};
+
 			Bitboard whitePieces = Bitboards::bbPieces[pieceType] & Bitboards::bbColors[Color::WHITE];
 			Bitboard blackPieces = Bitboards::bbPieces[pieceType] & Bitboards::bbColors[Color::BLACK];
 
 			// Evaluate white pieces
-			while (whitePieces)
-			{
-				const UInt pieceIdx = Bitboards::popLeastBit(whitePieces);
-				const UInt idxTable = ((BOARD_SIZE - 1) - Board::row(pieceIdx)) * BOARD_SIZE + Board::column(pieceIdx);
-
-				if (pieceType == PieceType::KING)
-				{
-					scorePieceWhite += 20000;
-					moveset.clear();
-					b.boardParsed()->board()[pieceIdx]->canMove(*b.boardParsed(), moveset);
-					egScore += Value(moveset.size());
-					scoreKingWhite = kingEndgameTable[idxTable];
-					egScore += scoreKingWhite;
-					mgScore += (kingTable[idxTable] - Value(moveset.size()));
-				}
-				else
-				{
-					scorePieceWhite += baseValue;
-					const Value v = pieceTable[idxTable];
-					mgScore += v;
-					egScore += v;
-				}
-			}
+			evaluatePieceColor(whitePieces, scorePieceWhite, true);
 
 			// Evaluate black pieces
-			while (blackPieces)
-			{
-				const UInt pieceIdx = Bitboards::popLeastBit(blackPieces);
-				const UInt idxTable = pieceIdx;
+			evaluatePieceColor(blackPieces, scorePieceBlack, false);
 
-				if (pieceType == PieceType::KING)
-				{
-					scorePieceBlack += 20000;
-					moveset.clear();
-					b.boardParsed()->board()[pieceIdx]->canMove(*b.boardParsed(), moveset);
-					egScore -= Value(moveset.size());
-					scoreKingBlack = kingEndgameTable[idxTable];
-					egScore -= scoreKingBlack;
-					mgScore -= (kingTable[idxTable] - Value(moveset.size()));
-				}
-				else
-				{
-					scorePieceBlack += baseValue;
-					const Value v = pieceTable[idxTable];
-					mgScore -= v;
-					egScore -= v;
-				}
-			}
 			finalScore += scorePieceWhite - scorePieceBlack;
 			};
 
@@ -108,6 +99,8 @@ public:
 		evaluatePawns(Color::BLACK);
 
 		// Final score adjustments based on the endgame condition
+		// Once ennemy has less pieces our king attacks the other one
+		// King, seven pawns a rook and a bishop
 		const bool endgame = (b.isWhiteTurn() ? scorePieceBlack : scorePieceWhite) <= 20000 + 7 * 100 + 563 + 333;
 		if (endgame)
 		{
