@@ -178,8 +178,9 @@ public:
 				}
 			}
 
-			finalScore += i * (*scoreCurrent);
 		}
+
+		finalScore += scorePieceWhite - scorePieceBlack;
 
 		// Final score adjustments based on the endgame condition
 		// Once ennemy has less pieces our king attacks the other one

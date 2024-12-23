@@ -66,8 +66,6 @@ public:
 
 			// Evaluate black pieces
 			evaluatePieceColor(blackPieces, scorePieceBlack, false);
-
-			finalScore += scorePieceWhite - scorePieceBlack;
 			};
 
 		// Evaluate passed, isolated, and doubled pawns
@@ -97,6 +95,8 @@ public:
 		evaluatePiece(PieceType::PAWN, 100, pawnTable.data());
 		evaluatePawns(Color::WHITE);
 		evaluatePawns(Color::BLACK);
+
+		finalScore += scorePieceWhite - scorePieceBlack;
 
 		// Final score adjustments based on the endgame condition
 		// Once ennemy has less pieces our king attacks the other one
