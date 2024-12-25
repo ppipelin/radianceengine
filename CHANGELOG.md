@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4] - 2024-12-25
+
+### Added
+
+- Bitboard evaluation function
+- Linux GCC errorless compile
+- Github actions compilation for Linux
+
+### Changed
+
+- Bit manipulation functions
+- Evaluate table code flow
+- Use 64 bits `UIntL` for nps display and perft
+
+### Removed
+
+- `opt` preprocessor variable for perft
+
 ## [3.3] - 2024-09-05
 
 ### Added
@@ -222,7 +240,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UCI `position` command
 - `Random` search
 
-[Unreleased]: https://github.com/ppipelin/radiance/compare/3.3...HEAD
+[Unreleased]: https://github.com/ppipelin/radiance/compare/3.4...HEAD
+[3.4]: https://github.com/ppipelin/radiance/compare/3.3...3.4
 [3.3]: https://github.com/ppipelin/radiance/compare/3.2...3.3
 [3.2]: https://github.com/ppipelin/radiance/compare/3.1.1...3.2
 [3.1.1]: https://github.com/ppipelin/radiance/compare/3.1...3.1.1

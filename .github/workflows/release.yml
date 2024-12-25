@@ -28,7 +28,7 @@ jobs:
         sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 100
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100
 
-    - name: Set up GCC compiler on Windows (comment for MSVC)
+    - name: Set up GCC compiler on Windows
       if: matrix.os == 'windows-latest'
       run: |
         choco install mingw -y
@@ -42,19 +42,26 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G "MinGW Makefiles"
 
-    # - name: Configure CMake on Windows (MSVC)
-    #   if: matrix.os == 'windows-latest'
-    #   run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
-    - name: Upload Windows Executable
+    - name: Configure and Build on Windows (MSVC)
+      if: matrix.os == 'windows-latest'
+      run: cmake -B ${{github.workspace}}/build_MSVC -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} && cmake --build ${{github.workspace}}/build_MSVC --config ${{env.BUILD_TYPE}}
+
+    - name: Upload Windows Executable GCC
       if: matrix.os == 'windows-latest'
       uses: actions/upload-artifact@v4
       with:
-        name: radiance_${{ github.ref_name }}_windows
-        path: ${{ github.workspace }}/build/radiance.exe # MSVC: ${{ github.workspace }}/build/Release/radiance.exe
+        name: radiance_${{ github.ref_name }}_windows_GCC
+        path: ${{ github.workspace }}/build/radiance.exe
+
+    - name: Upload Windows Executable MSVC
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: radiance_${{ github.ref_name }}_windows_MSVC
+        path: ${{ github.workspace }}/build_MSVC/Release/radiance.exe
 
     - name: Upload Linux Executable
       if: matrix.os == 'ubuntu-latest'
@@ -81,11 +88,17 @@ jobs:
         with:
           release_notes_file: RELEASE_NOTES.md
 
-      - name: Download Artifacts Windows
+      - name: Download Artifacts Windows GCC
         uses: actions/download-artifact@v4
         with:
-          name: radiance_${{ github.ref_name }}_windows
-          path: ${{ github.workspace }}/exe/
+          name: radiance_${{ github.ref_name }}_windows_GCC
+          path: ${{ github.workspace }}/exe/GCC/
+
+      - name: Download Artifacts Windows MSVC
+        uses: actions/download-artifact@v4
+        with:
+          name: radiance_${{ github.ref_name }}_windows_MSVC
+          path: ${{ github.workspace }}/exe/MSVC/
 
       - name: Download Artifacts linux
         uses: actions/download-artifact@v4
@@ -100,12 +113,14 @@ jobs:
 
       - name: Rename file
         run: |
-          mv ${{ github.workspace }}/exe/radiance.exe ${{ github.workspace }}/exe/radiance_${{ github.ref_name }}.exe
+          mv ${{ github.workspace }}/exe/GCC/radiance.exe ${{ github.workspace }}/exe/radiance_${{ github.ref_name }}_GCC.exe
+          mv ${{ github.workspace }}/exe/MSVC/radiance.exe ${{ github.workspace }}/exe/radiance_${{ github.ref_name }}_MSVC.exe
           mv ${{ github.workspace }}/exe/radiance ${{ github.workspace }}/exe/radiance_${{ github.ref_name }}
 
       - name: Upload executables
         run: |
-          gh release upload ${{ github.ref_name }} ${{ github.workspace }}/exe/radiance_${{ github.ref_name }}.exe
+          gh release upload ${{ github.ref_name }} ${{ github.workspace }}/exe/radiance_${{ github.ref_name }}_GCC.exe
+          gh release upload ${{ github.ref_name }} ${{ github.workspace }}/exe/radiance_${{ github.ref_name }}_MSVC.exe
           gh release upload ${{ github.ref_name }} ${{ github.workspace }}/exe/radiance_${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

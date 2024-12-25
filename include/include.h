@@ -24,7 +24,7 @@ using Int = std::int_fast16_t;
 using Value = Int;
 
 constexpr UInt MAJOR = 3;
-constexpr UInt MINOR = 3;
+constexpr UInt MINOR = 4;
 constexpr UInt PATCH = 0;
 
 constexpr UInt BOARD_SIZE = 8;
