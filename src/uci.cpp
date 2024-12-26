@@ -37,6 +37,7 @@ bool g_stop = false;
 namespace {
 	const std::string startFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 	const std::string kiwiFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+	const std::string laskerReichhelmFen("8/k7/3p4/p2P1p2/P2P1P2/8/8/K7 w - -");
 	// A list to keep track of the position states along the setup moves (from the
 	// start position to the position just before the search starts).
 	// Needed by 'draw by repetition' detection. Use a std::deque because pointers to
@@ -57,6 +58,11 @@ namespace {
 		else if (token == "kiwi")
 		{
 			fen = kiwiFen;
+			is >> token; // Consume the "moves" token, if any
+		}
+		else if (token == "lasker")
+		{
+			fen = laskerReichhelmFen;
 			is >> token; // Consume the "moves" token, if any
 		}
 		else if (token == "fen")
@@ -324,7 +330,7 @@ std::string UCI::pv(const Search &s, UInt depth)
 			<< " nodes " << nodes
 			<< " nps " << UIntL(nodes) * 1000 / std::max(s.elapsed(), TimePoint(1))
 			<< " hash " << transpositionTable.size()
-			<< " hashfull " << std::round(transpositionTable.size() * 1000 / transpositionTable.max_size())
+			<< " hashfull " << (g_options["Hash"] ? std::round(UIntL(transpositionTable.size() * (sizeof(Key) + sizeof(std::tuple<Value, UInt, cMove>)) + transpositionTable.bucket_count() * sizeof(void *)) * 1000 / (UIntL(g_options["Hash"]) * 1e6)) : 0)
 			<< " hashused " << s.transpositionUsed
 			<< " time " << s.elapsed()
 			<< " multipv " << i + 1
