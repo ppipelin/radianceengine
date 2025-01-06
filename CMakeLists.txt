@@ -8,6 +8,8 @@ project(radiance
 	LANGUAGES CXX
 )
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 add_executable(radiance)
 
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -31,68 +33,118 @@ target_sources(radiance PRIVATE
 
 set_target_properties(radiance PROPERTIES LINK_WHAT_YOU_USE TRUE)
 
-# target_compile_options(radiance PRIVATE -W4 ${OpenMP_CXX_FLAGS})
 if(MSVC)
 	add_compile_options(/W4)
 
-	check_cxx_compiler_flag("/LTCG" COMPILER_SUPPORTS_LTCG)
 	check_cxx_compiler_flag("/GL" COMPILER_SUPPORTS_GL)
 	check_cxx_compiler_flag("/Gv" COMPILER_SUPPORTS_Gv)
+	check_cxx_compiler_flag("/arch:SSE2" COMPILER_SUPPORTS_SSE2)
+	check_cxx_compiler_flag("/arch:SSE4.1" COMPILER_SUPPORTS_SSE41)
+	check_cxx_compiler_flag("/arch:SSE4.2" COMPILER_SUPPORTS_SSE42)
+	check_cxx_compiler_flag("/arch:AVX" COMPILER_SUPPORTS_AVX)
 	check_cxx_compiler_flag("/arch:AVX2" COMPILER_SUPPORTS_AVX2)
+	check_cxx_compiler_flag("/arch:AVX512" COMPILER_SUPPORTS_AVX512)
+	check_cxx_compiler_flag("/arch:AVX10.1" COMPILER_SUPPORTS_AVX101)
 	check_cxx_compiler_flag("/O2" COMPILER_SUPPORTS_O2)
+	check_cxx_compiler_flag("/Ob" COMPILER_SUPPORTS_OB)
+	check_cxx_compiler_flag("/Oi" COMPILER_SUPPORTS_Oi)
 	check_cxx_compiler_flag("/Ox" COMPILER_SUPPORTS_OX)
 	check_cxx_compiler_flag("/Oy" COMPILER_SUPPORTS_OY)
+	check_cxx_compiler_flag("/MT" COMPILER_SUPPORTS_MT)
+	check_cxx_compiler_flag("/MP" COMPILER_SUPPORTS_MP)
 	check_cxx_compiler_flag("/fp:fast" COMPILER_SUPPORTS_FPF)
 
-	if(COMPILER_SUPPORTS_LTCG)
-		add_compile_options("$<$<CONFIG:RELEASE>:/LTCG>")
-	endif()
-
-	add_link_options("$<$<CONFIG:RELEASE>:/LTCG>")
-
 	if(COMPILER_SUPPORTS_GL)
-		add_compile_options("$<$<CONFIG:RELEASE>:/GL>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/GL>")
+		target_link_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/LTCG>")
 	endif()
 
 	if(COMPILER_SUPPORTS_Gv)
-		add_compile_options("$<$<CONFIG:RELEASE>:/Gv>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/Gv>")
+	endif()
+
+	if(COMPILER_SUPPORTS_SSE2)
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/arch:SSE2>")
+	endif()
+
+	if(COMPILER_SUPPORTS_SSE41)
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/arch:SSE4.1>")
+	endif()
+
+	if(COMPILER_SUPPORTS_SSE42)
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/arch:SSE4.2>")
+	endif()
+
+	if(COMPILER_SUPPORTS_AVX)
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/arch:AVX>")
 	endif()
 
 	if(COMPILER_SUPPORTS_AVX2)
-		add_compile_options("$<$<CONFIG:RELEASE>:/arch:AVX2>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/arch:AVX2>")
+	endif()
+
+	if(COMPILER_SUPPORTS_AVX512)
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/arch:AVX512>")
+	endif()
+
+	if(COMPILER_SUPPORTS_AVX101)
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/arch:AVX10.1>")
 	endif()
 
 	if(COMPILER_SUPPORTS_O2)
-		add_compile_options("$<$<CONFIG:RELEASE>:/O2>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/O2>")
+	endif()
+
+	if(COMPILER_SUPPORTS_OB)
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/Ob>")
+	endif()
+
+	if(COMPILER_SUPPORTS_OI)
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/Oi>")
 	endif()
 
 	if(COMPILER_SUPPORTS_OX)
-		add_compile_options("$<$<CONFIG:RELEASE>:/Ox>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/Ox>")
 	endif()
 
 	if(COMPILER_SUPPORTS_OY)
-		add_compile_options("$<$<CONFIG:RELEASE>:/Oy>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/Oy>")
+	endif()
+
+	if(COMPILER_SUPPORTS_MT)
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/MT>")
+	endif()
+
+	if(COMPILER_SUPPORTS_MP)
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/MP>")
 	endif()
 
 	if(COMPILER_SUPPORTS_FPF)
-		add_compile_options("$<$<CONFIG:RELEASE>:/fp:fast>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:/fp:fast>")
 	endif()
 
-	target_compile_definitions(radiance PRIVATE NDEBUG _WIN32_WINNT=0x0A00)
 else()
 	# GCC and Clang specific options
-	add_compile_options(-Wall -Wextra -Wpedantic -Wno-unknown-pragmas -Wno-ignored-qualifiers)
+	target_compile_options(radiance PRIVATE -Wall -Wextra -Wpedantic -Wno-unknown-pragmas -Wno-ignored-qualifiers)
 
 	check_cxx_compiler_flag("-Ofast" COMPILER_SUPPORTS_OFAST)
 	check_cxx_compiler_flag("-flto" COMPILER_SUPPORTS_LTO)
 	check_cxx_compiler_flag("-ftree-vectorize" COMPILER_SUPPORTS_TREE_VECTORIZE)
 	check_cxx_compiler_flag("-funroll-loops" COMPILER_SUPPORTS_UNROLL_LOOPS)
+	check_cxx_compiler_flag("-static" COMPILER_SUPPORTS_STATIC)
+	check_cxx_compiler_flag("-static-libgcc" COMPILER_SUPPORTS_STATIC_LIBGCC)
+	check_cxx_compiler_flag("-static-libstdc++" COMPILER_SUPPORTS_STATIC_LIBCPP)
+	check_cxx_compiler_flag("-finline-functions" COMPILER_SUPPORTS_INLINE)
+	check_cxx_compiler_flag("-pipe" COMPILER_SUPPORTS_PIPE)
 	check_cxx_compiler_flag("-fstrict-aliasing" COMPILER_SUPPORTS_STRICT_ALIASING)
 	check_cxx_compiler_flag("-fomit-frame-pointer" COMPILER_SUPPORTS_OMIT_FRAME_POINTER)
+	check_cxx_compiler_flag("-lm" COMPILER_SUPPORTS_LM)
 	check_cxx_compiler_flag("-fwhole-program" COMPILER_SUPPORTS_WHOLE_PROGRAM)
 	check_cxx_compiler_flag("-fipa-pta" COMPILER_SUPPORTS_IPA_PTA)
 
 	check_cxx_compiler_flag("-mpopcnt" COMPILER_SUPPORTS_POPCNT)
+	check_cxx_compiler_flag("-msse3" COMPILER_SUPPORTS_SSE3)
+	check_cxx_compiler_flag("-mssse3" COMPILER_SUPPORTS_SSSE3)
 	check_cxx_compiler_flag("-msse4.1" COMPILER_SUPPORTS_SSE41)
 	check_cxx_compiler_flag("-msse4.2" COMPILER_SUPPORTS_SSE42)
 	check_cxx_compiler_flag("-mfma" COMPILER_SUPPORTS_FMA)
@@ -104,78 +156,108 @@ else()
 	check_cxx_compiler_flag("-mtune=native" COMPILER_SUPPORTS_MTUNE_NATIVE)
 
 	if(COMPILER_SUPPORTS_OFAST)
-		add_compile_options("$<$<CONFIG:RELEASE>:-Ofast>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-Ofast>")
 	endif()
 
 	if(COMPILER_SUPPORTS_LTO)
-		add_compile_options("$<$<CONFIG:RELEASE>:-flto>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-flto>")
 	endif()
 
 	if(COMPILER_SUPPORTS_TREE_VECTORIZE)
-		add_compile_options("$<$<CONFIG:RELEASE>:-ftree-vectorize>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-ftree-vectorize>")
+	endif()
+
+	if(COMPILER_SUPPORTS_STATIC)
+		target_link_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-static>")
+	endif()
+
+	if(COMPILER_SUPPORTS_STATIC_LIBGCC)
+		target_link_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-static-libgcc>")
+	endif()
+
+	if(COMPILER_SUPPORTS_STATIC_LIBCPP)
+		target_link_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-static-libstdc++>")
+	endif()
+
+	if(COMPILER_SUPPORTS_INLINE)
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-finline-functions>")
+	endif()
+
+	if(COMPILER_SUPPORTS_PIPE)
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-pipe>")
 	endif()
 
 	if(COMPILER_SUPPORTS_UNROLL_LOOPS)
-		add_compile_options("$<$<CONFIG:RELEASE>:-funroll-loops>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-funroll-loops>")
 	endif()
 
 	if(COMPILER_SUPPORTS_STRICT_ALIASING)
-		add_compile_options("$<$<CONFIG:RELEASE>:-fstrict-aliasing>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-fstrict-aliasing>")
 	endif()
 
 	if(COMPILER_SUPPORTS_OMIT_FRAME_POINTER)
-		add_compile_options("$<$<CONFIG:RELEASE>:-fomit-frame-pointer>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-fomit-frame-pointer>")
+	endif()
+
+	if(COMPILER_SUPPORTS_LM)
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-lm>")
 	endif()
 
 	if(COMPILER_SUPPORTS_WHOLE_PROGRAM)
-		add_compile_options("$<$<CONFIG:RELEASE>:-fwhole-program>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-fwhole-program>")
 	endif()
 
 	if(COMPILER_SUPPORTS_IPA_PTA)
-		add_compile_options("$<$<CONFIG:RELEASE>:-fipa-pta>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-fipa-pta>")
+	endif()
+
+	if(COMPILER_SUPPORTS_SSE3)
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-mpopcnt>")
+	endif()
+
+	if(COMPILER_SUPPORTS_SSSE3)
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-msse3>")
 	endif()
 
 	if(COMPILER_SUPPORTS_POPCNT)
-		add_compile_options("$<$<CONFIG:RELEASE>:-mpopcnt>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-mssse3>")
 	endif()
 
 	if(COMPILER_SUPPORTS_SSE41)
-		add_compile_options("$<$<CONFIG:RELEASE>:-msse4.1>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-msse4.1>")
 	endif()
 
 	if(COMPILER_SUPPORTS_SSE42)
-		add_compile_options("$<$<CONFIG:RELEASE>:-msse4.2>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-msse4.2>")
 	endif()
 
 	if(COMPILER_SUPPORTS_FMA)
-		add_compile_options("$<$<CONFIG:RELEASE>:-mfma>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-mfma>")
 	endif()
 
 	if(COMPILER_SUPPORTS_BMI)
-		add_compile_options("$<$<CONFIG:RELEASE>:-mbmi>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-mbmi>")
 	endif()
 
 	if(COMPILER_SUPPORTS_BMI2)
-		add_compile_options("$<$<CONFIG:RELEASE>:-mbmi2>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-mbmi2>")
 	endif()
 
 	if(COMPILER_SUPPORTS_AVX)
-		add_compile_options("$<$<CONFIG:RELEASE>:-mavx>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-mavx>")
 	endif()
 
 	if(COMPILER_SUPPORTS_AVX2)
-		add_compile_options("$<$<CONFIG:RELEASE>:-mavx2>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-mavx2>")
 	endif()
 
 	if(COMPILER_SUPPORTS_MARCH_NATIVE)
-		add_compile_options("$<$<CONFIG:RELEASE>:-march=native>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-march=native>")
 	endif()
 
 	if(COMPILER_SUPPORTS_MTUNE_NATIVE)
-		add_compile_options("$<$<CONFIG:RELEASE>:-mtune=native>")
+		target_compile_options(radiance PRIVATE "$<$<CONFIG:RELEASE>:-mtune=native>")
 	endif()
-
-	target_compile_definitions(radiance PRIVATE NDEBUG)
 endif()
 
 target_compile_features(radiance PRIVATE cxx_std_23)
@@ -183,12 +265,6 @@ target_compile_features(radiance PRIVATE cxx_std_23)
 target_include_directories(radiance PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/include
 )
-
-# OMP
-# find_package(OpenMP REQUIRED)
-
-# Link libraries
-# target_link_libraries(radiance PRIVATE ${OpenMP_CXX_FLAGS})
 
 # Tests
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
