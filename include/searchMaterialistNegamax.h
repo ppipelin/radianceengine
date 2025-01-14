@@ -114,7 +114,10 @@ public:
 		else
 		{
 			Search::generateMoveList(b, moveList, /*legalOnly=*/ true, /*onlyCapture=*/ false);
-			Search::orderMoves(b, moveList, (rootMoves[0].pv.size() > ss->ply) ? rootMoves[0].pv[ss->ply] : cMove());
+			if (pvNode)
+				Search::orderMoves(b, moveList, (rootMoves[0].pv.size() > ss->ply) ? rootMoves[0].pv[ss->ply] : cMove());
+			else
+				Search::orderMoves(b, moveList);
 		}
 
 		for (const cMove &move : moveList)
