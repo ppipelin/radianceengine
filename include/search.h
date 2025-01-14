@@ -94,7 +94,7 @@ public:
 	LimitsType Limits;
 	UInt pvIdx = 0;
 	std::vector<RootMove> rootMoves;
-	std::array<Int, MAX_PLY> nodesSearched = { 0 };
+	std::array<UIntL, MAX_PLY> nodesSearched;
 	UInt transpositionUsed = 0;
 
 	Search(const Search::LimitsType &limits, bool *g_stop) : Limits(limits), g_stop(g_stop), mtx(std::make_unique<std::mutex>()) {}

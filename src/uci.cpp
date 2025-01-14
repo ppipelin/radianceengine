@@ -324,11 +324,11 @@ std::string UCI::pv(const Search &s, UInt depth)
 		if (ss.rdbuf()->in_avail())
 			ss << "\n";
 
-		UInt nodes = std::accumulate(s.nodesSearched.begin(), s.nodesSearched.end(), 0);
+		UIntL nodes = std::accumulate(s.nodesSearched.begin(), s.nodesSearched.end(), 0);
 		ss << "info"
 			<< " depth " << depth
 			<< " nodes " << nodes
-			<< " nps " << UIntL(nodes) * 1000 / std::max(s.elapsed(), TimePoint(1))
+			<< " nps " << nodes * 1000 / std::max(s.elapsed(), TimePoint(1))
 			<< " hash " << transpositionTable.size()
 			<< " hashfull " << (g_options["Hash"] ? std::round(UIntL(transpositionTable.size() * (sizeof(Key) + sizeof(std::tuple<Value, UInt, cMove>)) + transpositionTable.bucket_count() * sizeof(void *)) * 1000 / (UIntL(g_options["Hash"]) * 1e6)) : 0)
 			<< " hashused " << s.transpositionUsed
