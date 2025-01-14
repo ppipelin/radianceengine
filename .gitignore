@@ -1,8 +1,7 @@
-.vscode/
-build/
-sioclient/
-node_modules
-package-lock.json
+CMakeFiles*
+CMakeCache*
+.vscode
+build
 lib
-ALL_BUILD.*
-CMakeCache.*
+Testing
+*.vcxproj*
