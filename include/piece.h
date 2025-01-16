@@ -14,9 +14,9 @@
 class Piece
 {
 protected:
-	UInt m_tile;
-	bool m_isWhite;
-	bool m_neverMoved;
+	UInt m_tile = 0;
+	bool m_isWhite = true;
+	bool m_neverMoved = true;
 
 public:
 	/**

@@ -277,10 +277,20 @@ void UCI::loop(int argc, char *argv[])
 				std::cout << "readyok" << std::endl;
 			else if (token == "eval")
 				std::cout << "UCI - eval called" << std::endl;
-			else if (token == "--help" || token == "help" || token == "--license" || token == "license")
+			else if (token == "--help" || token == "help")
+				std::cout << "\n\tuci"
+				"\n\tisready"
+				"\n\tsetoption name <id> [value <x>]"
+				"\n\tposition [fen <string> | startpos | kiwi | lasker] [moves <string>...]"
+				"\n\tgo [movetime <int> | [wtime <int>] [btime <int>] [winc <int>] [binc <int>] | depth <int> | infinite | perft <int>]"
+				"\n\tstop"
+				"\n\tquit"
+				"\n\tucinewgame"
+				"\n\td" << std::endl;
+			else if (token == "--license" || token == "license")
 				std::cout << "\nRadiance is chess engine for playing and analyzing."
-				"\nIt supports Universal Chess Interface (UCI) protocol to communicate with a GUI, an API, etc."
-				"\nor read the corresponding README.md and Copying.txt files distributed along with this program." << std::endl;
+				"\nRadiance is normally used with a graphical user interface (GUI) and supports Universal Chess Interface (UCI) protocol to communicate with a GUI, an API, etc."
+				"\nRead the README.md or type --help for further information." << std::endl;
 			else if (!token.empty() && token[0] != '#')
 				std::cout << "UCI - Unknown command: '" << cmd << "'." << std::endl;
 		} while (!q.empty());

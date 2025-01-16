@@ -54,7 +54,7 @@ public:
 		pawnColumsUnique.erase(last, pawnColumsUnique.end());
 		score -= 40 * Value(pawnColumns.size() - pawnColumsUnique.size());
 
-		for (const auto &i : pawnPositions)
+		for (const UInt &i : pawnPositions)
 		{
 			const Piece *piece = (*b.boardParsed())[i];
 			// Blocked pawn

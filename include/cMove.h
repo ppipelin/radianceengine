@@ -14,7 +14,7 @@ public:
 
 	cMove(UInt from, UInt to, UInt flags = 0)
 	{
-		m_move = ((flags & 0xf) << 12) | ((from & 0x3f) << 6) | (to & 0x3f);
+		m_move = (flags << 12) | (from << 6) | to;
 	}
 
 	cMove operator=(cMove c) { m_move = c.m_move; return c; }

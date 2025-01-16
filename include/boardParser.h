@@ -1003,8 +1003,8 @@ public:
 					}
 					else
 					{
-						const Piece *p1 = boardParsed()->board()[32 + enPassant - 1];
-						const Piece *p2 = boardParsed()->board()[32 + enPassant + 1];
+						const Piece *p1 = boardParsed()->board()[Int(32) + enPassant - 1];
+						const Piece *p2 = boardParsed()->board()[Int(32) + enPassant + 1];
 						if ((p1 == nullptr || !p1->isWhite() || p1->value() != PieceType::PAWN) && (p2 == nullptr || !p2->isWhite() || p2->value() != PieceType::PAWN))
 						{
 							enPassant = -1;
@@ -1025,8 +1025,8 @@ public:
 					}
 					else
 					{
-						const Piece *p1 = boardParsed()->board()[24 + enPassant - 1];
-						const Piece *p2 = boardParsed()->board()[24 + enPassant + 1];
+						const Piece *p1 = boardParsed()->board()[Int(24) + enPassant - 1];
+						const Piece *p2 = boardParsed()->board()[Int(24) + enPassant + 1];
 						if ((p1 == nullptr || p1->isWhite() || p1->value() != PieceType::PAWN) && (p2 == nullptr || p2->isWhite() || p2->value() != PieceType::PAWN))
 						{
 							enPassant = -1;
