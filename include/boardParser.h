@@ -810,8 +810,6 @@ public:
 			++counter;
 		}
 
-		Bitboards::computeAll();
-
 		if (words.size() > 1 && words[1] == "w")
 		{
 			m_isWhiteTurn = true;

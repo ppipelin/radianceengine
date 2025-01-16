@@ -42,6 +42,6 @@ int CALL_CONV main(int, char **)
 	b.displayCLI();
 	Bitboards::displayBBCLI();
 
-	return Bitboards::bbPieces[0] != Bitboard(0) || Bitboards::bbPieces[1] != Bitboard(56013520638870016) || Bitboards::bbPieces[2] != Bitboard(144115188075855872) || Bitboards::bbPieces[3] != Bitboard(8796093022240) || Bitboards::bbPieces[4] != Bitboard(9295429630892703744) || Bitboards::bbPieces[5] != Bitboard(576460752303423489) || Bitboards::bbPieces[6] != Bitboard(9007199263129600) || Bitboards::bbPieces[7] != Bitboard(10081035087267004961) || Bitboards::bbColors[0] != Bitboard(10081035086985166849) || Bitboards::bbColors[1] != Bitboard(281838112);
+	return Bitboards::bbPieces[PieceType::NONE] != Bitboard(0) || Bitboards::bbPieces[PieceType::PAWN] != Bitboard(56013520638870016) || Bitboards::bbPieces[PieceType::KNIGHT] != Bitboard(144115188075855872) || Bitboards::bbPieces[PieceType::BISHOP] != Bitboard(8796093022240) || Bitboards::bbPieces[PieceType::ROOK] != Bitboard(9295429630892703744) || Bitboards::bbPieces[PieceType::QUEEN] != Bitboard(576460752303423489) || Bitboards::bbPieces[PieceType::KING] != Bitboard(9007199263129600) || (Bitboards::bbColors[Color::BLACK] | Bitboards::bbColors[Color::WHITE]) != Bitboard(10081035087267004961) || Bitboards::bbColors[Color::BLACK] != Bitboard(10081035086985166849) || Bitboards::bbColors[Color::WHITE] != Bitboard(281838112);
 }
 

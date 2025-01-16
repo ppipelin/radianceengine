@@ -3,21 +3,21 @@
 void Queen::canMove(const Board &, std::vector<cMove> &v) const
 {
 	v.reserve(v.size() + 27);
-	const Bitboard blockersRook = Bitboards::movesRookMask[m_tile] & Bitboards::bbPieces[PieceType::ALL];
+	const Bitboard blockersRook = Bitboards::movesRookMask[m_tile] & (Bitboards::bbColors[Color::BLACK] | Bitboards::bbColors[Color::WHITE]);
 	Bitboard pseudoLegalMovesBBPartialRook = 0;
 	if (blockersRook == 0)
 		pseudoLegalMovesBBPartialRook = Bitboards::movesRook[m_tile];
 	else
 		pseudoLegalMovesBBPartialRook = Bitboards::movesRookLegal[m_tile][blockersRook];
 
-	const Bitboard blockersBishop = Bitboards::movesBishopMask[m_tile] & Bitboards::bbPieces[PieceType::ALL];
+	const Bitboard blockersBishop = Bitboards::movesBishopMask[m_tile] & (Bitboards::bbColors[Color::BLACK] | Bitboards::bbColors[Color::WHITE]);
 	Bitboard pseudoLegalMovesBBPartialBishop = 0;
 	if (blockersBishop == 0)
 		pseudoLegalMovesBBPartialBishop = Bitboards::movesBishop[m_tile];
 	else
 		pseudoLegalMovesBBPartialBishop = Bitboards::movesBishopLegal[m_tile][blockersBishop];
 
-	Bitboard pseudoLegalQuietBB = (pseudoLegalMovesBBPartialRook | pseudoLegalMovesBBPartialBishop) & ~Bitboards::bbPieces[PieceType::ALL];
+	Bitboard pseudoLegalQuietBB = (pseudoLegalMovesBBPartialRook | pseudoLegalMovesBBPartialBishop) & ~(Bitboards::bbColors[Color::BLACK] | Bitboards::bbColors[Color::WHITE]);
 	Bitboard pseudoLegalCapturesBB = (pseudoLegalMovesBBPartialRook | pseudoLegalMovesBBPartialBishop) & Bitboards::allPiecesColor(Color(!isWhite()));
 
 	// Quiet moves

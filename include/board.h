@@ -173,7 +173,6 @@ enum PieceType : UInt
 	ROOK,
 	QUEEN,
 	KING,
-	ALL,
 	NB
 };
 
@@ -219,7 +218,6 @@ public:
 	{
 		const Bitboard removeFilter = ~Bitboards::tileToBB(tile);
 		Bitboards::bbPieces[p] &= removeFilter;
-		Bitboards::bbPieces[PieceType::ALL] &= removeFilter;
 		Bitboards::bbColors[c] &= removeFilter;
 	}
 
@@ -227,7 +225,6 @@ public:
 	{
 		const Bitboard addFilter = Bitboards::tileToBB(tile);
 		Bitboards::bbPieces[p] |= addFilter;
-		Bitboards::bbPieces[PieceType::ALL] |= addFilter;
 		Bitboards::bbColors[c] |= addFilter;
 	}
 
@@ -235,16 +232,7 @@ public:
 	{
 		const Bitboard removeFilter = Bitboards::tileToBB(removeTile) | Bitboards::tileToBB(addTile);
 		Bitboards::bbPieces[p] ^= removeFilter;
-		Bitboards::bbPieces[PieceType::ALL] ^= removeFilter;
 		Bitboards::bbColors[c] ^= removeFilter;
-	}
-
-	static void computeAll()
-	{
-		for (UInt p = PieceType::NONE + 1; p < PieceType::ALL; ++p)
-		{
-			Bitboards::bbPieces[PieceType::ALL] |= Bitboards::bbPieces[p];
-		}
 	}
 
 	static void displayBBCLI(const Bitboard bb)
@@ -322,7 +310,7 @@ public:
 
 	static inline Bitboard allPiecesColor(const Color col)
 	{
-		return bbPieces[PieceType::ALL] & bbColors[col];
+		return bbColors[col];
 	}
 
 	static inline UInt popCount(const Bitboard &bb)

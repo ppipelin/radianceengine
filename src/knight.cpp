@@ -14,7 +14,7 @@ void Knight::canMove(const Board &, std::vector<cMove> &v) const
 	Bitboard pseudoLegalMovesBB = Bitboards::movesKnight[m_tile];
 
 	// Mask out our own pieces
-	Bitboard pseudoLegalQuietBB = pseudoLegalMovesBB & ~Bitboards::bbPieces[PieceType::ALL];
+	Bitboard pseudoLegalQuietBB = pseudoLegalMovesBB & ~(Bitboards::bbColors[Color::BLACK] | Bitboards::bbColors[Color::WHITE]);
 
 	// Iterate over possible quiet moves
 	while (pseudoLegalQuietBB)
